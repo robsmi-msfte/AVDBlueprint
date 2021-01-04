@@ -1,0 +1,373 @@
+{
+  "type": "Microsoft.Blueprint/blueprints",
+  "name": "WVD Blueprint",
+  "properties": {
+    "targetScope": "subscription",
+    "parameters": {
+      "resourcePrefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Resource Prefix"
+        },
+        "defaultValue": "WVD"
+      },
+      "_ScriptURI": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Script URI",
+          "description": "Blueprint Powershell script location."
+        },
+        "defaultValue": "https://wvdautodeployrepo.blob.core.windows.net/files"
+      },
+      "WVDUSERS_testUserPrefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Test User prefix",
+          "description": "Username prefix. A number will be added to the end of this value."
+        },
+        "defaultValue": "user"
+      },
+      "WVDUSERS_testUserCount": {
+        "type": "int",
+        "metadata": {
+          "displayName": "Total test users",
+          "description": "Sets how many test users will be deployed."
+        },
+        "defaultValue": 10
+      },
+      "ADDS_domainName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Azure ADDS Domain"
+        }
+      },
+      "DAUser_domainadmin": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Domain Admin User UPN",
+          "description": "Domain user with machine join privileges."
+        },
+        "defaultValue": "[concat( 'domainadmin@', parameters('ADDS_domainName'))]"
+      },
+      "ADDS_vnetName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Azure ADDS vNet"
+        },
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-sharedsvcs-vnet')]",
+        "allowedValues": []
+      },
+      "ADDS_emailNotifications": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Notification email addresses"
+        }
+      },
+      "script_deployment-user-resource-id": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Deployment Script Managed Identity Resource ID",
+          "description": "Managed Identity resource ID that will execute embeded deployment scripts."
+        }
+      },
+      "script_deployment-user-object-id": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Deployment Script Managed Identity Object ID",
+          "description": "Managed Identity object ID that will execute embeded deployment scripts."
+        }
+      },
+      "keyvault_access-user-object-id": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Keyvault Owner User Object ID",
+          "description": "AAD object ID of the user that requires access to Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID"
+        }
+      },
+      "keyvault_logs-retention-in-days": {
+        "type": "int",
+        "metadata": {
+          "displayName": "Log retention(days)",
+          "description": "Number of days that logs will be kept for; a value of 0 will retain data indefinitely"
+        },
+        "defaultValue": 365
+      },
+      "vnet_vnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Virtual Network address prefix"
+        },
+        "defaultValue": "10.0.0.0/16",
+        "allowedValues": []
+      },
+      "vnet_enable-ddos-protection": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Enable Virtual Network DDoS protection",
+          "description": "Determines whether or not DDoS Protection is enabled in the Virtual Network"
+        },
+        "defaultValue": "true"
+      },
+      "vnet_sharedsvcs-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Shared services subnet address prefix",
+          "description": "Value used in Virtual Network / Route Table, Jumpbox and Active Directory Domain Services templates"
+        },
+        "defaultValue": "10.0.0.0/24",
+        "allowedValues": []
+      },
+      "vnet_bastion-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Bastion subnet address prefix"
+        },
+        "defaultValue": "10.0.1.0/24",
+        "allowedValues": []
+      },
+      "vnet_app-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Application subnet address prefix"
+        },
+        "defaultValue": "10.0.2.0/24",
+        "allowedValues": []
+      },
+      "vnet_app-gateway-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Application Gateway subnet address prefix"
+        },
+        "defaultValue": "10.0.3.0/24",
+        "allowedValues": []
+      },
+      "vnet_gateway-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Virtual Network Gateway subnet address prefix"
+        },
+        "defaultValue": "10.0.4.0/24",
+        "allowedValues": []
+      },
+      "vnet_azure-firewall-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Azure Firewall subnet address prefix"
+        },
+        "defaultValue": "10.0.5.0/24",
+        "allowedValues": []
+      },
+      "azure-adds-subnet-address-prefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Azure ADDS subnet address prefix"
+        },
+        "defaultValue": "10.0.6.0/24",
+        "allowedValues": []
+      },
+      "vnet_logs-retention-in-days": {
+        "type": "int",
+        "metadata": {
+          "displayName": "Log retention in days",
+          "description": "Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely"
+        },
+        "defaultValue": 365
+      },
+      "nsg_logs-retention-in-days": {
+        "type": "int",
+        "metadata": {
+          "displayName": "Log retention in days",
+          "description": "Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely"
+        },
+        "defaultValue": 365
+      },
+      "log-analytics_service-tier": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Service tier",
+          "description": "Service tier: Free, Standalone, PerNode or PerGB2018"
+        },
+        "defaultValue": "PerNode",
+        "allowedValues": [
+          "Free",
+          "Standalone",
+          "PerNode",
+          "PerGB2018"
+        ]
+      },
+      "log-analytics_data-retention": {
+        "type": "int",
+        "metadata": {
+          "displayName": "Log retention in days",
+          "description": "Number of days data will be retained for"
+        },
+        "defaultValue": 365,
+        "allowedValues": []
+      },
+      "logAnalyticstemplate_automation-account-id": {
+        "type": "string",
+        "metadata": {
+          "displayName": "automation-account-id (Log Analytics template)",
+          "description": "Optional. Automation Account resource identifier, value used to create a LinkedService between Log Analytics and an Automation Account."
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_hostpoolname": {
+        "type": "string",
+        "metadata": {
+          "displayName": "WVD Hostpool Name"
+        },
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-wvd-hp')]"
+      },
+      "wVDHostpool_workspaceName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "WVD Workspace Name"
+        },
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-wvd-ws')]"
+      },
+      "wVDHostpool_hostpoolDescription": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Hostpool Description"
+        },
+        "defaultValue": ""
+      },
+      "wVDHostpool_vmNamePrefix": {
+        "type": "string",
+        "metadata": {
+          "displayName": "VM Prefix"
+        },
+        "defaultValue": "[concat(parameters('resourcePrefix'), 'VM')]"
+      },
+      "wVDHostpool_vmGalleryImageOffer": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Gallery Image Offer"
+        },
+        "defaultValue": "office-365"
+      },
+      "wVDHostpool_vmGalleryImagePublisher": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Gallery Image Publisher"
+        },
+        "defaultValue": "MicrosoftWindowsDesktop"
+      },
+      "wVDHostpool_vmGalleryImageSKU": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Gallery Image SKU"
+        },
+        "defaultValue": "20h1-evd-o365pp"
+      },
+      "wVDHostpool_vmImageType": {
+        "type": "string",
+        "metadata": {
+          "displayName": "VM Image Type"
+        },
+        "defaultValue": "Gallery"
+      },
+      "wVDHostpool_vmDiskType": {
+        "type": "string",
+        "metadata": {
+          "displayName": "VM Image Type"
+        },
+        "defaultValue": "StandardSSD_LRS"
+      },
+      "wVDHostpool_vmUseManagedDisks": {
+        "type": "bool",
+        "metadata": {
+          "displayName": "Use Managed Disks"
+        },
+        "defaultValue": true
+      },
+      "wVDHostpool_allApplicationGroupReferences": {
+        "type": "string",
+        "metadata": {
+          "displayName": "allApplicationGroupReferences (WVDHostpool)",
+          "description": "The existing app groups references of the workspace selected."
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_vmImageVhdUri": {
+        "type": "string",
+        "metadata": {
+          "displayName": "vmImageVhdUri (WVDHostpool)",
+          "description": "(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs. For example, https://rdsstorage.blob.core.windows.net/vhds/sessionhostimage.vhd"
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_vmCustomImageSourceId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "vmCustomImageSourceId (WVDHostpool)",
+          "description": "(Required when vmImageType = CustomImage) Resource ID of the image"
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_networkSecurityGroupId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "networkSecurityGroupId (WVDHostpool)",
+          "description": "The resource id of an existing network security group"
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_personalDesktopAssignmentType": {
+        "type": "string",
+        "metadata": {
+          "displayName": "personalDesktopAssignmentType (WVDHostpool)",
+          "description": "Set the type of assignment for a Personal hostpool type"
+        },
+        "defaultValue": "",
+        "allowedValues": [
+          "Automatic",
+          "Direct",
+          ""
+        ]
+      },
+      "wVDHostpool_customRdpProperty": {
+        "type": "string",
+        "metadata": {
+          "displayName": "customRdpProperty (WVDHostpool)",
+          "description": "Hostpool rdp properties"
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_deploymentId": {
+        "type": "string",
+        "metadata": {
+          "displayName": "deploymentId (WVDHostpool)",
+          "description": "GUID for the deployment"
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      },
+      "wVDHostpool_ouPath": {
+        "type": "string",
+        "metadata": {
+          "displayName": "ouPath (WVDHostpool)",
+          "description": "OUPath for the domain join"
+        },
+        "defaultValue": "",
+        "allowedValues": []
+      }
+    },
+    "resourceGroups": {
+      "ResourceGroup": {
+        "name": "[concat(parameters('resourcePrefix'),'-sharedsvcs-rg')]",
+        "metadata": {
+          "displayName": "Shared Services resource group"
+        },
+        "dependsOn": []
+      }
+    }
+  }
+}

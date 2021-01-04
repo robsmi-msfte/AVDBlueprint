@@ -1,0 +1,89 @@
+{
+    "kind": "template",
+    "type": "Microsoft.Blueprint/blueprints/artifacts",
+    "name": "DNSsharedsvcs",
+    "properties": {
+      "displayName": "VNET DNS Settings",
+      "description": "",
+      "dependsOn": [
+        "adds"
+      ],
+      "template": {
+        "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+        "contentVersion": "1.0.0.0",
+        "parameters": {
+          "dnsScriptURI": {
+            "type": "string"
+          },
+          "script_deployment-user-resource-id": {
+            "type": "string"
+          },
+          "srcRG": {
+              "type":"string"
+          },
+          "srcVnet": {
+            "type":"string"
+          },
+          "srcSubnet": {
+            "type":"string"
+          },
+          "dstRG": {
+            "type":"string"
+          },
+          "dstvNet": {
+            "type":"string"
+          }
+        },
+        "resources": [
+          {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2019-10-01-preview",
+            "name": "setVnetDNStoADDSIPs",
+            "location": "[resourceGroup().location]",
+            "kind": "AzurePowerShell",
+            "identity": {
+              "type": "userAssigned",
+              "userAssignedIdentities": {
+                "[parameters('script_deployment-user-resource-id')]": {
+                }
+              }
+            },
+            "properties": {
+              "forceUpdateTag": 1,
+              "azPowerShellVersion": "3.0",
+              "arguments": "[concat('-srcRG', ' ', parameters('srcRG'), ' ', '-srcVnet', ' ', parameters('srcVnet'), ' ', '-srcSubnet', ' ', parameters('srcSubnet'), ' ','-dstRG', ' ', parameters('dstRG'), ' ', '-dstVnet', ' ', parameters('dstVnet'))]",
+              "primaryScriptUri": "[parameters('dnsScriptURI')]",
+              "timeout": "PT1H",
+              "cleanupPreference": "OnSuccess",
+              "retentionInterval": "P1D"
+            }
+          }
+        ],
+        "outputs": {}
+      },
+      "resourceGroup": "ResourceGroup",
+      "parameters": {
+        "dnsScriptURI": {
+          "value": "[concat(parameters('_ScriptURI'),'/setDNS.ps1')]"
+        },
+        "script_deployment-user-resource-id": {
+          "value": "[parameters('script_deployment-user-resource-id')]"
+        },
+        "srcRG": {
+          "value": "[resourceGroup().name]"
+        },
+        "srcVnet": {
+          "value": "[parameters('ADDS_vnetName')]"
+        },
+        "srcSubnet": {
+          "value": "AzureADDSSubnet"
+        },
+        "dstRG": {
+          "value": "[resourceGroup().name]"
+        },
+        "dstvNet": {
+          "value": "[parameters('ADDS_vnetName')]"
+        }
+      }
+    }
+  }
