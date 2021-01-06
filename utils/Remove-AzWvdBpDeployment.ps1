@@ -32,7 +32,13 @@
 Param(
     #The prefix used to match against Azure resources for inclusion in this cleanup
     [Parameter(Mandatory=$true)]
-    [string] $Prefix
+    [string] $Prefix,
+    #Switch to override the default behavior of exporting a target environment's logs prior to cleanup
+    [Parameter(Mandatory=$true, ParameterSetName="DisableLogExport")]
+    [switch] $DisableLogExport,
+    #Path to the folder where the target environment's logs should be copied
+    [Parameter(Mandatory=$true, ParameterSetName="LogExport")]
+    [string] $LogPath
 )
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
@@ -73,6 +79,23 @@ $RemovalScope | ForEach-Object {
             Remove-AzWvdHostPool -ResourceGroupName $RemovalScope.ResourceGroupName -Name $_.name
         }
     }
+    
+    Write-Verbose "Exporting logs to $LogPath"
+    $laws = Get-AzOperationalInsightsWorkspace -Name "$prefix-sharedsvcs-log" -ResourceGroupName $thisrg.ResourceGroupName
+    if($PSBoundParameters.ContainsKey('DisableLogExport')){
+        Write-Verbose "-DisableLogExport switch called"
+    } else {
+        if($PSCmdlet.ShouldProcess($laws.Name, "Export logs to $LogPath")){
+            Write-Verbose "Querying log data from $($laws.Name)"
+            $logdata = Invoke-AzOperationalInsightsQuery -Workspace $laws -Query "search *" -Verbose
+            $timestamp = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." }
+            $tenantname = $(Get-AzTenant).Name
+            $ExportFile = "$LogPath\$timestamp-$tenantname-log-export.csv"
+            Write-Verbose "Writing log data to $ExportFile"
+            $logdata.Results | Export-Csv -Path $ExportFile
+        }
+    }
+   
 
     if($PSCmdlet.ShouldProcess($_.ResourceGroupName, "Remove ResourceGroup")){
         $_ | Remove-AzResourceGroup -Force -AsJob
@@ -113,5 +136,9 @@ if ($RemoveAADDCAdminsGroup) {
     }
 }
 
-Get-Job | Group-Object State
-Write-Host "Use 'Get-Job | Group-Object State' to track status of Resource Group removal jobs"
+if ($PSCmdlet.ShouldProcess("PowershellJobs", "DisplayActiveJobs")) {
+    Get-Job | Group-Object State
+    Write-Host "Use 'Get-Job | Group-Object State' to track status of Resource Group removal jobs"    
+} else {
+    Write-Verbose "Active removal jobs would be displayed here"
+}
