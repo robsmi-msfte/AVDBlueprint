@@ -17,9 +17,14 @@
     https://github.com/Azure/WVDBlueprint
 
 .EXAMPLE
-    .\Remove-AzWvdBpDeployment.ps1 -WhatIf -Verbose -Prefix "ABC"
+    .\Remove-AzWvdBpDeployment.ps1 -WhatIf -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
-    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC"
+    Exports logs of a WVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
+
+.EXAMPLE
+    .\Remove-AzWvdBpDeployment.ps1 -WhatIf -Verbose -Prefix "ABC" -LogPath "C:\projects"
+
+    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC" and does not first export the deployment's logs
 
 .INPUTS
     None. You cannot pipe objects into this script.
