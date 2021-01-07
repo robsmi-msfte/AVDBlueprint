@@ -1,13 +1,16 @@
 <#
 .SYNOPSIS
-    Removes an entire WVD Blueprint deployment
+    Exports logs from and removes an entire WVD Blueprint deployment
 .DESCRIPTION
+    Exports logs found in a WVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime    
+
     Finds and removes the following items that were previously deployed via WVD Blueprint:
     - All SessionHosts and HostPools in a ResourceGroup based on resource prefix
     - All users discovered in 'WVD Users' group
     - 'WVD Users' group itself
     - 'AAD DC Admins' group
 
+    
     Use of -verbose, -whatif or -comfirm ARE supported.
 
     Note: The script will create one Powershell Job for each Resource Group being removed
@@ -17,20 +20,22 @@
     https://github.com/Azure/WVDBlueprint
 
 .EXAMPLE
-    .\Remove-AzWvdBpDeployment.ps1 -WhatIf -Verbose -Prefix "ABC" -LogPath "C:\projects"
+    .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
     Exports logs of a WVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
 
 .EXAMPLE
-    .\Remove-AzWvdBpDeployment.ps1 -WhatIf -Verbose -Prefix "ABC" -LogPath "C:\projects"
+    .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -DisableLogExport
 
-    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC" and does not first export the deployment's logs
+    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC" without first exporting the deployment's logs
 
 .INPUTS
     None. You cannot pipe objects into this script.
 
 .OUTPUTS
     None. Only console text is displayed by this script.
+
+    Note: if a cleanup is performed, it is in the context of a Powershell Job after this script completes
 #>
 
 [CmdletBinding(SupportsShouldProcess=$true)]
