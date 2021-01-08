@@ -1,4 +1,4 @@
-# AZBluePrints-WVD
+# WVD Blueprint
 
 This Azure Blueprint will deploy and configure Azure ADDS and WVD (domain join is failing)
 

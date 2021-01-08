@@ -1,13 +1,16 @@
 <#
 .SYNOPSIS
-    Removes an entire WVD Blueprint deployment
+    Exports logs from and removes an entire WVD Blueprint deployment
 .DESCRIPTION
+    Exports logs found in a WVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime    
+
     Finds and removes the following items that were previously deployed via WVD Blueprint:
     - All SessionHosts and HostPools in a ResourceGroup based on resource prefix
     - All users discovered in 'WVD Users' group
     - 'WVD Users' group itself
     - 'AAD DC Admins' group
 
+    
     Use of -verbose, -whatif or -comfirm ARE supported.
 
     Note: The script will create one Powershell Job for each Resource Group being removed
@@ -17,22 +20,35 @@
     https://github.com/Azure/WVDBlueprint
 
 .EXAMPLE
-    .\Remove-AzWvdBpDeployment.ps1 -WhatIf -Verbose -Prefix "ABC"
+    .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
-    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC"
+    Exports logs of a WVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
+
+.EXAMPLE
+    .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -DisableLogExport
+
+    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC" without first exporting the deployment's logs
 
 .INPUTS
     None. You cannot pipe objects into this script.
 
 .OUTPUTS
     None. Only console text is displayed by this script.
+
+    Note: if a cleanup is performed, it is in the context of a Powershell Job after this script completes
 #>
 
 [CmdletBinding(SupportsShouldProcess=$true)]
 Param(
     #The prefix used to match against Azure resources for inclusion in this cleanup
     [Parameter(Mandatory=$true)]
-    [string] $Prefix
+    [string] $Prefix,
+    #Switch to override the default behavior of exporting a target environment's logs prior to cleanup
+    [Parameter(Mandatory=$true, ParameterSetName="DisableLogExport")]
+    [switch] $DisableLogExport,
+    #Path to the folder where the target environment's logs should be copied
+    [Parameter(Mandatory=$true, ParameterSetName="LogExport")]
+    [string] $LogPath
 )
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
@@ -73,6 +89,23 @@ $RemovalScope | ForEach-Object {
             Remove-AzWvdHostPool -ResourceGroupName $RemovalScope.ResourceGroupName -Name $_.name
         }
     }
+    
+    Write-Verbose "Exporting logs to $LogPath"
+    $laws = Get-AzOperationalInsightsWorkspace -Name "$prefix-sharedsvcs-log" -ResourceGroupName $thisrg.ResourceGroupName
+    if($PSBoundParameters.ContainsKey('DisableLogExport')){
+        Write-Verbose "-DisableLogExport switch called"
+    } else {
+        if($PSCmdlet.ShouldProcess($laws.Name, "Export logs to $LogPath")){
+            Write-Verbose "Querying log data from $($laws.Name)"
+            $logdata = Invoke-AzOperationalInsightsQuery -Workspace $laws -Query "search *" -Verbose
+            $timestamp = Get-Date -Format o | ForEach-Object { $_ -replace ":", "." }
+            $tenantname = $(Get-AzTenant).Name
+            $ExportFile = "$LogPath\$timestamp-$tenantname-log-export.csv"
+            Write-Verbose "Writing log data to $ExportFile"
+            $logdata.Results | Export-Csv -Path $ExportFile
+        }
+    }
+   
 
     if($PSCmdlet.ShouldProcess($_.ResourceGroupName, "Remove ResourceGroup")){
         $_ | Remove-AzResourceGroup -Force -AsJob
@@ -113,5 +146,9 @@ if ($RemoveAADDCAdminsGroup) {
     }
 }
 
-Get-Job | Group-Object State
-Write-Host "Use 'Get-Job | Group-Object State' to track status of Resource Group removal jobs"
+if ($PSCmdlet.ShouldProcess("PowershellJobs", "DisplayActiveJobs")) {
+    Get-Job | Group-Object State
+    Write-Host "Use 'Get-Job | Group-Object State' to track status of Resource Group removal jobs"    
+} else {
+    Write-Verbose "Active removal jobs would be displayed here"
+}
