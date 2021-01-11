@@ -1,0 +1,8 @@
+{
+    "args": {
+        "tenantID": "f9eca388-26c6-4cf9-980d-4966eacc2c08",
+        "subscriptionID": "3c09cfd5-3ea6-48c8-a9ac-3f997816d723",
+        "blueprintPath": "C:\\Users\\stdowns\\OneDrive - Microsoft\\Documents\\Github\\repos\\AZBluePrints-WVD\\Blueprint",
+        "assignmentFile": "C:\\Users\\stdowns\\OneDrive - Microsoft\\Documents\\Github\\repos\\AZBluePrints-WVD\\assignments\\assign_mydefault.json"
+    }
+}

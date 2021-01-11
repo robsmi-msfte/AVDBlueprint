@@ -1,0 +1,16 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "WEBSITE_SLOT_NAME": "Production",
+    "FUNCTIONS_EXTENSION_VERSION": "~3",
+    "ScmType": "None",
+    "WEBSITE_AUTH_ENABLED": "False",
+    "WEBSITE_RUN_FROM_PACKAGE": "1",
+    "APPINSIGHTS_INSTRUMENTATIONKEY": "52e01fd4-7198-4053-aa49-89701947642e",
+    "WEBSITE_CONTENTAZUREFILECONNECTIONSTRING": "DefaultEndpointsProtocol=https;AccountName=vditechdeploydemo;AccountKey=CZmqtiga4JKnwi4e5Jw/IbbY+Gi7Ut9FnedJ8zJAtQmVhQKg8c+jxM4lg5nctSwCHozlZihOyY8WAOJlX3c65g==;EndpointSuffix=core.windows.net",
+    "WEBSITE_CONTENTSHARE": "vditechdeploydemo51bc87",
+    "FUNCTIONS_WORKER_RUNTIME": "powershell",
+    "WEBSITE_SITE_NAME": "vditechdeploydemo",
+    "AzureWebJobsStorage": "DefaultEndpointsProtocol=https;AccountName=vditechdeploydemo;AccountKey=CZmqtiga4JKnwi4e5Jw/IbbY+Gi7Ut9FnedJ8zJAtQmVhQKg8c+jxM4lg5nctSwCHozlZihOyY8WAOJlX3c65g==;EndpointSuffix=core.windows.net"
+  }
+}
