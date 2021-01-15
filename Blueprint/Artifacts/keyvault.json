@@ -18,14 +18,14 @@
             "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
           }
         },
-        "keyvault_access-user-object-id": {
+        "keyvault_OwnerUserObjectID": {
           "type": "string",
           "metadata": {
             "displayName": "AAD object ID",
             "description": "AAD object ID of the user that requires access to Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID"
           }
         },
-        "script_deployment-user-object-id": {
+        "script_executionUserObjectID": {
           "type": "string",
           "metadata": {
             "displayName": "PoSH Managed Identity Object ID",
@@ -113,7 +113,7 @@
         "access-policies": [
           {
             "tenantId": "[subscription().tenantId]",
-            "objectId": "[parameters('keyvault_access-user-object-id')]",
+            "objectId": "[parameters('keyvault_OwnerUserObjectID')]",
             "permissions": {
               "certificates": [
                 "All"
@@ -128,7 +128,7 @@
           },
           {
             "tenantId": "[subscription().tenantId]",
-            "objectId": "[parameters('script_deployment-user-object-id')]",
+            "objectId": "[parameters('script_executionUserObjectID')]",
             "permissions": {
               "certificates": [
                 "All"
@@ -145,9 +145,6 @@
         "subnets": [
           {
             "name": "sharedsvcs"
-          },
-          {
-            "name": "bastion"
           },
           {
             "name": "AppGateway"
@@ -244,11 +241,11 @@
       "resourcePrefix": {
         "value": "[parameters('resourcePrefix')]"
       },
-      "keyvault_access-user-object-id": {
-        "value": "[parameters('keyvault_access-user-object-id')]"
+      "keyvault_OwnerUserObjectID": {
+        "value": "[parameters('keyvault_OwnerUserObjectID')]"
       },
-      "script_deployment-user-object-id": {
-        "value": "[parameters('script_deployment-user-object-id')]"
+      "script_executionUserObjectID": {
+        "value": "[parameters('script_executionUserObjectID')]"
       },
       "logs-retention-in-days": {
         "value": "[parameters('keyvault_logs-retention-in-days')]"

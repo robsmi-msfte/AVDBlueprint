@@ -16,7 +16,7 @@
       "scope": "/subscriptions/312ed374-43f0-4c49-b519-27e3e30c17f2",
       "parameters": {
         "resourcePrefix": {
-            "value": "SD11A"
+            "value": "SD14B"
         },
         "ADDS_domainName": {
             "value": "wvdascii.onmicrosoft.com"
@@ -24,13 +24,13 @@
         "ADDS_emailNotifications": {
             "value": "steve.downs@microsoft.com"
         },
-        "script_deployment-user-resource-id": {
+        "script_executionUserResourceID": {
           "value": "/subscriptions/312ed374-43f0-4c49-b519-27e3e30c17f2/resourcegroups/WVD-DEPLOY/providers/Microsoft.ManagedIdentity/userAssignedIdentities/bpdeploy"
         },
-        "script_deployment-user-object-id": {
+        "script_executionUserObjectID": {
           "value": "0cca72bd-8791-47a3-9b37-8dde407b3c41"
         },
-        "keyvault_access-user-object-id": {
+        "keyvault_OwnerUserObjectID": {
           "value": "2927f993-5932-4d2d-ae2e-759135e17ef5"
         },
         "_ScriptURI": {

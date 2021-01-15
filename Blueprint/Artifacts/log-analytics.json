@@ -44,13 +44,6 @@
             "displayName": "Log workspace location",
             "description": "Location where Log Analytics workspace to be created"
           }
-        },
-        "automation-account-id": {
-          "type": "string",
-          "defaultValue": "",
-          "metadata": {
-            "description": "Optional. Automation Account resource identifier, value used to create a LinkedService between Log Analytics and an Automation Account."
-          }
         }
       },
       "variables": {
@@ -340,16 +333,6 @@
               "key": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagnostic-storageAccount-name')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"
             }
           }
-        },
-        {
-          "type": "Microsoft.OperationalInsights/workspaces/linkedServices",
-          "name": "[concat(variables('oms-workspace-name'), '/' , 'Automation')]",
-          "apiVersion": "2020-03-01-preview",
-          "condition": "[not(empty(parameters('automation-account-id')))]",
-          "location": "[parameters('location')]",
-          "properties": {
-            "resourceId": "[parameters('automation-account-id')]"
-          }
         }
       ],
       "outputs": {}
@@ -367,9 +350,6 @@
       },
       "location": {
         "value": "[resourceGroup().location]"
-      },
-      "automation-account-id": {
-        "value": "[parameters('logAnalyticstemplate_automation-account-id')]"
       }
     }
   }

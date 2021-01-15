@@ -24,7 +24,7 @@
           "assignADGroupScriptURI": {
             "type": "string"
           },
-          "script_deployment-user-resource-id": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "ad_usernameUPN": {
@@ -99,7 +99,7 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_deployment-user-resource-id')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
@@ -109,7 +109,7 @@
               "arguments": "[concat('-displayName', ' ', variables('username'), ' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'), ' ', '-keyvault', ' ', variables('key-vault-name'), ' ','-forcePasswordChange', ' ', variables('forcePasswordChange'))]",
               "primaryScriptUri": "[parameters('addADUserScriptURI')]",
               "timeout": "PT1H",
-              "cleanupPreference": "OnSuccess",
+              "cleanupPreference": "OnExpiration",
               "retentionInterval": "P1D"
             }
           },
@@ -125,7 +125,7 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_deployment-user-resource-id')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
@@ -135,7 +135,7 @@
               "arguments": "[concat('-groupName', ' ''', parameters('ad_group'), ''' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'))]",
               "primaryScriptUri": "[parameters('assignADGroupScriptURI')]",
               "timeout": "PT1H",
-              "cleanupPreference": "OnSuccess",
+              "cleanupPreference": "OnExpiration",
               "retentionInterval": "P1D"
             }
           }
@@ -153,8 +153,8 @@
         "assignADGroupScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/assignADGroup.ps1')]"
         },
-        "script_deployment-user-resource-id": {
-          "value": "[parameters('script_deployment-user-resource-id')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         },
         "ad_usernameUPN": {
           "value": "[parameters('DAUser_domainadmin')]"

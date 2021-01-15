@@ -63,21 +63,21 @@
           "displayName": "Notification email addresses"
         }
       },
-      "script_deployment-user-resource-id": {
+      "script_executionUserResourceID": {
         "type": "string",
         "metadata": {
           "displayName": "Deployment Script Managed Identity Resource ID",
           "description": "Managed Identity resource ID that will execute embeded deployment scripts."
         }
       },
-      "script_deployment-user-object-id": {
+      "script_executionUserObjectID": {
         "type": "string",
         "metadata": {
           "displayName": "Deployment Script Managed Identity Object ID",
           "description": "Managed Identity object ID that will execute embeded deployment scripts."
         }
       },
-      "keyvault_access-user-object-id": {
+      "keyvault_OwnerUserObjectID": {
         "type": "string",
         "metadata": {
           "displayName": "Keyvault Owner User Object ID",
@@ -115,46 +115,6 @@
           "description": "Value used in Virtual Network / Route Table, Jumpbox and Active Directory Domain Services templates"
         },
         "defaultValue": "10.0.0.0/24",
-        "allowedValues": []
-      },
-      "vnet_bastion-subnet-address-prefix": {
-        "type": "string",
-        "metadata": {
-          "displayName": "Bastion subnet address prefix"
-        },
-        "defaultValue": "10.0.1.0/24",
-        "allowedValues": []
-      },
-      "vnet_app-subnet-address-prefix": {
-        "type": "string",
-        "metadata": {
-          "displayName": "Application subnet address prefix"
-        },
-        "defaultValue": "10.0.2.0/24",
-        "allowedValues": []
-      },
-      "vnet_app-gateway-subnet-address-prefix": {
-        "type": "string",
-        "metadata": {
-          "displayName": "Application Gateway subnet address prefix"
-        },
-        "defaultValue": "10.0.3.0/24",
-        "allowedValues": []
-      },
-      "vnet_gateway-subnet-address-prefix": {
-        "type": "string",
-        "metadata": {
-          "displayName": "Virtual Network Gateway subnet address prefix"
-        },
-        "defaultValue": "10.0.4.0/24",
-        "allowedValues": []
-      },
-      "vnet_azure-firewall-subnet-address-prefix": {
-        "type": "string",
-        "metadata": {
-          "displayName": "Azure Firewall subnet address prefix"
-        },
-        "defaultValue": "10.0.5.0/24",
         "allowedValues": []
       },
       "azure-adds-subnet-address-prefix": {
@@ -202,15 +162,6 @@
           "description": "Number of days data will be retained for"
         },
         "defaultValue": 365,
-        "allowedValues": []
-      },
-      "logAnalyticstemplate_automation-account-id": {
-        "type": "string",
-        "metadata": {
-          "displayName": "automation-account-id (Log Analytics template)",
-          "description": "Optional. Automation Account resource identifier, value used to create a LinkedService between Log Analytics and an Automation Account."
-        },
-        "defaultValue": "",
         "allowedValues": []
       },
       "wVDHostpool_hostpoolname": {

@@ -24,13 +24,13 @@
         "ADDS_emailNotifications": {
             "value": "[EMAIL NOTIFICATIONS FOR Azure ADDS]" 
         },
-        "script_deployment-user-resource-id": {
+        "script_executionUserResourceID": {
           "value": "[Managed identity object ID for Powershell script execution]"
         },
-        "script_deployment-user-object-id": {
+        "script_executionUserObjectID": {
           "value": "[Script deployment user object id]"
         },
-        "keyvault_access-user-object-id": {
+        "keyvault_OwnerUserObjectID": {
           "value": "[Object id of user who needs access to keyvault in the portal. Account is not used for Blueprint deployment.]"
         }
       },

@@ -348,3 +348,5 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+assignments/assign_asciiwvd.json
+assignments/assign_mydefault.json

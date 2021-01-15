@@ -37,7 +37,7 @@
           "assignADGroupScriptURI": {
             "type": "string"
           },
-          "script_deployment-user-resource-id": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "domainName": {
@@ -132,7 +132,7 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_deployment-user-resource-id')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
@@ -142,7 +142,7 @@
               "arguments": "[concat('-displayName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1)), ''' ', '-userPrincipalName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1), '@', parameters('domainname')), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvdTestUserGroup'), '''')]",
               "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
               "timeout": "PT1H",
-              "cleanupPreference": "OnSuccess",
+              "cleanupPreference": "OnExpiration",
               "retentionInterval": "P1D",
               "supportingScriptUris": [
                 "[parameters('addADUserScriptURI')]",
@@ -190,8 +190,8 @@
         "assignADGroupScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/assignADGroup.ps1')]"
         },
-        "script_deployment-user-resource-id": {
-          "value": "[parameters('script_deployment-user-resource-id')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         }
       }
     }
