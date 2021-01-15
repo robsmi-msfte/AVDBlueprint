@@ -24,13 +24,13 @@
         "ADDS_emailNotifications": {
             "value": "steve.downs@microsoft.com"
         },
-        "script_deployment-user-resource-id": {
+        "script_executionUserResourceID": {
           "value": "/subscriptions/3c09cfd5-3ea6-48c8-a9ac-3f997816d723/resourcegroups/RG-EastUS-Backups/providers/Microsoft.ManagedIdentity/userAssignedIdentities/wvdeploy"
         },
-        "script_deployment-user-object-id": {
+        "script_executionUserObjectID": {
           "value": "1202c841-a842-483d-83c9-7a783ea58c24"
         },
-        "keyvault_access-user-object-id": {
+        "keyvault_OwnerUserObjectID": {
           "value": "2927f993-5932-4d2d-ae2e-759135e17ef5"
         }
       },

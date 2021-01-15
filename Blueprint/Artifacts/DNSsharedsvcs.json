@@ -15,7 +15,7 @@
           "dnsScriptURI": {
             "type": "string"
           },
-          "script_deployment-user-resource-id": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "srcRG": {
@@ -44,7 +44,7 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_deployment-user-resource-id')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
@@ -54,7 +54,7 @@
               "arguments": "[concat('-srcRG', ' ', parameters('srcRG'), ' ', '-srcVnet', ' ', parameters('srcVnet'), ' ', '-srcSubnet', ' ', parameters('srcSubnet'), ' ','-dstRG', ' ', parameters('dstRG'), ' ', '-dstVnet', ' ', parameters('dstVnet'))]",
               "primaryScriptUri": "[parameters('dnsScriptURI')]",
               "timeout": "PT1H",
-              "cleanupPreference": "OnSuccess",
+              "cleanupPreference": "OnExpiration",
               "retentionInterval": "P1D"
             }
           }
@@ -66,8 +66,8 @@
         "dnsScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/setDNS.ps1')]"
         },
-        "script_deployment-user-resource-id": {
-          "value": "[parameters('script_deployment-user-resource-id')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         },
         "srcRG": {
           "value": "[resourceGroup().name]"

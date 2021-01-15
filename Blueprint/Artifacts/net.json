@@ -33,41 +33,6 @@
             "description": "Value used in Virtual Network / Route Table, Jumpbox and Active Directory Domain Services templates"
           }
         },
-        "bastion-subnet-address-prefix": {
-          "type": "string",
-          "defaultValue": "10.0.1.0/24",
-          "metadata": {
-            "displayName": "Bastion subnet address prefix"
-          }
-        },
-        "app-subnet-address-prefix": {
-          "type": "string",
-          "defaultValue": "10.0.2.0/24",
-          "metadata": {
-            "displayName": "Applications subnet address prefix"
-          }
-        },
-        "app-gateway-subnet-address-prefix": {
-          "type": "string",
-          "defaultValue": "10.0.3.0/24",
-          "metadata": {
-            "displayName": "Application Gateway subnet address prefix"
-          }
-        },
-        "gateway-subnet-address-prefix": {
-          "type": "string",
-          "defaultValue": "10.0.4.0/24",
-          "metadata": {
-            "displayName": "Virtual Network Gateway subnet address prefix"
-          }
-        },
-        "azure-firewall-subnet-address-prefix": {
-          "type": "string",
-          "defaultValue": "10.0.5.0/24",
-          "metadata": {
-            "displayName": "Azure Firewall subnet address prefix"
-          }
-        },
         "azure-adds-subnet-address-prefix": {
           "type": "string",
           "defaultValue": "10.0.6.0/24",
@@ -118,41 +83,6 @@
                 "service": "Microsoft.KeyVault"
               }
             ]
-          },
-          {
-            "name": "bastion",
-            "address-prefix": "[parameters('bastion-subnet-address-prefix')]",
-            "network-security-group": "bastion-subnet",
-            "user-defined-route": "",
-            "service-endpoints": []
-          },
-          {
-            "name": "app",
-            "address-prefix": "[parameters('app-subnet-address-prefix')]",
-            "network-security-group": "app-subnet",
-            "user-defined-route": "",
-            "service-endpoints": []
-          },
-          {
-            "name": "AppGateway",
-            "address-prefix": "[parameters('app-gateway-subnet-address-prefix')]",
-            "network-security-group": "",
-            "user-defined-route": "",
-            "service-endpoints": []
-          },
-          {
-            "name": "GatewaySubnet",
-            "address-prefix": "[parameters('gateway-subnet-address-prefix')]",
-            "network-security-group": "",
-            "user-defined-route": "",
-            "service-endpoints": []
-          },
-          {
-            "name": "AzureFirewallSubnet",
-            "address-prefix": "[parameters('azure-firewall-subnet-address-prefix')]",
-            "network-security-group": "",
-            "user-defined-route": "",
-            "service-endpoints": []
           },
           {
             "name": "AzureADDSSubnet",
@@ -271,21 +201,6 @@
       },
       "sharedsvcs-subnet-address-prefix": {
         "value": "[parameters('vnet_sharedsvcs-subnet-address-prefix')]"
-      },
-      "bastion-subnet-address-prefix": {
-        "value": "[parameters('vnet_bastion-subnet-address-prefix')]"
-      },
-      "app-subnet-address-prefix": {
-        "value": "[parameters('vnet_app-subnet-address-prefix')]"
-      },
-      "app-gateway-subnet-address-prefix": {
-        "value": "[parameters('vnet_app-gateway-subnet-address-prefix')]"
-      },
-      "gateway-subnet-address-prefix": {
-        "value": "[parameters('vnet_gateway-subnet-address-prefix')]"
-      },
-      "azure-firewall-subnet-address-prefix": {
-        "value": "[parameters('vnet_azure-firewall-subnet-address-prefix')]"
       },
       "azure-adds-subnet-address-prefix": {
         "value": "[parameters('azure-adds-subnet-address-prefix')]"

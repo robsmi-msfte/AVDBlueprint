@@ -682,29 +682,6 @@
               }
             ]
           },
-          {
-            "name": "bastion-subnet",
-            "rules": [
-              {
-                "name": "allow-vnet",
-                "properties": {
-                  "access": "Allow",
-                  "destinationAddressPrefix": "*",
-                  "destinationAddressPrefixes": [],
-                  "destinationPortRange": "*",
-                  "destinationPortRanges": [],
-                  "direction": "Inbound",
-                  "priority": 100,
-                  "protocol": "*",
-                  "sourceAddressPrefix": "VirtualNetwork",
-                  "sourcePortRange": "*",
-                  "sourcePortRanges": [],
-                  "destinationApplicationSecurityGroups": [],
-                  "sourceApplicationSecurityGroups": []
-                }
-              }
-            ]
-          },
           { 
             "name": "adds-subnet",
             "rules": [
