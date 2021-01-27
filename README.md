@@ -53,7 +53,7 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
     e)	Finally, add the managed identity to the Global Administrators group in Azure AD.  The managed identity is going to be initiating the creation of users and virtual machines during the blueprint process.
 
-    MORE INFO: https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
+    **MORE INFO:** https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
 
 8.	Lastly, an [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) needs to be created with anonymous access permissions granted.  This will be the network location containing scripts and other objects needed during the blueprint deployment.
 
