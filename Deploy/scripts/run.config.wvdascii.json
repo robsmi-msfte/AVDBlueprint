@@ -1,8 +1,0 @@
-{
-    "args": {
-        "tenantID": "974cccba-8d13-48e4-94c6-23390a798f42",
-        "subscriptionID": "312ed374-43f0-4c49-b519-27e3e30c17f2",
-        "blueprintPath": "C:\\Users\\stdowns\\OneDrive - Microsoft\\Documents\\Github\\repos\\WVDBlueprint\\Blueprint",
-        "assignmentFile": "C:\\Users\\stdowns\\OneDrive - Microsoft\\Documents\\Github\\repos\\WVDBlueprint\\assignments\\assign_asciiwvd.json"
-    }
-}
