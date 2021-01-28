@@ -18,7 +18,7 @@
             "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
           }
         },
-        "keyvault_OwnerUserObjectID": {
+        "keyvault_ownerUserObjectID": {
           "type": "string",
           "metadata": {
             "displayName": "AAD object ID",
@@ -113,7 +113,7 @@
         "access-policies": [
           {
             "tenantId": "[subscription().tenantId]",
-            "objectId": "[parameters('keyvault_OwnerUserObjectID')]",
+            "objectId": "[parameters('keyvault_ownerUserObjectID')]",
             "permissions": {
               "certificates": [
                 "All"
@@ -241,8 +241,8 @@
       "resourcePrefix": {
         "value": "[parameters('resourcePrefix')]"
       },
-      "keyvault_OwnerUserObjectID": {
-        "value": "[parameters('keyvault_OwnerUserObjectID')]"
+      "keyvault_ownerUserObjectID": {
+        "value": "[parameters('keyvault_ownerUserObjectID')]"
       },
       "script_executionUserObjectID": {
         "value": "[parameters('script_executionUserObjectID')]"

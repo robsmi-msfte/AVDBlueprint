@@ -2,7 +2,7 @@
     "name": "WVD Blueprint - Default Configuration",
     "type": "Microsoft.Blueprint/blueprintAssignments",
     "apiVersion": "2018-11-01-preview",
-    "location": "eastus",
+    "location": "[REGION]",
     "identity": {
         "type": "UserAssigned",
         "userAssignedIdentities": {
@@ -19,7 +19,7 @@
             "value": "WVD"
         },
         "ADDS_domainName": {
-            "value": "wvdhints.com"
+            "value": "[DOMAINNAME]"
         },
         "ADDS_emailNotifications": {
             "value": "[EMAIL NOTIFICATIONS FOR Azure ADDS]" 
@@ -30,13 +30,13 @@
         "script_executionUserObjectID": {
           "value": "[Script deployment user object id]"
         },
-        "keyvault_OwnerUserObjectID": {
+        "keyvault_ownerUserObjectID": {
           "value": "[Object id of user who needs access to keyvault in the portal. Account is not used for Blueprint deployment.]"
         }
       },
       "resourceGroups": {
         "ResourceGroup": {
-          "location": "eastus"
+          "location": "[REGION]"
         }
       }
     }

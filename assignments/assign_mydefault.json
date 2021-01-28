@@ -16,7 +16,7 @@
       "scope": "/subscriptions/3c09cfd5-3ea6-48c8-a9ac-3f997816d723",
       "parameters": {
         "resourcePrefix": {
-            "value": "SCDB20"
+            "value": "SCD27D"
         },
         "ADDS_domainName": {
             "value": "wvdhints.com"
