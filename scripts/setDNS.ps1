@@ -52,6 +52,9 @@ function Deploy-AzureADDSDNSIPs  {
     $obj = new-object -type PSObject -Property @{"DnsServers" = $dnsIPs}
     $vnet.DhcpOptions = $obj
     $vnet | Set-AzVirtualNetwork | out-null
+    
+    $DeploymentScriptOutputs = @{}
+    $DeploymentScriptOutputs['dnsIPs'] = $dnsIPs
 }
 
 Deploy-AzureADDSDNSIPs -srcRG $srcRG -srcVNet $srcVnet -srcSubnet $srcSubnet -dstRG $dstRG -dstVnet $dstVnet

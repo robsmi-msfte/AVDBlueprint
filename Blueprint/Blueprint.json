@@ -77,7 +77,7 @@
           "description": "Managed Identity object ID that will execute embeded deployment scripts."
         }
       },
-      "keyvault_OwnerUserObjectID": {
+      "keyvault_ownerUserObjectID": {
         "type": "string",
         "metadata": {
           "displayName": "Keyvault Owner User Object ID",
