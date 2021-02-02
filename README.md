@@ -82,7 +82,8 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 With the basic objects in place, a few updates will prepare the Blueprint for Assignment to your Azure subscription.  There are two objects that can be edited fairly easily to customize for each respective environment:
 
 * assign_json
-* Blueprint.json
+* run.config.json
+* (optional) Blueprint.json
 
 ### Editing 'assign_default.json' file
 The **'assign_default.json'** file is used to pass certain values to the Blueprint at assignment time, such as Azure subscription ID, managed identity name, and more. This file is in Javascript Notation (JSON) format, so is easily editable in a variety of methods.  
@@ -121,7 +122,17 @@ The following values are needed to customize the **'assign_default.json'** file 
 |**keyvault_ownerUserObjectID**|[**MANAGED IDENTITY OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the object ID of your Azure Managed Identity|
 |**Location**|ex. '**eastus**'|The geographic region that Azure Resoource Group will be created in|
 
-### Editing 'Blueprint.json' file
+### Editing 'run.config.json'
+The file 'run.config.json' in the 'Scripts' folder, contains several values that are passed in to the Blueprint. The values must be edited to the specific values for your environment.
+
+| Parameter | Value | Purpose |
+|-|-|-|  
+|**tenantID**|ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|Your Azure AD 'Tenant ID' value|
+|**subscriptionID**|ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|Your Azure AD 'Subscription ID' value|  
+|**blueprintPath**|ex. **C:\\Code\\WVDBP\\AZBluePrints-WVD\\Blueprint"**|The local folder on the device where the Blueprint objects are stored' value|  
+|**assignmentFile**|ex. **C:\\Code\\WVDBP\\AZBluePrints-WVD\\Assignments\\assign_default.json"**|The local folder on the device where the Blueprint objects are stored' value|  
+
+### (Optional) Editing 'Blueprint.json' file
 There are values that you may want to consider changing, such as "test user count", though you can go with defaults provided.
 
 | Parameter | Value | Purpose |
@@ -130,6 +141,12 @@ There are values that you may want to consider changing, such as "test user coun
 |**WVDUSERS_testUserCount \ 'defaultValue'**|ex. '**10**'|(optional) the number of test users the Blueprint will create|
 
 ## Assigning the Blueprint (initiating the deployment)
+
+1. Open PowerShell
+2. Change directory to your customized Blueprint object tree (ex. C:\Code\WVDBP\AZBluePrints-WVD\)
+3. Connect to your Azure subscription and authenticate, using 'Connect-AzAccount'
+4. In PowerShell, run the file 'import-bp.ps1'
+5. In PowerShell, run the file 'assign-bp.ps1'
 
 ## Tips
 
@@ -144,3 +161,4 @@ There are values that you may want to consider changing, such as "test user coun
 - To store scripts and any other objects needed during Blueprint assignment on Internet connected assigments, a publically web location can be used to store scripts and other objects needed during Blueprint assigment.  
 [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
 Whatever method chosed, the access method should be "public" and "anonymous" read-only access.
+
