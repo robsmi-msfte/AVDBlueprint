@@ -62,9 +62,9 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 8.  The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
 
     - An "assignment" file can be customized with your Azure subscription, and related details.
-    - Code can be created to stand up an interface, that could be used to receive the specific information, and then pass that information to the Blueprint, as well as initiate       the Blueprint assigment. The following table contains the environment specific information needed to assign (deploy) the Blueprint to each respective environment.  
+    - Code can be created to stand up an interface, that could be used to receive the specific information, and then pass that information to the Blueprint, as well as initiate the Blueprint assigment. The following table contains the environment specific information needed to assign (deploy) the Blueprint to each respective environment.  
 
-    | Type | Object | Purpose |  
+      | Type | Object | Purpose |
     |-|-|-|  
     |Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc. |  
     |Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint assignment|
