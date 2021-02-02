@@ -301,7 +301,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "https://agblueprintsa.blob.core.windows.net/blueprintscripts/WSM_Install_GPMC_ADUC.ps1"
+              "[parameters('gpmcScriptURI')]"
             ],
             "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File WSM_Install_GPMC_ADUC.ps1"
           }
@@ -441,6 +441,9 @@
     },
     "DAUser_domainadmin": {
       "value": "[parameters('DAUser_domainadmin')]"
+    },
+    "gpmcScriptURI": {
+      "value": "[concat(parameters('_ScriptURI'),'/WSM_Install_GPMC_ADUC.ps1')]"
     },
     "resourcePrefix": {
       "value": "[parameters('resourcePrefix')]"
