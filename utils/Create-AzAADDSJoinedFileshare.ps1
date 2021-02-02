@@ -4,13 +4,7 @@ Param(
     [string] $ResourceGroupName,
 
     [Parameter(Mandatory=$true)]
-    [string] $StorageAccountName,
-
-    [Parameter(Mandatory=$true)]
-    [string] $FileShareAdminUPN,
-
-    [Parameter(Mandatory=$true)]
-    [string] $FileShareUserGroupId
+    [string] $StorageAccountName
 )
 
 #Confirm AzContext
@@ -18,6 +12,8 @@ If (!(Get-AzContext)) {
     Write-Error "Please login to your Azure account"
 }
 else {
+    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
+    
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
 
     #Create AADDS enabled Storage account and accompanying share
@@ -42,10 +38,12 @@ else {
     #"/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Storage/storageAccounts/<storage-account>/fileServices/default/fileshares/<share-name>"
     $ShareScope = "/subscriptions/$($(Get-AzContext).Subscription.Id)/resourceGroups/$($StorageAccount.ResourceGroupName)/providers/Microsoft.Storage/storageAccounts/$($StorageAccount.StorageAccountName)/fileServices/default/fileshares/$($StorageShare.Name)"
 
+    <#
     #Grant elevated rights to permit Share configuration
     $FileShareElevatedContributorRole = Get-AzRoleDefinition "Storage File Data SMB Share Elevated Contributor"
     New-AzRoleAssignment -RoleDefinitionName $FileShareElevatedContributorRole.Name -Scope $ShareScope -SignInName $FileShareAdminUPN
     Write-Verbose "Granted elevated share rights"
+    #>
 
     #Grant standard rights to permit user access
     $FileShareContributorRole = Get-AzRoleDefinition "Storage File Data SMB Share Contributor"
