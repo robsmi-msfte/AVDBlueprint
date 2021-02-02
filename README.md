@@ -12,10 +12,10 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 The WVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, WVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
 ## Prerequisites    
 1.	Two “identities” are required to successfully deploy the Azure WVD Blueprints:  
-    a).	An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference).  
+    - An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference).  
     > The Azure Global Administrator is a person that has complete permission to an Azure subscription. This is required because modifications will be made at the directory and subscription levels.
 
-    b).	An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)  
+    - An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)  
     > The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment.  
 
 2.	An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels.  
@@ -29,8 +29,8 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
 4.	Open an instance of PowerShell, connect to your Azure account, then register the Azure AD provider to your account (if not already registered):
 
-    a).	`Connect-AzAccount`  
-    b).	`Register-AzResourceProvider -ProviderNamespace Microsoft.AAD`
+    - `Connect-AzAccount`  
+    - `Register-AzResourceProvider -ProviderNamespace Microsoft.AAD`
 
 5.	Create the Domain Controller Services service principal (if it does not already exist), with this PowerShell command
 
@@ -40,24 +40,24 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
 6.	Create a user-assigned managed identity within Azure, which will later be used to execute the blueprint.  Note that in the case of “greenfield” deployments, the level of assignment will need to be the Azure subscription.  The Blueprint creates objects at the subscription level during the blueprint deployment.
 
-    a) Create an Azure security group (example: ‘Blueprint Operators’)  
-    b) Add the managed identity to the Azure security group created in the previous step  
-    c) Assign permissions to the group, to allow members to create objects at the subscription level  
-    d) At the subscription level, assign roles to the group previously created, by going to the following location in the Azure Portal  
+    - Create an Azure security group (example: ‘Blueprint Operators’)  
+    - Add the managed identity to the Azure security group created in the previous step  
+    - Assign permissions to the group, to allow members to create objects at the subscription level  
+    - At the subscription level, assign roles to the group previously created, by going to the following location in the Azure Portal  
        > **Azure Portal** -> **Home** -> **Subscriptions** -> (***your subscription***) -> **Access Control (IAM)**
 
 7.	Click **Add Role Assignments**, then add the following role assignments to the group you created earlier in this step:
 
-    a)	Blueprint Contributor  
-    b)	Blueprint Operator  
-    c)	Managed Identity Operator  
-    d)	In addition, you have to grant the **Owner** role to the managed identity at the subscription level.  The reason is that the managed identity needs full access during the deployment, for example to initiate the creation of an instance of Azure AD DS.  
+    - Blueprint Contributor  
+    - Blueprint Operator  
+    - Managed Identity Operator  
+    - In addition, you have to grant the **Owner** role to the managed identity at the subscription level.  The reason is that the managed identity needs full access during the deployment, for example to initiate the creation of an instance of Azure AD DS.  
 
-    **MORE INFO:** https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator  
+        **MORE INFO:** https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator  
 
-    e)	Finally, add the managed identity to the Global Administrators group in Azure AD.  The managed identity is going to be initiating the creation of users and virtual machines during the blueprint process.
+    - Finally, add the managed identity to the Global Administrators group in Azure AD.  The managed identity is going to be initiating the creation of users and virtual machines during the blueprint process.
 
-    MORE INFO: https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
+        **MORE INFO:** https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
 
 8.  The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
 
@@ -77,6 +77,60 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
     |Artifact|net.json’|Sets up networking and various subnets|
     |Artifact|nsg.json’|Sets up network security groups|
 
+## Customizing the Assignment (in preparation for deployment)
+
+With the basic objects in place, a few updates will prepare the Blueprint for Assignment to your Azure subscription.  There are two objects that can be edited fairly easily to customize for each respective environment:
+
+* assign_json
+* Blueprint.json
+
+### Editing 'assign_default.json' file
+The **'assign_default.json'** file is used to pass certain values to the Blueprint at assignment time, such as Azure subscription ID, managed identity name, and more. This file is in Javascript Notation (JSON) format, so is easily editable in a variety of methods.  
+Some values will require a concatentation of values. The following are values that require a "path" value in Azure:
+
+```<language>
+userAssignedIdentities
+```
+>   "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]**"
+```<language>
+blueprintID
+```
+>  "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/providers/Microsoft.Blueprint/blueprints/[**YOUR BLUEPRINT NAME**]"  
+```<language>
+scope
+```
+>  "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]"  
+```<language>
+script_executionUserResourceID
+```
+>  "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]"  
+
+The following values are needed to customize the **'assign_default.json'** file to respective environments:  
+
+| Parameter | Value | Purpose |
+|-|-|-|  
+|**Location**|ex. '**eastus**'|The Azure region the assignment will be created in|  
+|**userAssignedIdentities**|ex. '**UAI1**'|The name of the managed identity created from the prerequisite steps earlier|
+|**blueprintId**|ex. **'wvd_full'**|a name that you provide, that is the Blueprint name assigned in your subscription|
+|**scope**|[**YOUR AZURE SUBSCRIPTION ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|The ID of your Azure subscription|
+|**resourcePrefix**|ex. **'WVD'**|a value you determine, which will be used to prefix the name of objects created during Blueprint assignment.<br/>**NOTE:** This prefix will be used to name WVD session host computers, so should be kept as short as possible, due to the 15 character [name limitation for WVD session hosts in Azure WVD as of 2/2/2021](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftcompute)|
+|**aDDS_domainName**|ex. **'wvdbp.contoso.com'**|the name of your Azure Active Directory instance, this Blueprint will be assigned to|
+|**ADDS_emailNotifications** (optional)|ex. **'wvdbpadmin@contoso.com'**|an optional account for e-mail notifications|
+|**script_executionUserResourceID**|ex. **'UAI1'**|the name and path of your Azure Managed Identity|
+|**script_executionUserObjectID**|[**AZURE AD USER OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the 'Object ID' of the Azure Active Directory account that will be used to execute the Blueprint|
+|**keyvault_ownerUserObjectID**|[**MANAGED IDENTITY OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the object ID of your Azure Managed Identity|
+|**Location**|ex. '**eastus**'|The geographic region that Azure Resoource Group will be created in|
+
+### Editing 'Blueprint.json' file
+There are values that you may want to consider changing, such as "test user count", though you can go with defaults provided.
+
+| Parameter | Value | Purpose |
+|-|-|-|  
+|**_ScriptURI \ 'defaultValue'**|ex. https://wvdautodeployrepo.blob.core.windows.net/files |(optional) a fully-qualified resource location for scripts and related objects needed during the assignment|
+|**WVDUSERS_testUserCount \ 'defaultValue'**|ex. '**10**'|(optional) the number of test users the Blueprint will create|
+
+## Assigning the Blueprint (initiating the deployment)
+
 ## Tips
 
 - [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
@@ -90,5 +144,3 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 - To store scripts and any other objects needed during Blueprint assignment on Internet connected assigments, a publically web location can be used to store scripts and other objects needed during Blueprint assigment.  
 [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
 Whatever method chosed, the access method should be "public" and "anonymous" read-only access.
-
-
