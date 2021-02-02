@@ -1,6 +1,14 @@
 # Instructions for customizing Azure Windows Virtual Desktop to your environment, utilizing Azure Blueprints  
 
-Azure Blueprints provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Windows Virtual Desktop (WVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
+[Azure Blueprints](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview) provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Windows Virtual Desktop (WVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
+  
+Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview#blueprint-definition), such as:
+
+* Role Assignments
+* Policy Assignments
+* Azure Resource Manager (ARM) templates
+* Resource Groups
+
 The WVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, WVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
 ## Prerequisites    
 1.	Two “identities” are required to successfully deploy the Azure WVD Blueprints:  
@@ -9,19 +17,15 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
     b).	An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)  
     > The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment.  
+
 2.	An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels.  
-3.	A develop environment can be used to help work with the Blueprint code, as well as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.  
-    a).	PowerShell with the [Az.Blueprint module](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#add-the-azblueprint-module) for PowerShell  
-    > If you've not used Azure Blueprints before, register the resource provider through Azure PowerShell with this PowerShell command:  
+
+3.	A development environment can be used to help work with the Blueprint code, as well as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.  
+   PowerShell can be utilized with the [Az.Blueprint module](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#add-the-azblueprint-module) for PowerShell.  
+
+    If you've not used Azure Blueprints before, register the resource provider through Azure PowerShell with this PowerShell command:  
+
     `Register-AzResourceProvider -ProviderNamespace Microsoft.Blueprint`
-
-    b). [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints.  If using VS Code, the following extensions will greatly assist the efforts:
-
-        i) Azure Resource Manager Tools  
-        ii) XML Formatter  
-        iii) PowerShell extension (so that all work can be performed within one tool)
-
-        There may be other extensions available that perform the same functionality  
 
 4.	Open an instance of PowerShell, connect to your Azure account, then register the Azure AD provider to your account (if not already registered):
 
@@ -53,14 +57,38 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
     e)	Finally, add the managed identity to the Global Administrators group in Azure AD.  The managed identity is going to be initiating the creation of users and virtual machines during the blueprint process.
 
-    **MORE INFO:** https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
+    MORE INFO: https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
 
-8.	Lastly, an [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) needs to be created with anonymous access permissions granted.  This will be the network location containing scripts and other objects needed during the blueprint deployment.
+8.  The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
+
+    - An "assignment" file can be customized with your Azure subscription, and related details.
+    - Code can be created to stand up an interface, that could be used to receive the specific information, and then pass that information to the Blueprint, as well as initiate the Blueprint assigment. The following table contains the environment specific information needed to assign (deploy) the Blueprint to each respective environment.  
+
+      | Type | Object | Purpose |
+    |-|-|-|  
+    |Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc. |  
+    |Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint assignment|
+    |Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
+    |Artifact|addsDAUser.json|directs the creation of domain administrator account|
+    |Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
+    |Artifact|keyvault.json|directs the creation of Azure Key Vault resources, used to store and retrieve credentials used at various points during the Blueprint assignment|
+    |Artifact|log-analytics.json’|Sets up logging of various components to Azure storage|
+    |Artifact|MGMTVM.json’|Sets up logging of various components to Azure storage|
+    |Artifact|net.json’|Sets up networking and various subnets|
+    |Artifact|nsg.json’|Sets up network security groups|
+
+## Tips
+
+- [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
+   
+   - Azure Resource Manager Tools  
+   - XML Formatter  
+   - PowerShell extension (so that all work can be performed within one tool)  
+
+   There may be other extensions available that perform the same functionality
+
+- To store scripts and any other objects needed during Blueprint assignment on Internet connected assigments, a publically web location can be used to store scripts and other objects needed during Blueprint assigment.  
+[Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
+Whatever method chosed, the access method should be "public" and "anonymous" read-only access.
 
 
-Quickest way to currently deploy everything:
-
-1) Update Utils\Import-bp.ps1 to match your tenant values.
-2) Execute Import-bp.ps1
-3) Edit assignments\assign_default.json to match your environment
-4) Execute assign-bp.ps1
