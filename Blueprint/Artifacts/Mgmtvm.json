@@ -301,9 +301,30 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[parameters('gpmcScriptURI')]"
+              "https://agblueprintsa.blob.core.windows.net/blueprintscripts/WSM_Install_GPMC_ADUC.ps1"
             ],
             "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File WSM_Install_GPMC_ADUC.ps1"
+          }
+        }
+      },
+      {
+        "type": "Microsoft.Compute/virtualMachines/extensions",
+        "apiVersion": "2019-07-01",
+        "name": "azfiles",
+        "location": "[variables('location')]",
+        "dependsOn": [
+          "MGMTVMjoindomain"
+        ],
+        "properties": {
+          "publisher": "Microsoft.Compute",
+          "type": "CustomScriptExtension",
+          "typeHandlerVersion": "1.7",
+          "autoUpgradeMinorVersion": true,
+          "settings": {
+            "fileUris": [
+              "https://wvdautodeployrepo.blob.core.windows.net/files/Create-AzAADDSJoinedFileshare.ps1"
+            ],
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ' , resourceGroup().name, ' -StorageAccountName ', parameters('resourcePrefix'), 'profilestore']"
           }
         }
       },
@@ -441,9 +462,6 @@
     },
     "DAUser_domainadmin": {
       "value": "[parameters('DAUser_domainadmin')]"
-    },
-    "gpmcScriptURI": {
-      "value": "[concat(parameters('_ScriptURI'),'/WSM_Install_GPMC_ADUC.ps1')]"
     },
     "resourcePrefix": {
       "value": "[parameters('resourcePrefix')]"
