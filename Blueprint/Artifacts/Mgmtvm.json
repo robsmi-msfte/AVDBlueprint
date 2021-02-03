@@ -304,7 +304,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[concat(parameters('ScriptBaseURI'),'WSM_Install_GPMC_ADUC.ps1')]"
+              "[concat(parameters('ScriptBaseURI'),'/WSM_Install_GPMC_ADUC.ps1')]"
             ],
             "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File WSM_Install_GPMC_ADUC.ps1"
           }
@@ -325,7 +325,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[concat(parameters('ScriptBaseURI'),'Create-AzAADDSJoinedFileshare.ps1')]"
+              "[concat(parameters('ScriptBaseURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
             ],
             "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ' , resourceGroup().name, ' -StorageAccountName ', parameters('resourcePrefix'), 'profilestore']"
           }
