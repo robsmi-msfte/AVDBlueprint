@@ -142,7 +142,7 @@
               "arguments": "[concat('-displayName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1)), ''' ', '-userPrincipalName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1), '@', parameters('domainname')), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvdTestUserGroup'), '''')]",
               "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
               "timeout": "PT1H",
-              "cleanupPreference": "OnExpiration",
+              "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D",
               "supportingScriptUris": [
                 "[parameters('addADUserScriptURI')]",
