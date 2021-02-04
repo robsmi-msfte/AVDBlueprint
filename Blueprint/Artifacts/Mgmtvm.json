@@ -25,6 +25,9 @@
         },
         "defaultValue": ""
       },
+      "gpmcScriptURI": {
+        "type": "string"
+      },
       "baseTime": {
         "type": "string",
         "defaultValue": "[utcNow('u')]"
