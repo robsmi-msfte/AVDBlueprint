@@ -1,6 +1,7 @@
 .vscode
 assignments/assign_asciiwvd.json
 assignments/assign_mydefault.json
+assignments/assign_ag6.json
 Deploy/scripts/import-vditech.ps1
 Deploy/scripts/import-wvdascii.ps1
 Deploy/scripts/run.config.vditech.json
