@@ -327,7 +327,7 @@
             "fileUris": [
               "[concat(parameters('ScriptBaseURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ' , resourceGroup().name, ' -StorageAccountName ', parameters('resourcePrefix'), 'profilestore']"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ' , resourceGroup().name, ' -StorageAccountName ', parameters('resourcePrefix'), 'profilestore')]"
           }
         }
       },
