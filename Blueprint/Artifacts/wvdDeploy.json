@@ -803,7 +803,7 @@
             "value": "[parameters('ADDS_domainName')]"     
         },
         "ouPath": {
-            "value": ""
+            "value": "OU=WVD Computers,DC=azureglobal6,DC=onmicrosoft,DC=com"
         },
         "hostpoolTags": {
             "value": {}
