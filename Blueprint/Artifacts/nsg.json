@@ -40,9 +40,6 @@
         "application-security-groups": [
           {
             "name": "dc"
-          },
-          {
-            "name": "jb"
           }
         ],
         "network-security-groups": [
@@ -226,34 +223,9 @@
                   ],
                   "sourceApplicationSecurityGroups": [
                     {
-                      "name": "jb"
+                      "name": "dc"
                     }
                   ]
-                }
-              },
-              {
-                "name": "allow-rdp-ssh-into-jb",
-                "properties": {
-                  "access": "Allow",
-                  "destinationAddressPrefixes": [],
-                  "destinationAddressPrefix": "",
-                  "destinationPortRanges": [
-                    "3389",
-                    "22"
-                  ],
-                  "destinationPortRange": "",
-                  "direction": "Inbound",
-                  "priority": 150,
-                  "protocol": "TCP",
-                  "sourceAddressPrefix": "VirtualNetwork",
-                  "sourcePortRange": "*",
-                  "sourcePortRanges": [],
-                  "destinationApplicationSecurityGroups": [
-                    {
-                      "name": "jb"
-                    }
-                  ],
-                  "sourceApplicationSecurityGroups": []
                 }
               },
               {
@@ -544,34 +516,9 @@
                   ],
                   "sourceApplicationSecurityGroups": [
                     {
-                      "name": "jb"
+                      "name": "dc"
                     }
                   ]
-                }
-              },
-              {
-                "name": "allow-rdp-ssh-into-jb",
-                "properties": {
-                  "access": "Allow",
-                  "destinationAddressPrefixes": [],
-                  "destinationAddressPrefix": "",
-                  "destinationPortRanges": [
-                    "3389",
-                    "22"
-                  ],
-                  "destinationPortRange": "",
-                  "direction": "Inbound",
-                  "priority": 150,
-                  "protocol": "TCP",
-                  "sourceAddressPrefix": "VirtualNetwork",
-                  "sourcePortRange": "*",
-                  "sourcePortRanges": [],
-                  "destinationApplicationSecurityGroups": [
-                    {
-                      "name": "jb"
-                    }
-                  ],
-                  "sourceApplicationSecurityGroups": []
                 }
               },
               {
