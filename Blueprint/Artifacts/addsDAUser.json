@@ -89,7 +89,7 @@
           },
           {
             "type": "Microsoft.Resources/deploymentScripts",
-            "apiVersion": "2019-10-01-preview",
+            "apiVersion": "2020-10-01",
             "name": "createDAUser",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -115,7 +115,7 @@
           },
           {
             "type": "Microsoft.Resources/deploymentScripts",
-            "apiVersion": "2019-10-01-preview",
+            "apiVersion": "2020-10-01",
             "name": "assignDomainAdmin",
             "location": "[resourceGroup().location]",
             "dependsOn": [
