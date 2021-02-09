@@ -13,4 +13,4 @@ Import-AzBlueprintWithArtifact -Name $bpName -InputPath $bpPath -SubscriptionId 
 
 $bpDef = Get-AzBlueprint -SubscriptionId $subID -Name $bpName
 $version =(Get-Date -Format "yyyyMMddHHmmss").ToString()
-Publish-AzBluePrint -Blueprint $bpDef -Version $version 
+Publish-AzBluePrint -Blueprint $bpDef -Version $version
