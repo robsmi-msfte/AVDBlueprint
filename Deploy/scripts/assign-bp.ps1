@@ -10,7 +10,7 @@ Param(
     [string] $assignFile = '..\assignments\assign_default.json'
 )
 
-$bpName = 'WVD_E2E'
+$bpName = 'WVDBlueprint'
 $version =(Get-Date -Format "yyyyMMddHHmmss").ToString()
 $assignmentName = $bpName + '_' + $version
 
