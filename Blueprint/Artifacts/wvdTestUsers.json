@@ -6,7 +6,7 @@
       "displayName": "WVD Test Users",
       "description": "",
       "dependsOn": [
-        "wvdDeploy"
+        "adds"
       ],
       "template": {
         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -141,7 +141,7 @@
               "azPowerShellVersion": "3.0",
               "arguments": "[concat('-displayName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1)), ''' ', '-userPrincipalName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1), '@', parameters('domainname')), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvdTestUserGroup'), '''')]",
               "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
-              "timeout": "PT1H",
+              "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D",
               "supportingScriptUris": [

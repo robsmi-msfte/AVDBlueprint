@@ -1,7 +1,7 @@
 {
   "kind": "template",
   "type": "Microsoft.Blueprint/blueprints/artifacts",
-  "name": "Mgmt_VM_deploy",
+  "name": "Mgmtvm",
   "properties": {
     "displayName": "Management VM",
     "description": "Management VM",
@@ -295,27 +295,6 @@
         "name": "[concat(parameters('dnsLabelPrefix'),'/', variables('InstallRSATTools-extension-name'))]",
         "location": "[variables('location')]",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/',parameters('dnsLabelPrefix'))]"
-        ],
-        "properties": {
-          "publisher": "Microsoft.Compute",
-          "type": "CustomScriptExtension",
-          "typeHandlerVersion": "1.7",
-          "autoUpgradeMinorVersion": true,
-          "settings": {
-            "fileUris": [
-              "[concat(parameters('ScriptBaseURI'),'/WSM_Install_GPMC_ADUC.ps1')]"
-            ],
-            "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File WSM_Install_GPMC_ADUC.ps1"
-          }
-        }
-      },
-      {
-        "type": "Microsoft.Compute/virtualMachines/extensions",
-        "apiVersion": "2019-07-01",
-        "name": "azfiles",
-        "location": "[variables('location')]",
-        "dependsOn": [
           "MGMTVMjoindomain"
         ],
         "properties": {
@@ -336,7 +315,7 @@
         "apiVersion": "2019-10-01",
         "name": "MGMTVMjoindomain",
         "dependsOn": [
-          "[resourceId('Microsoft.Compute/virtualMachines/extensions/', parameters('dnsLabelPrefix'), variables('InstallRSATTools-extension-name'))]"
+
         ],
         "properties": {
           "mode": "Incremental",
@@ -491,7 +470,7 @@
       "value": true
     },
     "ScriptBaseURI": {
-      "value": "parameters('_ScriptURI')"
+      "value": "[parameters('_ScriptURI')]"
     }
     }
  }

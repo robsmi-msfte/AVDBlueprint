@@ -6,6 +6,18 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $StorageAccountName
 )
+#Install RSAT and other stuff
+Install-WindowsFeature -name GPMC
+Install-WindowsFeature -name RSAT-AD-Tools
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
+Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/InstallFSLogixClient.ps1' -OutFile C:\Windows\Temp\InstallFSLogixClient.ps1
+Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/FSLogixAppsSetup.exe' -OutFile C:\Windows\Temp\FSLogixAppsSetup.exe
+Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/PolicyDefinitions.zip ' -OutFile C:\Windows\Temp\PolicyDefinitions.zip
+Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp\PolicyDefinitions
+
+#Install Azure module
+Install-Module -Name Az -Force
 
 #Confirm AzContext
 If (!(Get-AzContext)) {
@@ -37,13 +49,6 @@ else {
     #Construct the scope of the share
     #"/subscriptions/<subscription-id>/resourceGroups/<resource-group>/providers/Microsoft.Storage/storageAccounts/<storage-account>/fileServices/default/fileshares/<share-name>"
     $ShareScope = "/subscriptions/$($(Get-AzContext).Subscription.Id)/resourceGroups/$($StorageAccount.ResourceGroupName)/providers/Microsoft.Storage/storageAccounts/$($StorageAccount.StorageAccountName)/fileServices/default/fileshares/$($StorageShare.Name)"
-
-    <#
-    #Grant elevated rights to permit Share configuration
-    $FileShareElevatedContributorRole = Get-AzRoleDefinition "Storage File Data SMB Share Elevated Contributor"
-    New-AzRoleAssignment -RoleDefinitionName $FileShareElevatedContributorRole.Name -Scope $ShareScope -SignInName $FileShareAdminUPN
-    Write-Verbose "Granted elevated share rights"
-    #>
 
     #Grant standard rights to permit user access
     $FileShareContributorRole = Get-AzRoleDefinition "Storage File Data SMB Share Contributor"
@@ -91,4 +96,32 @@ else {
     $acl | Set-Acl z:
 
     Write-Verbose "NTFS ACLs set on $StorageUNC"
+
+    #Section added by RMS to create group policy object for WVD Session Hosts (and related work)
+    #Create new WVD Organizational Unit
+
+    $Domain = Get-ADDomain
+    $PDC = $Domain.PDCEmulator
+    $FQDomain = $Domain.DNSRoot
+    $WVDPolicy = New-GPO -Name "WVD Session Host Policy"
+    $WVDComputersOU = New-ADOrganizationalUnit -Name 'WVD Computers' -DisplayName 'WVD Computers' -Path $Domain.DistinguishedName -Server $PDC -PassThru
+    New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
+
+    #Create GPO Central Store
+    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomainName\SYSVOL\$FQDomain\Policies" -Recurse
+
+    #Move WVD session host VMs to WVD
+    #Get-ADComputer -Filter {Name -notlike "*mgmtvm*"} -SearchBase (Get-ADDomain).ComputersContainer -SearchScope subtree -Server $PDC | Foreach-Object {Move-ADObject -identity $_.DistinguishedName -TargetPath $WVDComputersOU.DistinguishedName -Server $PDC}
+
+    #Cope WVD Session Host startup script that installs FSLogix
+    #Create WVD GPO AD Object
+    $WVDPolicy=Get-GPO -Name "WVD Session Host Policy"
+    $PolicyID ="{" +  $WVDPolicy.ID + "}"
+    Copy-Item 'C:\Windows\Temp\WVDSH_InstallFSLogix.ps1' "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
+
+    #Create WVD FSLogix GPO
+    #Switch to script Directory
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value "\\$StorageAccountName\$($StorageShare.Name)"
 }
