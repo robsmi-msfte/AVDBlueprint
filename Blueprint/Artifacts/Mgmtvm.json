@@ -1,7 +1,7 @@
 {
   "kind": "template",
   "type": "Microsoft.Blueprint/blueprints/artifacts",
-  "name": "Mgmt_VM_deploy",
+  "name": "Mgmtvm",
   "properties": {
     "displayName": "Management VM",
     "description": "Management VM",
