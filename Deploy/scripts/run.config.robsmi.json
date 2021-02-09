@@ -1,0 +1,8 @@
+{
+    "args": {
+        "tenantID": "12bb1f9a-1f97-4881-a221-a1ec27f04be3",
+        "subscriptionID": "cb7d4e3d-d3e8-4aea-aa23-d0e37c73df7e",
+        "blueprintPath": "C:\\VSCode\\AZBluePrints-WVD\\WVDBlueprint\\Blueprint",
+        "assignmentFile": "C:\\VSCode\\AZBluePrints-WVD\\WVDBlueprint\\assignments\\assign_default_robsmi.json"
+    }
+}

@@ -11,7 +11,5 @@ Deploy/scripts/assign-wvdascii.ps1
 assignments/assign_mydefault.json
 assignments/assign_default_robsmi.json
 Deploy/scripts/run.config_robsmi.json
-Deploy/scripts/import-bp.ps1
-Deploy/scripts/run.config.json
-Deploy/scripts/run.config.json
 Deploy/scripts/import-bp-robsmi.ps1
+Deploy/scripts/assign-bp-robsmi.ps1
