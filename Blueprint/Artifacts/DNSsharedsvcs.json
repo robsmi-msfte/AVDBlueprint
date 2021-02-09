@@ -15,7 +15,7 @@
           "dnsScriptURI": {
             "type": "string"
           },
-          "script_executionUserResourceID": {
+          "script_executionUserObjectID": {
             "type": "string"
           },
           "srcRG": {
@@ -44,7 +44,7 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserResourceID')]": {
+                "[parameters('script_executionUserObjectID')]": {
                 }
               }
             },
@@ -66,8 +66,8 @@
         "dnsScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/setDNS.ps1')]"
         },
-        "script_executionUserResourceID": {
-          "value": "[parameters('script_executionUserResourceID')]"
+        "script_executionUserObjectID": {
+          "value": "[parameters('script_executionUserObjectID')]"
         },
         "srcRG": {
           "value": "[resourceGroup().name]"
