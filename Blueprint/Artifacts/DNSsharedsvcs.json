@@ -53,7 +53,7 @@
               "azPowerShellVersion": "3.0",
               "arguments": "[concat('-srcRG', ' ', parameters('srcRG'), ' ', '-srcVnet', ' ', parameters('srcVnet'), ' ', '-srcSubnet', ' ', parameters('srcSubnet'), ' ','-dstRG', ' ', parameters('dstRG'), ' ', '-dstVnet', ' ', parameters('dstVnet'))]",
               "primaryScriptUri": "[parameters('dnsScriptURI')]",
-              "timeout": "PT1H",
+              "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D"
             }

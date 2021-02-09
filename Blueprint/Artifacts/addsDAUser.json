@@ -108,7 +108,7 @@
               "azPowerShellVersion": "3.0",
               "arguments": "[concat('-displayName', ' ', variables('username'), ' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'), ' ', '-keyvault', ' ', variables('key-vault-name'), ' ','-forcePasswordChange', ' ', variables('forcePasswordChange'))]",
               "primaryScriptUri": "[parameters('addADUserScriptURI')]",
-              "timeout": "PT1H",
+              "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D"
             }
@@ -134,7 +134,7 @@
               "azPowerShellVersion": "3.0",
               "arguments": "[concat('-groupName', ' ''', parameters('ad_group'), ''' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'))]",
               "primaryScriptUri": "[parameters('assignADGroupScriptURI')]",
-              "timeout": "PT1H",
+              "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D"
             }

@@ -315,7 +315,7 @@
         "apiVersion": "2019-10-01",
         "name": "MGMTVMjoindomain",
         "dependsOn": [
-          "[resourceId('Microsoft.Compute/virtualMachines/extensions/', parameters('dnsLabelPrefix'), variables('InstallRSATTools-extension-name'))]"
+
         ],
         "properties": {
           "mode": "Incremental",
