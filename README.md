@@ -9,7 +9,12 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 * Azure Resource Manager (ARM) templates
 * Resource Groups
 
-The WVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, WVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
+The WVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, WVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.
+## Recommended Reading
+1) [Azure Blueprints] (https://docs.microsoft.com/en-us/azure/governance/blueprints/overview)
+2) [Windows Virtual Desktop] (https://docs.microsoft.com/en-us/azure/virtual-desktop/)
+
+
 ## Prerequisites    
 1.	Two “identities” are required to successfully deploy the Azure WVD Blueprints:  
     - An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference).  
@@ -140,13 +145,10 @@ There are values that you may want to consider changing, such as "test user coun
 |**_ScriptURI \ 'defaultValue'**|ex. https://wvdautodeployrepo.blob.core.windows.net/files |(optional) a fully-qualified resource location for scripts and related objects needed during the assignment|
 |**WVDUSERS_testUserCount \ 'defaultValue'**|ex. '**10**'|(optional) the number of test users the Blueprint will create|
 
-## Assigning the Blueprint (initiating the deployment)
-
-1. Open PowerShell
-2. Change directory to your customized Blueprint object tree (ex. C:\Code\WVDBP\AZBluePrints-WVD\)
-3. Connect to your Azure subscription and authenticate, using 'Connect-AzAccount'
-4. In PowerShell, run the file 'import-bp.ps1'
-5. In PowerShell, run the file 'assign-bp.ps1'
+## Import, Publish and Assign the Blueprint
+1. Import the Blueprint - https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps\
+2. Publish the Blueprint - https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal
+3. Assign the Blueprint - https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal
 
 ## Tips
 
