@@ -164,3 +164,10 @@ There are values that you may want to consider changing, such as "test user coun
 [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
 Whatever method chosed, the access method should be "public" and "anonymous" read-only access.
 
+- If you need to delete a deployment with the intent of starting over with a new deployment, you will need to change the "Deployment Prefix" value in the "assign_default.json" file.
+  This file is used to prefix most of the Azure resources created during the deployment, including an [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
+  Azure Key Vault is used to store and retrieve cryptogrphic keys used by cloud apps and services, and as such is treated with great care in Azure. 
+  When an Azure Key Vault is deleted, it transitions to a "soft delete" state for a period of time, before actually being deleted.
+  While an Azure Key Vault is in soft delete state, another key vault cannot be created with the same name.  Therefore, if you do not change your
+  Resource Prefix value for subsequent deployments, the subsequent deployments will fail with an error referencing Key Vault name.
+

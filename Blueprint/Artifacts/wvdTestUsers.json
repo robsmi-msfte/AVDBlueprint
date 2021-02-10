@@ -37,7 +37,7 @@
           "assignADGroupScriptURI": {
             "type": "string"
           },
-          "script_executionUserObjectID": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "domainName": {
@@ -122,7 +122,7 @@
           },
           {
             "type": "Microsoft.Resources/deploymentScripts",
-            "apiVersion": "2019-10-01-preview",
+            "apiVersion": "2020-10-01",
             "name": "[concat('createuser_', parameters('testUserPrefix'), copyIndex(1))]",
             "location": "[resourceGroup().location]",
             "dependsOn": [
@@ -132,13 +132,13 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserObjectID')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
             "properties": {
               "forceUpdateTag": "[parameters('utcValue')]",
-              "azPowerShellVersion": "3.0",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-displayName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1)), ''' ', '-userPrincipalName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1), '@', parameters('domainname')), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvdTestUserGroup'), '''')]",
               "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
               "timeout": "PT4H",
@@ -190,8 +190,8 @@
         "assignADGroupScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/assignADGroup.ps1')]"
         },
-        "script_executionUserObjectID": {
-          "value": "[parameters('script_executionUserObjectID')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         }
       }
     }

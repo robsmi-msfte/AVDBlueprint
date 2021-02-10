@@ -29,7 +29,7 @@
                 "metadata": {
                     "description": "The base URI where artifacts required by this template are located."
                 },
-                "defaultValue": "https://catalogartifact.azureedge.net/publicartifacts/Microsoft.Hostpool-ARM-1.0.13-preview/"
+                "defaultValue": "https://catalogartifact.azureedge.net/publicartifacts/Microsoft.Hostpool-ARM-1.0.14-preview/"
             },
             "artifactsLocation": {
                 "type": "string",
