@@ -15,7 +15,7 @@
           "dnsScriptURI": {
             "type": "string"
           },
-          "script_executionUserObjectID": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "srcRG": {
@@ -32,6 +32,10 @@
           },
           "dstvNet": {
             "type":"string"
+          },
+          "utcValue": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
           }
         },
         "resources": [
@@ -44,13 +48,13 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserObjectID')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
             "properties": {
-              "forceUpdateTag": 1,
-              "azPowerShellVersion": "3.0",
+              "forceUpdateTag": "[parameters('utcValue')]",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-srcRG', ' ', parameters('srcRG'), ' ', '-srcVnet', ' ', parameters('srcVnet'), ' ', '-srcSubnet', ' ', parameters('srcSubnet'), ' ','-dstRG', ' ', parameters('dstRG'), ' ', '-dstVnet', ' ', parameters('dstVnet'))]",
               "primaryScriptUri": "[parameters('dnsScriptURI')]",
               "timeout": "PT4H",
@@ -66,8 +70,8 @@
         "dnsScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/setDNS.ps1')]"
         },
-        "script_executionUserObjectID": {
-          "value": "[parameters('script_executionUserObjectID')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         },
         "srcRG": {
           "value": "[resourceGroup().name]"

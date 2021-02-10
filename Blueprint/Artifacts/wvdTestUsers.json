@@ -37,7 +37,7 @@
           "assignADGroupScriptURI": {
             "type": "string"
           },
-          "script_executionUserObjectID": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "domainName": {
@@ -132,7 +132,7 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserObjectID')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
@@ -190,8 +190,8 @@
         "assignADGroupScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/assignADGroup.ps1')]"
         },
-        "script_executionUserObjectID": {
-          "value": "[parameters('script_executionUserObjectID')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         }
       }
     }
