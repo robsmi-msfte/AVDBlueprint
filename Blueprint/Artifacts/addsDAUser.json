@@ -84,7 +84,7 @@
           {
             "type": "Microsoft.KeyVault/vaults/secrets",
             "name": "[concat(variables('key-vault-name'), '/', variables('username'))]",
-            "apiVersion": "2015-06-01",
+            "apiVersion": "2019-09-01",
             "properties": {
               "value": "[variables('domainadmin_secret_value')]",
               "dependsOn": [
