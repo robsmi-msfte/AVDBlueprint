@@ -24,7 +24,7 @@
           "assignADGroupScriptURI": {
             "type": "string"
           },
-          "script_executionUserObjectID": {
+          "script_executionUserResourceID": {
             "type": "string"
           },
           "ad_usernameUPN": {
@@ -66,6 +66,10 @@
               "displayName": "Unique value3 for secret generation",
               "description": "Unique value that will be used to auto generate secrets"
             }
+          },
+          "utcValue": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
           }
         },
         "variables": {
@@ -80,7 +84,7 @@
           {
             "type": "Microsoft.KeyVault/vaults/secrets",
             "name": "[concat(variables('key-vault-name'), '/', variables('username'))]",
-            "apiVersion": "2015-06-01",
+            "apiVersion": "2019-09-01",
             "properties": {
               "value": "[variables('domainadmin_secret_value')]",
               "dependsOn": [
@@ -100,13 +104,12 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserObjectID')]": {
-                }
+                "[parameters('script_executionUserResourceID')]": {}
               }
             },
             "properties": {
-              "forceUpdateTag": 1,
-              "azPowerShellVersion": "3.0",
+              "forceUpdateTag": "[parameters('utcValue')]",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-displayName', ' ', variables('username'), ' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'), ' ', '-keyvault', ' ', variables('key-vault-name'), ' ','-forcePasswordChange', ' ', variables('forcePasswordChange'))]",
               "primaryScriptUri": "[parameters('addADUserScriptURI')]",
               "timeout": "PT4H",
@@ -126,13 +129,13 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserObjectID')]": {
+                "[parameters('script_executionUserResourceID')]": {
                 }
               }
             },
             "properties": {
-              "forceUpdateTag": 1,
-              "azPowerShellVersion": "3.0",
+              "forceUpdateTag": "[parameters('utcValue')]",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-groupName', ' ''', parameters('ad_group'), ''' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'))]",
               "primaryScriptUri": "[parameters('assignADGroupScriptURI')]",
               "timeout": "PT4H",
@@ -154,8 +157,8 @@
         "assignADGroupScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/assignADGroup.ps1')]"
         },
-        "script_executionUserObjectID": {
-          "value": "[parameters('script_executionUserObjectID')]"
+        "script_executionUserResourceID": {
+          "value": "[parameters('script_executionUserResourceID')]"
         },
         "ad_usernameUPN": {
           "value": "[parameters('DAUser_domainadmin')]"

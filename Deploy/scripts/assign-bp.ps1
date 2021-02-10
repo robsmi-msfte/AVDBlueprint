@@ -6,11 +6,13 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $subscriptionID,
 
+    [Parameter(Mandatory=$true)]
+    [string] $bpName,
+
     [Parameter(Mandatory=$false)]
     [string] $assignFile = '..\assignments\assign_default.json'
 )
 
-$bpName = 'WVD_E2E'
 $version =(Get-Date -Format "yyyyMMddHHmmss").ToString()
 $assignmentName = $bpName + '_' + $version
 
