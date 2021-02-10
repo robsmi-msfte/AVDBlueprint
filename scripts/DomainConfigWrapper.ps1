@@ -12,7 +12,7 @@ Param(
 
 #Build a credential object for $DAUserUPN
 $DAUserName = $DAUserUPN.Split('@')[0]
-$DAPass = ConvertTo-SecureString -String $((Get-AzKeyVaultSecret -VaultName $keyvault -name $DAUserName).SecretValue) -AsPlainText -Force
+$DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault -name $DAUserName).SecretValue
 $DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
 
 #Run the config script as DAUser
