@@ -138,7 +138,7 @@
             },
             "properties": {
               "forceUpdateTag": "[parameters('utcValue')]",
-              "azPowerShellVersion": "3.0",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-displayName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1)), ''' ', '-userPrincipalName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1), '@', parameters('domainname')), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvdTestUserGroup'), '''')]",
               "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
               "timeout": "PT4H",
