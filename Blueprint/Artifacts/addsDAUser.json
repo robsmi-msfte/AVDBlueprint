@@ -104,17 +104,16 @@
             "identity": {
               "type": "userAssigned",
               "userAssignedIdentities": {
-                "[parameters('script_executionUserResourceID')]": {
-                }
+                "[parameters('script_executionUserResourceID')]": {}
               }
             },
             "properties": {
               "forceUpdateTag": "[parameters('utcValue')]",
-              "azPowerShellVersion": "3.0",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-displayName', ' ', variables('username'), ' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'), ' ', '-keyvault', ' ', variables('key-vault-name'), ' ','-forcePasswordChange', ' ', variables('forcePasswordChange'))]",
               "primaryScriptUri": "[parameters('addADUserScriptURI')]",
               "timeout": "PT4H",
-              "cleanupPreference": "OnExpiration",
+              "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D"
             }
           },
@@ -140,7 +139,7 @@
               "arguments": "[concat('-groupName', ' ''', parameters('ad_group'), ''' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'))]",
               "primaryScriptUri": "[parameters('assignADGroupScriptURI')]",
               "timeout": "PT4H",
-              "cleanupPreference": "OnExpiration",
+              "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D"
             }
           }

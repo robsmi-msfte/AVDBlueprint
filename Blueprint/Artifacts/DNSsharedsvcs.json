@@ -32,6 +32,10 @@
           },
           "dstvNet": {
             "type":"string"
+          },
+          "utcValue": {
+            "type": "string",
+            "defaultValue": "[utcNow()]"
           }
         },
         "resources": [
@@ -49,8 +53,8 @@
               }
             },
             "properties": {
-              "forceUpdateTag": 1,
-              "azPowerShellVersion": "3.0",
+              "forceUpdateTag": "[parameters('utcValue')]",
+              "azPowerShellVersion": "5.4",
               "arguments": "[concat('-srcRG', ' ', parameters('srcRG'), ' ', '-srcVnet', ' ', parameters('srcVnet'), ' ', '-srcSubnet', ' ', parameters('srcSubnet'), ' ','-dstRG', ' ', parameters('dstRG'), ' ', '-dstVnet', ' ', parameters('dstVnet'))]",
               "primaryScriptUri": "[parameters('dnsScriptURI')]",
               "timeout": "PT4H",
