@@ -6,7 +6,7 @@
     "displayName": "Management VM",
     "description": "Management VM",
     "dependsOn": [
-      "wvdTestUsers"
+      
     ],
     "template": {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -295,7 +295,7 @@
         "name": "[concat(parameters('dnsLabelPrefix'),'/', variables('InstallRSATTools-extension-name'))]",
         "location": "[variables('location')]",
         "dependsOn": [
-          "MGMTVMjoindomain"
+          "[concat('Microsoft.Compute/virtualMachines/',parameters('dnsLabelPrefix'))]"
         ],
         "properties": {
           "publisher": "Microsoft.Compute",
@@ -304,9 +304,9 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[concat(parameters('ScriptBaseURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
+              "https://agblueprintsa.blob.core.windows.net/blueprintscripts/WSM_Install_GPMC_ADUC.ps1"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ' , resourceGroup().name, ' -StorageAccountName ', parameters('resourcePrefix'), 'profilestore')]"
+            "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File WSM_Install_GPMC_ADUC.ps1"
           }
         }
       },
@@ -315,7 +315,7 @@
         "apiVersion": "2019-10-01",
         "name": "MGMTVMjoindomain",
         "dependsOn": [
-
+          "[resourceId('Microsoft.Compute/virtualMachines/extensions/', parameters('dnsLabelPrefix'), variables('InstallRSATTools-extension-name'))]"
         ],
         "properties": {
           "mode": "Incremental",
