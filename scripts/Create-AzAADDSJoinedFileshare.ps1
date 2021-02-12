@@ -13,11 +13,16 @@ Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/InstallFSLogixClient.ps1' -OutFile C:\Windows\Temp\InstallFSLogixClient.ps1
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/FSLogixAppsSetup.exe' -OutFile C:\Windows\Temp\FSLogixAppsSetup.exe
+<#
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/PolicyDefinitions.zip ' -OutFile C:\Windows\Temp\PolicyDefinitions.zip
 Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp\PolicyDefinitions
+#>
 
 #Install Azure module
 Install-Module -Name Az -Force
+
+#Login with Managed Identity
+Connect-AzAccount -Identity
 
 #Confirm AzContext
 If (!(Get-AzContext)) {
@@ -108,20 +113,20 @@ else {
     New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
 
     #Create GPO Central Store
-    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomainName\SYSVOL\$FQDomain\Policies" -Recurse
+    Copy-Item 'C:\Windows\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse
 
-    #Move WVD session host VMs to WVD
-    #Get-ADComputer -Filter {Name -notlike "*mgmtvm*"} -SearchBase (Get-ADDomain).ComputersContainer -SearchScope subtree -Server $PDC | Foreach-Object {Move-ADObject -identity $_.DistinguishedName -TargetPath $WVDComputersOU.DistinguishedName -Server $PDC}
 
     #Cope WVD Session Host startup script that installs FSLogix
     #Create WVD GPO AD Object
     $WVDPolicy=Get-GPO -Name "WVD Session Host Policy"
     $PolicyID ="{" +  $WVDPolicy.ID + "}"
-    Copy-Item 'C:\Windows\Temp\WVDSH_InstallFSLogix.ps1' "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
+    $PolicyStartupFolder = "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
+    New-Item -ItemType Directory -Path $PolicyStartupFolder
+    Copy-Item 'C:\Windows\Temp\InstallFSLogixClient.ps1' $PolicyStartupFolder
 
     #Create WVD FSLogix GPO
     #Switch to script Directory
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
-    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value "\\$StorageAccountName\$($StorageShare.Name)"
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
 }
