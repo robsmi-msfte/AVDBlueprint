@@ -313,7 +313,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[concat(parameters('ScriptBaseURI'),'Create-AzAADDSJoinedFileshare.ps1')]"
+              "[concat(parameters('ScriptBaseURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
             ],
             "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ', resourceGroup().name ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
