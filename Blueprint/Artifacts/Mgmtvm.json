@@ -172,7 +172,7 @@
       "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
       "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
       "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
-      "InstallRSATTools-extension-name": "InstallRSATTools",
+      "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
       "existingDomainUsername": "[first(split(parameters('DAUser_domainadmin'), '@'))]",
       "managedDomaintoJoin": "[parameters('ADDS_domainName')]",
       "imagePublisher": "MicrosoftWindowsServer",
@@ -301,7 +301,7 @@
       {
         "type": "Microsoft.Compute/virtualMachines/extensions",
         "apiVersion": "2019-07-01",
-        "name": "[concat(parameters('dnsLabelPrefix'),'/', variables('InstallRSATTools-extension-name'))]",
+        "name": "[concat(parameters('dnsLabelPrefix'),'/', variables('CustomScriptExtensionName'))]",
         "location": "[variables('location')]",
         "dependsOn": [
           "MGMTVMjoindomain"
@@ -313,9 +313,9 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "https://agblueprintsa.blob.core.windows.net/blueprintscripts/WSM_Install_GPMC_ADUC.ps1"
+              "[concat(parameters('ScriptBaseURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
             ],
-            "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File WSM_Install_GPMC_ADUC.ps1"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ', resourceGroup().name ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
