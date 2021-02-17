@@ -7,8 +7,7 @@
     "description": "",
     "dependsOn": [
         "DNSsharedsvcs",
-        "addsDAUser",
-        "Mgmtvm"
+        "addsDAUser"
       ],
     "template": {
         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -804,7 +803,7 @@
             "value": "[parameters('ADDS_domainName')]"     
         },
         "ouPath": {
-            "value": "OU=WVD Computers,DC=azureglobal6,DC=onmicrosoft,DC=com"
+            "value": ""
         },
         "hostpoolTags": {
             "value": {}
