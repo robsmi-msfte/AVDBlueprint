@@ -19,19 +19,25 @@ Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscr
 Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp\PolicyDefinitions
 #>
 
-#Install Azure module
-Install-Module -Name Az -Force
 
-#Login with Managed Identity
-Connect-AzAccount -Identity
+#Run most of the following as domainadmin user via invoke-command scriptblock
+$Scriptblock = {
+    Param(
+    [Parameter(Mandatory=$true,Position=0)]
+    [string] $ResourceGroupName,
 
-#Confirm AzContext
-If (!(Get-AzContext)) {
-    Write-Error "Please login to your Azure account"
-}
-else {
-    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
+    [Parameter(Mandatory=$true,Position=1)]
+    [string] $StorageAccountName
+    )
     
+    #Install Azure module
+    Install-Module -Name Az -Force
+
+    #Login with Managed Identity
+    Connect-AzAccount -Identity
+
+    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
+
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
 
     #Create AADDS enabled Storage account and accompanying share
@@ -137,3 +143,15 @@ else {
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
 }
+
+#Create a DAuser context, using password from Key Vault
+$KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
+$DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
+$DAUserName = $DAUserUPN.Split('@')[0]
+$DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault -name $DAUserName).SecretValue
+$DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
+$Session = New-PSSession -Credential $DACredential 
+
+
+#Run the $scriptblock in the DAuser context
+Invoke-Command -Session $Session -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
