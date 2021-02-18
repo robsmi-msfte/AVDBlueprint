@@ -13,10 +13,10 @@ Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/InstallFSLogixClient.ps1' -OutFile C:\Windows\Temp\InstallFSLogixClient.ps1
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/FSLogixAppsSetup.exe' -OutFile C:\Windows\Temp\FSLogixAppsSetup.exe
-<#
+#
 #PolicyDefinitions folder comes with GPMC/RSAT
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/PolicyDefinitions.zip ' -OutFile C:\Windows\Temp\PolicyDefinitions.zip
-Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp\PolicyDefinitions
+Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp
 #>
 
 
@@ -30,13 +30,13 @@ $Scriptblock = {
     [string] $StorageAccountName
     )
     
-    #Install Azure module
-    Install-Module -Name Az -Force
+    Start-Transcript -OutputDirectory C:\Windows\Temp
 
     #Login with Managed Identity
     Connect-AzAccount -Identity
 
     $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
+    Write-Host $fileshareusergroupid
 
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
 
@@ -63,8 +63,9 @@ $Scriptblock = {
     $ShareScope = "/subscriptions/$($(Get-AzContext).Subscription.Id)/resourceGroups/$($StorageAccount.ResourceGroupName)/providers/Microsoft.Storage/storageAccounts/$($StorageAccount.StorageAccountName)/fileServices/default/fileshares/$($StorageShare.Name)"
 
     #Grant elevated rights to permit admin access
+    
     $FileShareContributorRole = Get-AzRoleDefinition "Storage File Data SMB Share Elevated Contributor"
-    $ThisUPN = (Get-ADUser -Identity $env:USERNAME).UserPrincipalName
+    $ThisUPN = whoami /upn
     New-AzRoleAssignment -RoleDefinitionName $FileShareContributorRole.Name -Scope $ShareScope -SignInName $ThisUPN
     Write-Verbose "Granted admin share rights"
 
@@ -126,7 +127,7 @@ $Scriptblock = {
     New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
 
     #Create GPO Central Store
-    Copy-Item 'C:\Windows\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse
+    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse
 
 
     #Cope WVD Session Host startup script that installs FSLogix
@@ -142,16 +143,17 @@ $Scriptblock = {
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
+    #>
 }
 
 #Create a DAuser context, using password from Key Vault
 $KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
 $DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
 $DAUserName = $DAUserUPN.Split('@')[0]
-$DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault -name $DAUserName).SecretValue
+$DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName).SecretValue
 $DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
-$Session = New-PSSession -Credential $DACredential 
+Register-PSSessionConfiguration -Name DASessionConf -RunAsCredential $DACredential -Force
 
 
 #Run the $scriptblock in the DAuser context
-Invoke-Command -Session $Session -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
+Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
