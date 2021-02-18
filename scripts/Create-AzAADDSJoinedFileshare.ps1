@@ -157,3 +157,6 @@ Register-PSSessionConfiguration -Name DASessionConf -RunAsCredential $DACredenti
 
 #Run the $scriptblock in the DAuser context
 Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
+
+#Clean up DAuser context
+Unregister-PSSessionConfiguration -Name DASessionConf -Force
