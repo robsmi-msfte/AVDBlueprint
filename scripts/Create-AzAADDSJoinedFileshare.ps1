@@ -16,7 +16,7 @@ Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscr
 #
 #PolicyDefinitions folder comes with GPMC/RSAT
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/PolicyDefinitions.zip ' -OutFile C:\Windows\Temp\PolicyDefinitions.zip
-Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp
+Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp -Force
 #>
 
 
@@ -35,9 +35,13 @@ $Scriptblock = {
     #Login with Managed Identity
     Connect-AzAccount -Identity
 
-    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
-    Write-Host $fileshareusergroupid
+    whoami | Out-File -append c:\windows\temp\innercontext.txt
 
+    klist tickets | Out-File -append c:\windows\temp\innercontext.txt
+    
+
+    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
+    
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
 
     #Create AADDS enabled Storage account and accompanying share
@@ -127,7 +131,7 @@ $Scriptblock = {
     New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
 
     #Create GPO Central Store
-    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse
+    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse -Force
 
 
     #Cope WVD Session Host startup script that installs FSLogix
@@ -146,6 +150,9 @@ $Scriptblock = {
     #>
 }
 
+#Get an Azure Managed Identity context
+Connect-AzAccount -Identity
+
 #Create a DAuser context, using password from Key Vault
 $KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
 $DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
@@ -154,9 +161,24 @@ $DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName
 $DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
 Register-PSSessionConfiguration -Name DASessionConf -RunAsCredential $DACredential -Force
 
+whoami | Out-File c:\windows\temp\outercontext.txt
+"KeyVault" | Out-File -append c:\windows\temp\outercontext.txt
+$keyVault | Out-File -append c:\windows\temp\outercontext.txt
+"dauserupn" | Out-File -append c:\windows\temp\outercontext.txt
+$DAUserUPN | Out-File -append c:\windows\temp\outercontext.txt
+"dausername" | Out-File -append c:\windows\temp\outercontext.txt
+$DAUserName | Out-File -append c:\windows\temp\outercontext.txt
+"dapass" | Out-File -append c:\windows\temp\outercontext.txt
+$DAPass | Out-File -append c:\windows\temp\outercontext.txt
+"dacred" | Out-File -append c:\windows\temp\outercontext.txt
+$DACredential | Out-File -append c:\windows\temp\outercontext.txt
+Get-PSSessionConfiguration | Out-File -append c:\windows\temp\outercontext.txt
+systeminfo | Out-File -append c:\windows\temp\outercontext.txt
+Get-AzContext | Out-File -append c:\windows\temp\outercontext.txt
+klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 
 #Run the $scriptblock in the DAuser context
 Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
 
 #Clean up DAuser context
-Unregister-PSSessionConfiguration -Name DASessionConf -Force
+#Unregister-PSSessionConfiguration -Name DASessionConf -Force
