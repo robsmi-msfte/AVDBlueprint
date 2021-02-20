@@ -13,23 +13,33 @@ Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/InstallFSLogixClient.ps1' -OutFile C:\Windows\Temp\InstallFSLogixClient.ps1
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/FSLogixAppsSetup.exe' -OutFile C:\Windows\Temp\FSLogixAppsSetup.exe
-<#
+#
 #PolicyDefinitions folder comes with GPMC/RSAT
 Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/PolicyDefinitions.zip ' -OutFile C:\Windows\Temp\PolicyDefinitions.zip
-Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp\PolicyDefinitions
+Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp -Force
 #>
 
-#Install Azure module
-Install-Module -Name Az -Force
 
-#Login with Managed Identity
-Connect-AzAccount -Identity
+#Run most of the following as domainadmin user via invoke-command scriptblock
+$Scriptblock = {
+    Param(
+    [Parameter(Mandatory=$true,Position=0)]
+    [string] $ResourceGroupName,
 
-#Confirm AzContext
-If (!(Get-AzContext)) {
-    Write-Error "Please login to your Azure account"
-}
-else {
+    [Parameter(Mandatory=$true,Position=1)]
+    [string] $StorageAccountName
+    )
+    
+    Start-Transcript -OutputDirectory C:\Windows\Temp
+
+    #Login with Managed Identity
+    Connect-AzAccount -Identity
+
+    whoami | Out-File -append c:\windows\temp\innercontext.txt
+
+    klist tickets | Out-File -append c:\windows\temp\innercontext.txt
+    
+
     $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
     
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
@@ -57,8 +67,9 @@ else {
     $ShareScope = "/subscriptions/$($(Get-AzContext).Subscription.Id)/resourceGroups/$($StorageAccount.ResourceGroupName)/providers/Microsoft.Storage/storageAccounts/$($StorageAccount.StorageAccountName)/fileServices/default/fileshares/$($StorageShare.Name)"
 
     #Grant elevated rights to permit admin access
+    
     $FileShareContributorRole = Get-AzRoleDefinition "Storage File Data SMB Share Elevated Contributor"
-    $ThisUPN = (Get-ADUser -Identity $env:USERNAME).UserPrincipalName
+    $ThisUPN = whoami /upn
     New-AzRoleAssignment -RoleDefinitionName $FileShareContributorRole.Name -Scope $ShareScope -SignInName $ThisUPN
     Write-Verbose "Granted admin share rights"
 
@@ -120,7 +131,7 @@ else {
     New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
 
     #Create GPO Central Store
-    Copy-Item 'C:\Windows\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse
+    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse -Force
 
 
     #Cope WVD Session Host startup script that installs FSLogix
@@ -136,4 +147,38 @@ else {
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
+    #>
 }
+
+#Get an Azure Managed Identity context
+Connect-AzAccount -Identity
+
+#Create a DAuser context, using password from Key Vault
+$KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
+$DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
+$DAUserName = $DAUserUPN.Split('@')[0]
+$DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName).SecretValue
+$DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
+Register-PSSessionConfiguration -Name DASessionConf -RunAsCredential $DACredential -Force
+
+whoami | Out-File c:\windows\temp\outercontext.txt
+"KeyVault" | Out-File -append c:\windows\temp\outercontext.txt
+$keyVault | Out-File -append c:\windows\temp\outercontext.txt
+"dauserupn" | Out-File -append c:\windows\temp\outercontext.txt
+$DAUserUPN | Out-File -append c:\windows\temp\outercontext.txt
+"dausername" | Out-File -append c:\windows\temp\outercontext.txt
+$DAUserName | Out-File -append c:\windows\temp\outercontext.txt
+"dapass" | Out-File -append c:\windows\temp\outercontext.txt
+$DAPass | Out-File -append c:\windows\temp\outercontext.txt
+"dacred" | Out-File -append c:\windows\temp\outercontext.txt
+$DACredential | Out-File -append c:\windows\temp\outercontext.txt
+Get-PSSessionConfiguration | Out-File -append c:\windows\temp\outercontext.txt
+systeminfo | Out-File -append c:\windows\temp\outercontext.txt
+Get-AzContext | Out-File -append c:\windows\temp\outercontext.txt
+klist tickets | Out-File -append c:\windows\temp\outercontext.txt
+
+#Run the $scriptblock in the DAuser context
+Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
+
+#Clean up DAuser context
+#Unregister-PSSessionConfiguration -Name DASessionConf -Force
