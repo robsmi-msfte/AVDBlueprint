@@ -170,7 +170,7 @@ $Scriptblock = {
     "===============================" | Out-File -append $ScriptLogActionsTimes
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Create WVD Session Host Startup script folder in GPO started" | Out-File -append $ScriptLogActionsTimes
-    $WVDPolicy=Get-GPO -Name "WVD Session Host Policy"
+    $WVDPolicy = Get-GPO -Name "WVD Session Host Policy"
     $PolicyID ="{" +  $WVDPolicy.ID + "}"
     $PolicyStartupFolder = "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
     New-Item -ItemType Directory -Path $PolicyStartupFolder
@@ -204,11 +204,30 @@ $Scriptblock = {
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Import a backup of 3 FSLogix static settings, including PS script in Startup for WVD SH completed" | Out-File -append $ScriptLogActionsTimes
 
+    #RDP Lockdown GPO Settings
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "RDP Lockdown GPO Settings started" | Out-File -append $ScriptLogActionsTimes
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type STRING -ValueName "fDisableAudioCapture" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type STRING -ValueName "fDisableClip" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type STRING -ValueName "DisableCcm" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type STRING -ValueName "fDisableCdm" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type STRING -ValueName "fDisableLPT" -Value 1
+    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type STRING -ValueName "fDisablePNPRedir" -Value 1
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "RDP Lockdown GPO Settings completed" | Out-File -append $ScriptLogActionsTimes
+
     #Move the WVD Session hosts to the 'WVD Computers' OU
     "===============================" | Out-File -append $ScriptLogActionsTimes
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Move the WVD Session hosts to the 'WVD Computers' OU started" | Out-File -append $ScriptLogActionsTimes
     $WVDComputersOU = Get-ADOrganizationalUnit -Filter 'Name -like "WVD*"'
+    $KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
+    $DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
+    $DAUserName = $DAUserUPN.Split('@')[0]
+    $DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName).SecretValue
+    $DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
     Get-ADComputer -Filter * -Server $PDC| Where-Object {($_.DNSHostName -like "$DeploymentPrefix*" -and $_.DNSHostName -notlike "*mgmtvm*")} | Foreach-Object {Move-ADObject -Credential $DACredential -identity $_.DistinguishedName -TargetPath $WVDComputersOU.DistinguishedName -Server $PDC}
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Move the WVD Session hosts to the 'WVD Computers' OU completed" | Out-File -append $ScriptLogActionsTimes
