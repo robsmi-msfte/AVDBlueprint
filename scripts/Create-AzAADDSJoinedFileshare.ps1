@@ -6,18 +6,11 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $StorageAccountName
 )
-#Install RSAT and other stuff
+#Install RSAT-AD Tools, GP Tools, Az PS, and download components
 Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
-Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/InstallFSLogixClient.ps1' -OutFile C:\Windows\Temp\InstallFSLogixClient.ps1
-Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/FSLogixAppsSetup.exe' -OutFile C:\Windows\Temp\FSLogixAppsSetup.exe
-#
-#PolicyDefinitions folder comes with GPMC/RSAT
-Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/PolicyDefinitions.zip ' -OutFile C:\Windows\Temp\PolicyDefinitions.zip
-Expand-Archive -LiteralPath 'C:\Windows\Temp\PolicyDefinitions.zip' -DestinationPath C:\Windows\Temp -Force
-#>
 
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
@@ -120,33 +113,115 @@ $Scriptblock = {
 
     Write-Verbose "NTFS ACLs set on $StorageUNC"
 
-    #Section added by RMS to create group policy object for WVD Session Hosts (and related work)
-    #Create new WVD Organizational Unit
+################# Group Policy and FSLogix Session Host Section #################
+    #Set up time logging for this script section to 'C:\Temp'
+    Connect-AzAccount -Identity
+        
+    $ScriptLogActionsTimes = 'C:\Temp\ScriptActionLogTimes.txt'
+    Get-Timezone | Out-File -FilePath $ScriptLogActionsTimes
+    Get-Date | Out-File -append $ScriptLogActionsTimes
+        
+    #Create a working folder to store downloaded items
+    
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Create temporary working folder started" | Out-File -append $ScriptLogActionsTimes
+    New-Item -ItemType Directory -Path 'C:\Temp\'
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Create temporary working folder completed" | Out-File -append $ScriptLogActionsTimes 
 
+    #Download updated GP templates, script, and GP settings backup
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Download DomainConfigItems.zip started" | Out-File -append $ScriptLogActionsTimes
+    $DomainConfigItemsZip = 'C:\Temp\DomainConfigItems.zip'
+    Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/DomainConfigItems.zip' -OutFile $DomainConfigItemsZip
+    If (Test-Path $DomainConfigItemsZip){
+    Expand-Archive -LiteralPath $DomainConfigItemsZip -DestinationPath 'C:\Temp\' -ErrorAction SilentlyContinue
+    }
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Download DomainConfigItems.zip completed" | Out-File -append $ScriptLogActionsTimes
+
+    #Create (for WVD session hosts) new GPO, new OU, then link the two
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Create GPO, OU, and link the two started" | Out-File -append $ScriptLogActionsTimes
     $Domain = Get-ADDomain
     $PDC = $Domain.PDCEmulator
     $FQDomain = $Domain.DNSRoot
     $WVDPolicy = New-GPO -Name "WVD Session Host Policy"
     $WVDComputersOU = New-ADOrganizationalUnit -Name 'WVD Computers' -DisplayName 'WVD Computers' -Path $Domain.DistinguishedName -Server $PDC -PassThru
     New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Create GPO, OU, and link the two completed" | Out-File -append $ScriptLogActionsTimes
 
     #Create GPO Central Store
-    Copy-Item 'C:\Windows\Temp\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse -Force
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Copy updated GP templates to AD, and create a 'Central Store' started" | Out-File -append $ScriptLogActionsTimes
+    Copy-Item 'C:\Temp\PolicyDefinitions' "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse -Force
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Copy updated GP templates to AD, and create a 'Central Store' completed" | Out-File -append $ScriptLogActionsTimes
 
-
-    #Cope WVD Session Host startup script that installs FSLogix
+    #Copy WVD Session Host startup script that installs FSLogix
     #Create WVD GPO AD Object
+    #Import a GPO Backup of 3 FSLogix static settings, including Startup script, and write those to GPO
+    #Write to GPO the variable name of the profile storage path
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Create WVD Session Host Startup script folder in GPO started" | Out-File -append $ScriptLogActionsTimes
     $WVDPolicy=Get-GPO -Name "WVD Session Host Policy"
     $PolicyID ="{" +  $WVDPolicy.ID + "}"
     $PolicyStartupFolder = "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
     New-Item -ItemType Directory -Path $PolicyStartupFolder
-    Copy-Item 'C:\Windows\Temp\InstallFSLogixClient.ps1' $PolicyStartupFolder
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Create WVD Session Host Startup script folder in GPO completed" | Out-File -append $ScriptLogActionsTimes
 
-    #Create WVD FSLogix GPO
-    #Switch to script Directory
-    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
-    set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
+    #Copy PS script to install FSLogix software to the Startup scripts folder for WVD SH
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Copy PS script to install FSLogix software to the Startup scripts folder for WVD SH started" | Out-File -append $ScriptLogActionsTimes
+    Copy-Item 'C:\Temp\InstallFSLogixClient.ps1' $PolicyStartupFolder
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Copy PS script to install FSLogix software to the Startup scripts folder for WVD SH completed" | Out-File -append $ScriptLogActionsTimes
+
+    #Import a backup of 3 FSLogix static settings, including PS script in Startup for WVD SH
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Import a backup of 3 FSLogix static settings, including PS script in Startup for WVD SH started" | Out-File -append $ScriptLogActionsTimes
+    Import-GPO -BackupId 21C8F75B-8DCF-490C-B19C-38DA4288C930 -Path C:\Temp -TargetName $WVDPolicy.DisplayName
+    
+    #Re-enumerate FSLogix profile UNC
+    $CurrentVMName = hostname
+    $DeploymentPrefix = $CurrentVMName.Split('-')[0]
+    $CurrentResourceGroupName = ($DeploymentPrefix +, '-sharedsvcs-rg')
+    $DeploymentPrefixSS = ($DeploymentPrefix +,'sharedsvcs*')
+    $CurrentStorageAccountName = Get-AzStorageAccount -ResourceGroup $CurrentResourceGroupName | where {($_.StorageAccountName -Like "$DeploymentPrefix*" -and $_.StorageAccountName -notlike "$DeploymentPrefixSS")}
+    $StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName).file.core.windows.net"
+    $StorageShareName = Get-AzRmStorageShare -StorageAccount $CurrentStorageAccountName
+    $StorageUNC = "\\$StorageFQDN\$($StorageShareName.Name)"
     set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\Software\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Import a backup of 3 FSLogix static settings, including PS script in Startup for WVD SH completed" | Out-File -append $ScriptLogActionsTimes
+
+    #Move the WVD Session hosts to the 'WVD Computers' OU
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Move the WVD Session hosts to the 'WVD Computers' OU started" | Out-File -append $ScriptLogActionsTimes
+    $WVDComputersOU = Get-ADOrganizationalUnit -Filter 'Name -like "WVD*"'
+    Get-ADComputer -Filter * -Server $PDC| Where-Object {($_.DNSHostName -like "$DeploymentPrefix*" -and $_.DNSHostName -notlike "*mgmtvm*")} | Foreach-Object {Move-ADObject -Credential $DACredential -identity $_.DistinguishedName -TargetPath $WVDComputersOU.DistinguishedName -Server $PDC}
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Move the WVD Session hosts to the 'WVD Computers' OU completed" | Out-File -append $ScriptLogActionsTimes
+
+    #Reboot the WVD VMs so they can install FSLogix on the next startup
+    "===============================" | Out-File -append $ScriptLogActionsTimes
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Reboot the WVD VMs so they can install FSLogix on the next startup" | Out-File -append $ScriptLogActionsTimes
+    $VMsToReboot = (Get-ADComputer -Filter * -Server $PDC -SearchBase $WVDComputersOU.DistinguishedName -SearchScope Subtree).name
+    Foreach ($V in $VMsToReboot) {Restart-Computer -ComputerName $V -Force -Verbose}
+    Get-Date | Out-File -Append $ScriptLogActionsTimes
+    "Reboot the WVD VMs so they can install FSLogix on the next completed" | Out-File -append $ScriptLogActionsTimes
+    ############ END GROUP POLICY SECTION
     #>
 }
 

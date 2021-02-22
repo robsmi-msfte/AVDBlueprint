@@ -6,7 +6,6 @@
     "displayName": "Azure ADDS template",
     "description": "",
     "dependsOn": [
-      "net",
       "keyvault"
     ],
     "template": {
