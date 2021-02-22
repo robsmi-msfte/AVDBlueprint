@@ -6,8 +6,7 @@
     "displayName": "Management VM",
     "description": "Management VM",
     "dependsOn": [
-       "adds",
-       "wvdTestUsers"
+       "wvdDeploy"
     ],
     "template": {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -314,7 +313,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[concat(parameters('ScriptBaseURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
+              "https://agblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
             ],
             "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ', resourceGroup().name ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
