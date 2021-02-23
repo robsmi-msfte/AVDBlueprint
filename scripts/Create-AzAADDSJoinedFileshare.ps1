@@ -181,8 +181,8 @@ $Scriptblock = {
     "===============================" | Out-File -append $ScriptLogActionsTimes
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Import a backup of 3 FSLogix static settings, including PS script in Startup for WVD SH started" | Out-File -append $ScriptLogActionsTimes
-    Import-GPO -BackupId 21C8F75B-8DCF-490C-B19C-38DA4288C930 -Path C:\Temp -TargetName $WVDPolicy.DisplayName
-    
+    Import-GPO -BackupId 82048A53-3598-4FB3-B91F-DF58DE56D821 -Path C:\Temp -TargetName $WVDPolicy.DisplayName
+        
     #Re-enumerate FSLogix profile UNC
     $CurrentVMName = hostname
     $DeploymentPrefix = $CurrentVMName.Split('-')[0]
@@ -211,14 +211,19 @@ $Scriptblock = {
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Move the WVD Session hosts to the 'WVD Computers' OU completed" | Out-File -append $ScriptLogActionsTimes
 
-    #Reboot the WVD VMs so they can install FSLogix on the next startup
+    #Apply GPO settings to Session Host VMs, and reboot so the settings take effect
     "===============================" | Out-File -append $ScriptLogActionsTimes
     Get-Date | Out-File -Append $ScriptLogActionsTimes
-    "Reboot the WVD VMs so they can install FSLogix on the next startup" | Out-File -append $ScriptLogActionsTimes
+    "Apply GPO settings to Session Host VMs, and reboot started" | Out-File -append $ScriptLogActionsTimes
+    Connect-AzAccount -Identity
+    $Domain = Get-ADDomain
+    $PDC = $Domain.PDCEmulator
+    $WVDComputersOU = Get-ADOrganizationalUnit -Filter 'Name -like "WVD*"'
     $VMsToReboot = (Get-ADComputer -Filter * -Server $PDC -SearchBase $WVDComputersOU.DistinguishedName -SearchScope Subtree).name
-    Foreach ($V in $VMsToReboot) {Restart-Computer -ComputerName $V -Force -Verbose}
+    Foreach ($V in $VMsToReboot) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
+    Foreach ($V in $VMsToReboot) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 00}}
     Get-Date | Out-File -Append $ScriptLogActionsTimes
-    "Reboot the WVD VMs so they can install FSLogix on the next completed" | Out-File -append $ScriptLogActionsTimes
+    "Apply GPO settings to Session Host VMs, and reboot started completed" | Out-File -append $ScriptLogActionsTimes
     ############ END GROUP POLICY SECTION
     #>
 }
