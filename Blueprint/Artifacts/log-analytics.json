@@ -1,5 +1,7 @@
 {
   "kind": "template",
+  "type": "Microsoft.Blueprint/blueprints/artifacts",
+  "name": "log-analytics",
   "properties": {
     "displayName": "Log Analytics template",
     "description": "",
