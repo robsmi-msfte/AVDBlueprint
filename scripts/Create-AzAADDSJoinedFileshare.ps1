@@ -259,4 +259,4 @@ klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
 
 #Clean up DAuser context
-#Unregister-PSSessionConfiguration -Name DASessionConf -Force
+Unregister-PSSessionConfiguration -Name DASessionConf -Force
