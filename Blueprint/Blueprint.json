@@ -67,14 +67,14 @@
         "type": "string",
         "metadata": {
           "displayName": "Deployment Script Managed Identity Resource ID",
-          "description": "Managed Identity resource ID that will execute embeded deployment scripts."
+          "description": "Managed Identity resource ID that will execute embedded deployment scripts."
         }
       },
       "script_executionUserObjectID": {
         "type": "string",
         "metadata": {
           "displayName": "Deployment Script Managed Identity Object ID",
-          "description": "Managed Identity object ID that will execute embeded deployment scripts."
+          "description": "Managed Identity object ID that will execute embedded deployment scripts."
         }
       },
       "keyvault_ownerUserObjectID": {
@@ -112,7 +112,7 @@
         "type": "string",
         "metadata": {
           "displayName": "Shared services subnet address prefix",
-          "description": "Value used in Virtual Network / Route Table, Jumpbox and Active Directory Domain Services templates"
+          "description": "Value used in Virtual Network / Route Table, and Active Directory Domain Services templates"
         },
         "defaultValue": "10.0.0.0/24",
         "allowedValues": []
