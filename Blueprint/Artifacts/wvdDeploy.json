@@ -6,7 +6,6 @@
     "displayName": "WVD Template",
     "description": "",
     "dependsOn": [
-        "wvdTestUsers",
         "addsDAUser",
         "DNSsharedsvcs",
         "adds"       

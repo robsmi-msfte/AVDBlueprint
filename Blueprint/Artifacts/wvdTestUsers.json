@@ -6,8 +6,8 @@
       "displayName": "WVD Test Users",
       "description": "",
       "dependsOn": [
+         "wvdDeploy",
          "DNSsharedsvcs",
-         "addsDAUser",
          "adds"
       ],
       "template": {
