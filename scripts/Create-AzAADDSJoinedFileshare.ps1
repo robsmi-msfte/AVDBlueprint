@@ -188,7 +188,7 @@ $Scriptblock = {
     $DeploymentPrefix = $CurrentVMName.Split('-')[0]
     $CurrentResourceGroupName = ($DeploymentPrefix +, '-sharedsvcs-rg')
     $DeploymentPrefixSS = ($DeploymentPrefix +,'sharedsvcs*')
-    $CurrentStorageAccountName = Get-AzStorageAccount -ResourceGroup $CurrentResourceGroupName | where {($_.StorageAccountName -Like "$DeploymentPrefix*" -and $_.StorageAccountName -notlike "$DeploymentPrefixSS")}
+    $CurrentStorageAccountName = Get-AzStorageAccount -ResourceGroup $CurrentResourceGroupName | Where-Object {($_.StorageAccountName -Like "$DeploymentPrefix*" -and $_.StorageAccountName -notlike "$DeploymentPrefixSS")}
     $StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName).file.core.windows.net"
     $StorageShareName = Get-AzRmStorageShare -StorageAccount $CurrentStorageAccountName
     $StorageUNC = "\\$StorageFQDN\$($StorageShareName.Name)"
@@ -259,4 +259,4 @@ klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
 
 #Clean up DAuser context
-#Unregister-PSSessionConfiguration -Name DASessionConf -Force
+Unregister-PSSessionConfiguration -Name DASessionConf -Force
