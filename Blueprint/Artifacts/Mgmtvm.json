@@ -242,6 +242,9 @@
             "scope": "inner"
           },
           "parameters": {
+            "resourcePrefix": {
+              "value": "[parameters('resourcePrefix')]"
+            },
             "vmname": {
               "value": "[parameters('dnsLabelPrefix')]"
             },
@@ -270,6 +273,12 @@
             },
             "vmStorageAccountName": {
               "value": "[variables('storageAccountName')]"
+            },
+            "mgmtvmNameStatic": {
+              "value": "[parameters('mgmtvmNameStatic')]"
+            },
+            "dnsLabelPrefix": {
+              "value": "[parameters('dnsLabelPrefix')]"
             }
         },
         "template": {
@@ -303,23 +312,18 @@
               "vmStorageAccountName": {
                 "type": "string"
               },
+              "mgmtvmNameStatic": {
+                "type": "string"
+              },
+              "dnsLabelPrefix": {
+                "type": "string"
+              }
             },
             "variables": {
-              "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-              "resourcegroup-name": "[concat(parameters('resourcePrefix'), '-sharedsvcs-rg')]",
-              "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
-              "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
-              "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
-              "existingDomainUsername": "[first(split(parameters('DAUser_domainadmin'), '@'))]",
-              "managedDomaintoJoin": "[parameters('ADDS_domainName')]",
               "imagePublisher": "MicrosoftWindowsServer",
               "imageOffer": "WindowsServer",
               "windowsOSVersion": "2019-Datacenter",
-              "resourceGroup": "[resourceGroup().name]",
-              "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]",
-              "publicIPName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-pip'))]",
-              "location": "[parameters('location')]",
-              "subnetId": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', parameters('existingVnetName'), parameters('existingSubnetName'))]"
+              "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]"
             },
             "resources": [
               {
@@ -496,9 +500,7 @@
                 "type": "Microsoft.Compute/virtualMachines/extensions",
                 "name": "[concat(parameters('vmname'),'/joindomain')]",
                 "location": "[parameters('location')]",
-                "dependsOn": [
-                  "[resourceId('Microsoft.Compute/virtualMachines',parameters('vmname'))]"
-                ],
+                "dependsOn": [],
                 "properties": {
                   "publisher": "Microsoft.Compute",
                   "type": "JsonADDomainExtension",
