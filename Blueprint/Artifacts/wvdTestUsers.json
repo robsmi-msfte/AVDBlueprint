@@ -6,9 +6,7 @@
       "displayName": "WVD Test Users",
       "description": "",
       "dependsOn": [
-         "DNSsharedsvcs",
-         "addsDAUser",
-         "adds"
+         "wvdDeploy"
       ],
       "template": {
         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

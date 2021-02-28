@@ -7,6 +7,7 @@
     "description": "Management VM",
     "dependsOn": [
        "wvdDeploy",
+       "DNSsharedsvcs",
        "addsDAUser",
        "adds"
     ],
@@ -116,13 +117,6 @@
           "description": "The name of the administrator of the management VM. Exclusion list: 'admin','administrator"
         }
       },
-      "vmAdminPassword": {
-        "type": "securestring",
-        "defaultValue": "P@ssw0rd!P@ssw0rd!",
-        "metadata": {
-          "description": "The password for the administrator account of the management VM"
-        }
-      },
       "virtualNetworkResourceGroupName": {
         "type": "string",
         "metadata": {
@@ -172,6 +166,7 @@
     "variables": {
       "storageAccountName": "[concat(uniquestring(resourceGroup().id, deployment().name))]",
       "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
+      "resourcegroup-name": "[concat(parameters('resourcePrefix'), '-sharedsvcs-rg')]",
       "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
       "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
       "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
@@ -234,70 +229,169 @@
         }
       },
       {
-        "type": "Microsoft.Compute/virtualMachines",
-        "apiVersion": "2019-07-01",
-        "name": "[parameters('dnsLabelPrefix')]",
-        "location": "[parameters('location')]",
+        "type": "Microsoft.Resources/deployments",
+        "apiVersion": "2019-10-01",
+        "name": "MGMTVMdeploy",
         "dependsOn": [
-          "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]",
-          "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            "[resourceId('Microsoft.Storage/storageAccounts',variables('storageAccountName'))]",
+            "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
         ],
-        "identity": {
-          "type": "userAssigned",
-          "userAssignedIdentities": {
-              "[parameters('VMUserAssignedIdentity')]": {}
-          }
-        },
         "properties": {
-            "hardwareProfile": {
-            "vmSize": "[parameters('vmSize')]"
+          "mode": "Incremental",
+          "expressionEvaluationOptions": {
+            "scope": "inner"
+          },
+          "parameters": {
+            "resourcePrefix": {
+              "value": "[parameters('resourcePrefix')]"
             },
-            "osProfile": {
-            "computerName": "[parameters('dnsLabelPrefix')]",
-            "adminUsername": "[parameters('vmAdminUsername')]",
-            "adminPassword": "[parameters('vmAdminPassword')]",
-            "windowsConfiguration": {
-              "enableAutomaticUpdates": true
+            "vmname": {
+              "value": "[parameters('dnsLabelPrefix')]"
+            },
+            "vmSize": {
+              "value": "[parameters('vmSize')]"
+            },
+            "vaultName": {
+              "value": "[parameters('vaultName')]"
+            },
+            "KVsecretName": {
+                "value": "[parameters('KVsecretName')]"
+            },
+            "VMUserAssignedIdentity": {
+                "value": "[parameters('VMUserAssignedIdentity')]"
+            },
+            "vmAdminUsername": {
+                "value": "[parameters('vmAdminUsername')]"
+            },
+            "vmAdminPassword": {
+              "reference": {
+                "keyVault": {
+                  "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('vaultName'))]"
+                },
+                "secretName": "[parameters('KVsecretName')]"
+              }
+            },
+            "vmStorageAccountName": {
+              "value": "[variables('storageAccountName')]"
+            },
+            "mgmtvmNameStatic": {
+              "value": "[parameters('mgmtvmNameStatic')]"
+            },
+            "dnsLabelPrefix": {
+              "value": "[parameters('dnsLabelPrefix')]"
             }
+        },
+        "template": {
+            "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+            "contentVersion": "1.0.0.0",
+            "parameters": {
+              "resourcePrefix": {
+                "type": "string"
+              },
+              "vmname": {
+                "type": "string"
+              },
+              "vmSize": {
+                "type": "string"
+              },
+              "vaultName": {
+                "type": "string"
+              },
+              "KVsecretName": {
+                "type": "string"
+              },
+              "VMUserAssignedIdentity": {
+                "type": "string"
+              },
+              "vmAdminUsername": {
+                "type": "string"
+              },
+              "vmAdminPassword": {
+                "type": "securestring"
+              },
+              "vmStorageAccountName": {
+                "type": "string"
+              },
+              "mgmtvmNameStatic": {
+                "type": "string"
+              },
+              "dnsLabelPrefix": {
+                "type": "string"
+              }
             },
-            "storageProfile": {
-            "imageReference": {
-              "publisher": "[variables('imagePublisher')]",
-              "offer": "[variables('imageOffer')]",
-              "sku": "[variables('windowsOSVersion')]",
-              "version": "latest"
+            "variables": {
+              "imagePublisher": "MicrosoftWindowsServer",
+              "imageOffer": "WindowsServer",
+              "windowsOSVersion": "2019-Datacenter",
+              "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]"
             },
-            "osDisk": {
-                 "createOption": "FromImage",
-                 "name": "[concat(parameters('dnsLabelPrefix'), '-OsDisk')]",
-                 "managedDisk": {
-                "storageAccountType": "StandardSSD_LRS"
+            "resources": [
+              {
+                "type": "Microsoft.Compute/virtualMachines",
+                "apiVersion": "2019-07-01",
+                "name": "[parameters('vmname')]",
+                "location": "[resourceGroup().location]",
+                "dependsOn": [],
+                "identity": {
+                    "type": "userAssigned",
+                    "userAssignedIdentities": {
+                        "[parameters('VMUserAssignedIdentity')]": {}
+                    }
+                },
+                "properties": {
+                    "hardwareProfile": {
+                    "vmSize": "[parameters('vmSize')]"
+                    },
+                    "osProfile": {
+                    "computerName": "[parameters('dnsLabelPrefix')]",
+                    "adminUsername": "[parameters('vmAdminUsername')]",
+                    "adminPassword": "[parameters('vmAdminPassword')]",
+                    "windowsConfiguration": {
+                        "enableAutomaticUpdates": true
+                    }
+                    },
+                    "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[variables('windowsOSVersion')]",
+                        "version": "latest"
+                    },
+                    "osDisk": {
+                      "createOption": "FromImage",
+                      "name": "[concat(parameters('dnsLabelPrefix'), '-OsDisk')]",
+                      "managedDisk": {
+                        "storageAccountType": "StandardSSD_LRS"
+                      }
+                    },
+                    "dataDisks": [
+                        {
+                        "name": "[concat(parameters('dnsLabelPrefix'),'-DataDisk1')]",
+                        "diskSizeGB": 1023,
+                        "lun": 0,
+                        "createOption": "Empty"
+                        }
+                    ]
+                    },
+                    "networkProfile": {
+                    "networkInterfaces": [
+                        {
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+                        }
+                    ]
+                    },
+                    "diagnosticsProfile": {
+                    "bootDiagnostics": {
+                        "enabled": false,
+                        "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', parameters('vmStorageAccountName')), '2015-06-15').primaryEndpoints.blob]"
+                    }
+                    
+                    },
+                    "licenseType": "Windows_Server"
                 }
-            },
-            "dataDisks": [
-              {
-                "name": "[concat(parameters('dnsLabelPrefix'),'-DataDisk1')]",
-                "diskSizeGB": 1023,
-                "lun": 0,
-                "createOption": "Empty"
-              }
-            ]
-            },
-            "networkProfile": {
-            "networkInterfaces": [
-              {
-                "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
-              }
-            ]
-            },
-            "diagnosticsProfile": {
-            "bootDiagnostics": {
-              "enabled": false,
-              "storageUri": "[reference(concat('Microsoft.Storage/storageAccounts/', variables('storageAccountName')), '2015-06-15').primaryEndpoints.blob]"
             }
-            
-            },
-            "licenseType": "Windows_Server"
+            ]
+          }
         }
       },
       {
@@ -326,7 +420,7 @@
         "apiVersion": "2019-10-01",
         "name": "MGMTVMjoindomain",
         "dependsOn": [
-          "[concat('Microsoft.Compute/virtualMachines/',parameters('dnsLabelPrefix'))]"
+          "MGMTVMdeploy"
         ],
         "properties": {
           "mode": "Incremental",
