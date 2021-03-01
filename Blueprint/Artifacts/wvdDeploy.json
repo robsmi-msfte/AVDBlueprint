@@ -6,10 +6,8 @@
     "displayName": "WVD Template",
     "description": "",
     "dependsOn": [
-        "wvdTestUsers",
         "addsDAUser",
-        "DNSsharedsvcs",
-        "adds"       
+        "DNSsharedsvcs"      
       ],
     "template": {
         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -769,7 +767,7 @@
             "value": "[resourceGroup().location]"
         },
         "vmSize": {
-            "value": "Standard_D2s_v3"
+            "value": "Standard_D4s_v3"
         },
         "vmNumberOfInstances": {
             "value": 2
