@@ -127,7 +127,7 @@ $Scriptblock = {
     Get-Date | Out-File -Append $ScriptLogActionsTimes
     "Download DomainConfigItems.zip started" | Out-File -append $ScriptLogActionsTimes
     $DomainConfigItemsZip = 'C:\Temp\DomainConfigItems.zip'
-    Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/DomainConfigItems.zip' -OutFile $DomainConfigItemsZip
+    Invoke-WebRequest -Uri 'https://wvdautodeployrepo.blob.core.windows.net/files/DomainConfigItems.zip' -OutFile $DomainConfigItemsZip
     If (Test-Path $DomainConfigItemsZip){
     Expand-Archive -LiteralPath $DomainConfigItemsZip -DestinationPath 'C:\Temp\' -ErrorAction SilentlyContinue
     }
