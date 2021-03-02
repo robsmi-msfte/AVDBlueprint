@@ -1,9 +1,9 @@
 {
     "kind": "template",
     "type": "Microsoft.Blueprint/blueprints/artifacts",
-    "name": "wvdTestUsers",
+    "name": "wvdUsers",
     "properties": {
-      "displayName": "WVD Test Users",
+      "displayName": "WVD User Accounts",
       "description": "",
       "dependsOn": [
          "wvdDeploy"
@@ -18,7 +18,7 @@
               "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
             }
           },
-          "aad_wvdTestUserGroup": {
+          "aad_wvduserGroup": {
             "type": "string",
             "metadata": {
                 "displayName": "AAD WVD Test Users Group"
@@ -50,7 +50,7 @@
             },
             "defaultValue": "[variables('hostpoolName')]"
           },
-          "testUserPrefix": {
+          "userPrefix": {
             "type": "string",
             "metadata": {
               "displayName": "Test User prefix",
@@ -58,7 +58,7 @@
             },
             "defaultValue": "user"
           },
-          "testUserCount": {
+          "userCount": {
             "type": "int",
             "metadata": {
               "displayName": "Total test users",
@@ -107,7 +107,7 @@
         "resources": [
           {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(variables('key-vault-name'), '/', parameters('testUserPrefix'), copyIndex(1))]",
+            "name": "[concat(variables('key-vault-name'), '/', parameters('userPrefix'), copyIndex(1))]",
             "apiVersion": "2015-06-01",
             "properties": {
               "value": "[variables('pw_secret_value')]",
@@ -117,16 +117,16 @@
             }, 
             "copy": {
               "name": "usersecrets",
-              "count": "[parameters('testUserCount')]"
+              "count": "[parameters('userCount')]"
             }
           },
           {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2020-10-01",
-            "name": "[concat('createuser_', parameters('testUserPrefix'), copyIndex(1))]",
+            "name": "createWVDUsers",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-              "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('key-vault-name'), concat(parameters('testUserPrefix'), copyIndex(1)))]"
+              "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('key-vault-name'), concat(parameters('userPrefix'), parameters('userCount')))]"
             ],
             "kind": "AzurePowerShell",
             "identity": {
@@ -139,7 +139,7 @@
             "properties": {
               "forceUpdateTag": "[parameters('utcValue')]",
               "azPowerShellVersion": "5.4",
-              "arguments": "[concat('-displayName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1)), ''' ', '-userPrincipalName', ' ''', concat(parameters('testUserPrefix'), copyIndex(1), '@', parameters('domainname')), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvdTestUserGroup'), '''')]",
+              "arguments": "[concat('-totalUsers', ' ''', parameters('userCount'), ''' ', '-prefix', ' ''', parameters('userPrefix'), ''' ', '-domainname', ' ''', parameters('domainname'), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvduserGroup'), '''')]",
               "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
               "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
@@ -149,10 +149,6 @@
                 "[parameters('assignADGroupScriptURI')]",
                 "[parameters('assignWVDRoleScriptURI')]"
               ]
-            },
-            "copy": {
-              "name": "wvdaccounts",
-              "count": "[parameters('testUserCount')]"
             }
           }
         ],
@@ -169,17 +165,17 @@
         "hostpoolName": {
           "value": "[parameters('wVDHostpool_hostpoolName')]"
       },
-        "testUserPrefix": {
-          "value": "[parameters('WVDUSERS_testUserPrefix')]"
+        "userPrefix": {
+          "value": "[parameters('WVDUSERS_userPrefix')]"
         },
-        "testUserCount": {
-            "value": "[parameters('WVDUSERS_testUserCount')]"
+        "userCount": {
+            "value": "[parameters('WVDUSERS_userCount')]"
         },
-        "aad_wvdTestUserGroup": {
+        "aad_wvduserGroup": {
           "value": "WVD Users"
         },
         "createWVDUserScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/createWVDUser.ps1')]"
+          "value": "[concat(parameters('_ScriptURI'),'/createAllWVDUsers.ps1')]"
         },
         "assignWVDRoleScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/assignWVDRole.ps1')]"
