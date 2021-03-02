@@ -19,7 +19,7 @@
         },
         "defaultValue": "https://wvdautodeployrepo.blob.core.windows.net/files"
       },
-      "WVDUSERS_testUserPrefix": {
+      "WVDUSERS_userPrefix": {
         "type": "string",
         "metadata": {
           "displayName": "Test User prefix",
@@ -27,7 +27,7 @@
         },
         "defaultValue": "user"
       },
-      "WVDUSERS_testUserCount": {
+      "WVDUSERS_userCount": {
         "type": "int",
         "metadata": {
           "displayName": "Total test users",
