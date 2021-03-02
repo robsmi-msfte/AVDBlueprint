@@ -143,7 +143,7 @@ There are values that you may want to consider changing, such as "test user coun
 | Parameter | Value | Purpose |
 |-|-|-|  
 |**_ScriptURI \ 'defaultValue'**|ex. https://wvdautodeployrepo.blob.core.windows.net/files |(optional) a fully-qualified resource location for scripts and related objects needed during the assignment|
-|**WVDUSERS_testUserCount \ 'defaultValue'**|ex. '**10**'|(optional) the number of test users the Blueprint will create|
+|**WVDUSERS_userCount \ 'defaultValue'**|ex. '**10**'|(optional) the number of test users the Blueprint will create|
 
 ## Import, Publish and Assign the Blueprint
 1. Import the Blueprint - https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps\
