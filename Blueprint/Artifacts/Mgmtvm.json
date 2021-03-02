@@ -10,7 +10,7 @@
        "DNSsharedsvcs",
        "addsDAUser",
        "adds",
-       "wvdTestUsers"
+       "wvdUsers"
     ],
     "template": {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -410,7 +410,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "https://agblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
+              "https://wvdautodeployrepo.blob.core.windows.net/files/Create-AzAADDSJoinedFileshare.ps1"
             ],
             "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ', resourceGroup().name ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
