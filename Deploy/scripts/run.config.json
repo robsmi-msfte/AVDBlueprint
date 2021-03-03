@@ -1,8 +1,0 @@
-{
-    "args": {
-        "tenantID": "[TENANT ID]",
-        "subscriptionID": "[SUB ID]",
-        "blueprintPath": "[PATH TO BLUEPRINT FILES]",
-        "assignmentFile": "[PATH TO ASSIGNMENT JSON]"
-    }
-}
