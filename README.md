@@ -71,20 +71,20 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
     - Code can be created to stand up an interface, that could be used to receive the specific information, and then pass that information to the Blueprint, as well as initiate the Blueprint assigment. The following table contains the environment specific information needed to assign (deploy) the Blueprint to each respective environment.  
     - Copy the assignment file to the 'Deploy/' folder, which has an entry in the .Gitignore file.  Files you customize in the 'Deploy' folder will not be included with subsequent pull requests.
 
-      | Type | Object | Purpose |
-      |-|-|-|  
-      |Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc.|  
-      |Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint assignment|
-      |Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
-      |Artifact|addsDAUser.json|directs the creation of domain administrator account|
-      |Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
-      |Artifact|keyvault.json|directs the creation of Azure Key Vault resources, used to store and retrieve credentials used at various points during the Blueprint assignment|
-      |Artifact|log-analytics.json|Sets up logging of various components to Azure storage|
-      |Artifact|MGMTVM.json|Sets up logging of various components to Azure storage|
-      |Artifact|net.json|Sets up networking and various subnets|
-      |Artifact|nsg.json|Sets up network security groups|
-      |Artifact|wvdDeploy.json|Deploys WVD session hosts, created the WVD host pool and application group, and adds the session hosts to the application group|
-      |Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
+| Type | Object | Purpose |
+|-|-|-|  
+|Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc.|  
+|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint assignment|
+|Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
+|Artifact|addsDAUser.json|directs the creation of domain administrator account|
+|Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
+|Artifact|keyvault.json|directs the creation of Azure Key Vault resources, used to store and retrieve credentials used at various points during the Blueprint assignment|
+|Artifact|log-analytics.json|Sets up logging of various components to Azure storage|
+|Artifact|MGMTVM.json|Sets up logging of various components to Azure storage|
+|Artifact|net.json|Sets up networking and various subnets|
+|Artifact|nsg.json|Sets up network security groups|
+|Artifact|wvdDeploy.json|Deploys WVD session hosts, created the WVD host pool and application group, and adds the session hosts to the application group|
+|Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
 ## Customizing the Assignment (in preparation for deployment)
 
