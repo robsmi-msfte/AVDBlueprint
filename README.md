@@ -167,8 +167,7 @@ Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will 
 
 ```powershell
 
-#Exports logs of a WVD Blueprint deployment that used the 
-#prefix "ABC" followed by a removal of that deployment:
+#Exports logs of a WVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment:
 .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
 #Use help for more details or examples:  
