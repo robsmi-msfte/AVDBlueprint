@@ -150,6 +150,31 @@ There are values that you may want to consider changing, such as "test user coun
 2. Publish the Blueprint - https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal
 3. Assign the Blueprint - https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal
 
+## Teardown
+
+If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in a WVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
+
+The script finds and removes the following items that were previously deployed via WVD Blueprint:
+
+* All SessionHosts and HostPools in a ResourceGroup based on resource prefix
+* All users discovered in 'WVD Users' group
+* 'WVD Users' group itself
+* 'AAD DC Admins' group
+
+Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will create one Powershell Job for each Resource Group being removed. Teardowns typically take quite some time, so this will allow you to return to prompt and keep working while the job runs in the background.  
+
+**Example:**
+
+```powershell
+
+#Exports logs of a WVD Blueprint deployment that used the 
+#prefix "ABC" followed by a removal of that deployment:
+.\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
+
+#Use help for more details or examples:  
+help .\Remove-AzWvdBpDeployment.ps1
+```
+
 ## Tips
 
 - [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
