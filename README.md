@@ -169,7 +169,6 @@ The script finds and removes the following items that were previously deployed v
 * 'WVD Users' group itself
 * 'AAD DC Admins' group
 
->[!NOTE]
 Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will create one Powershell Job for each Resource Group being removed. Teardowns typically take quite some time, so this will allow you to return to prompt and keep working while the job runs in the background.  
 
 **Example:**
