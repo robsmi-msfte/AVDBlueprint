@@ -33,7 +33,7 @@
             "description": "Value used in Virtual Network / Route Table, and Active Directory Domain Services templates"
           }
         },
-        "azure-adds-subnet-address-prefix": {
+        "vnet_adds-subnet-address-prefix": {
           "type": "string",
           "defaultValue": "10.0.6.0/24",
           "metadata": {
@@ -86,7 +86,7 @@
           },
           {
             "name": "AzureADDSSubnet",
-            "address-prefix": "[parameters('azure-adds-subnet-address-prefix')]",
+            "address-prefix": "[parameters('vnet_adds-subnet-address-prefix')]",
             "network-security-group": "adds-subnet",
             "user-defined-route": "",
             "service-endpoints": []
@@ -202,8 +202,8 @@
       "sharedsvcs-subnet-address-prefix": {
         "value": "[parameters('vnet_sharedsvcs-subnet-address-prefix')]"
       },
-      "azure-adds-subnet-address-prefix": {
-        "value": "[parameters('azure-adds-subnet-address-prefix')]"
+      "vnet_adds-subnet-address-prefix": {
+        "value": "[parameters('vnet_adds-subnet-address-prefix')]"
       },
       "logs-retention-in-days": {
         "value": "[parameters('vnet_logs-retention-in-days')]"

@@ -163,13 +163,13 @@
           "value": "[parameters('ADDS_domainName')]"
         },
         "hostpoolName": {
-          "value": "[parameters('wVDHostpool_hostpoolName')]"
-      },
+          "value": "[parameters('wvdHostpool_hostpoolName')]"
+        },
         "userPrefix": {
-          "value": "[parameters('WVDUSERS_userPrefix')]"
+          "value": "[parameters('wvdUsers_userPrefix')]"
         },
         "userCount": {
-            "value": "[parameters('WVDUSERS_userCount')]"
+            "value": "[parameters('wvdUsers_userCount')]"
         },
         "aad_wvduserGroup": {
           "value": "WVD Users"

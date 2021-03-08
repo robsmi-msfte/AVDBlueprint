@@ -728,10 +728,10 @@
             "value": "https://catalogartifact.azureedge.net/publicartifacts/Microsoft.Hostpool-ARM-1.0.14-preview/"
         },
         "hostpoolName": {
-            "value": "[parameters('wVDHostpool_hostpoolName')]"
+            "value": "[parameters('wvdHostpool_hostpoolName')]"
         },
         "hostpoolDescription": {
-            "value": "[parameters('wVDHostpool_hostpoolDescription')]"
+            "value": "[parameters('wvdHostpool_hostpoolDescription')]"
         },
         "location": {
             "value": "[resourceGroup().location]"
@@ -752,10 +752,10 @@
             "value": ""
         },
         "vmTemplate": {
-            "value": "[concat('{\"domain\":\"', parameters('ADDS_domainName'), '\",\"galleryImageOffer\":\"', parameters('wVDHostpool_vmGalleryImageOffer'), '\",\"galleryImagePublisher\":\"', parameters('wVDHostpool_vmGalleryImagePublisher'), '\",\"galleryImageSKU\":\"', parameters('wVDHostpool_vmGalleryImageSKU'), '\",\"imageType\":\"', parameters('wVDHostpool_vmImageType'), '\",\"imageUri\":null,\"customImageId\":null,\"namePrefix\":\"', parameters('wVDHostpool_vmNamePrefix'), '\",\"osDiskType\":\"', parameters('wVDHostpool_vmDiskType'), '\",\"useManagedDisks\":', parameters('wVDHostpool_vmUseManagedDisks'), ',\"vmSize\":{\"id\":\"Standard_D2s_v3\",\"cores\":2,\"ram\":8},\"galleryItemId\":\"', parameters('wVDHostpool_vmGalleryImagePublisher'), '.',parameters('wVDHostpool_vmGalleryImageSKU'),'\"}')]"
+            "value": "[concat('{\"domain\":\"', parameters('ADDS_domainName'), '\",\"galleryImageOffer\":\"', parameters('wvdHostpool_vmGalleryImageOffer'), '\",\"galleryImagePublisher\":\"', parameters('wvdHostpool_vmGalleryImagePublisher'), '\",\"galleryImageSKU\":\"', parameters('wvdHostpool_vmGalleryImageSKU'), '\",\"imageType\":\"', parameters('wvdHostpool_vmImageType'), '\",\"imageUri\":null,\"customImageId\":null,\"namePrefix\":\"', parameters('wvdHostpool_vmNamePrefix'), '\",\"osDiskType\":\"', parameters('wvdHostpool_vmDiskType'), '\",\"useManagedDisks\":', parameters('wvdHostpool_vmUseManagedDisks'), ',\"vmSize\":{\"id\":\"Standard_D2s_v3\",\"cores\":2,\"ram\":8},\"galleryItemId\":\"', parameters('wvdHostpool_vmGalleryImagePublisher'), '.',parameters('wvdHostpool_vmGalleryImageSKU'),'\"}')]"
         },
         "administratorAccountUsername": {
-            "value": "[parameters('DAUser_domainadmin')]"
+            "value": "[parameters('DAUser_adminuser')]"
         },
         "createAvailabilitySet": {
             "value": true
@@ -773,16 +773,16 @@
             "value": 2
         },
         "vmNamePrefix": {
-            "value": "[parameters('wVDHostpool_vmNamePrefix')]"
+            "value": "[parameters('wvdHostpool_vmNamePrefix')]"
         },
         "vmImageType": {
             "value": "Gallery"
         },
         "vmDiskType": {
-            "value": "[parameters('wVDHostpool_vmDiskType')]"
+            "value": "[parameters('wvdHostpool_vmDiskType')]"
         },
         "vmUseManagedDisks": {
-            "value": "[parameters('wVDHostpool_vmUseManagedDisks')]"
+            "value": "[parameters('wvdHostpool_vmUseManagedDisks')]"
         },
         "existingVnetName": {
             "value": "[parameters('ADDS_vnetName')]"
@@ -836,10 +836,10 @@
             "value": ""
         },
         "vmGalleryImageOffer": {
-            "value": "[parameters('wVDHostpool_vmGalleryImageOffer')]"
+            "value": "[parameters('wvdHostpool_vmGalleryImageOffer')]"
         },
         "vmGalleryImagePublisher": {
-            "value": "[parameters('wVDHostpool_vmGalleryImagePublisher')]"
+            "value": "[parameters('wvdHostpool_vmGalleryImagePublisher')]"
         },
         "vmGalleryImageSKU": {
             "value": "20h1-evd-o365pp"
@@ -851,13 +851,13 @@
             "value": "[resourceGroup().name]"
         },
         "workspaceName": {
-            "value": "[parameters('wVDHostpool_workspaceName')]"
+            "value": "[parameters('wvdHostpool_workspaceName')]"
         },
         "workspaceLocation": {
             "value": "[resourceGroup().location]"
         },
         "allApplicationGroupReferences": {
-            "value": "[parameters('wVDHostpool_allApplicationGroupReferences')]"
+            "value": "[parameters('wvdHostpool_allApplicationGroupReferences')]"
         }
     }
   }
