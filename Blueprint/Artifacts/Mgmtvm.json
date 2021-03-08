@@ -44,10 +44,10 @@
         },
         "defaultValue": "[concat(toLower(parameters('resourcePrefix')), parameters('mgmtvmNameStatic'))]"
       },
-      "DAUser_domainadmin": {
+      "DAUser_adminuser": {
         "type": "string",
         "metadata": {
-          "description": "The managed domain, domain admin account"
+          "description": "An admin account created and added to"
         }
       },
       "vaultName": {
@@ -62,7 +62,7 @@
         "metadata": {
           "description": "The name of the Key Vault secret."
         },
-        "defaultValue": "[first(split(parameters('DAUser_domainadmin'), '@'))]"
+        "defaultValue": "[first(split(parameters('DAUser_adminuser'), '@'))]"
       },
       "vaultResourceGroupName": {
         "type": "string",
@@ -171,7 +171,7 @@
       "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
       "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
       "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
-      "existingDomainUsername": "[first(split(parameters('DAUser_domainadmin'), '@'))]",
+      "existingDomainUsername": "[first(split(parameters('DAUser_adminuser'), '@'))]",
       "managedDomaintoJoin": "[parameters('ADDS_domainName')]",
       "imagePublisher": "MicrosoftWindowsServer",
       "imageOffer": "WindowsServer",
@@ -442,7 +442,7 @@
               "value": "[parameters('ouPath')]"
             },
             "mvUser": {
-              "value": "[parameters('DAUser_domainadmin')]"
+              "value": "[parameters('DAUser_adminuser')]"
             },
             "kvSub": {
               "value": "[parameters('vaultSubscription')]"
@@ -548,8 +548,8 @@
     "ouPath": {
       "value": ""
     },
-    "DAUser_domainadmin": {
-      "value": "[parameters('DAUser_domainadmin')]"
+    "DAUser_adminuser": {
+      "value": "[parameters('DAUser_adminuser')]"
     },
     "resourcePrefix": {
       "value": "[parameters('resourcePrefix')]"

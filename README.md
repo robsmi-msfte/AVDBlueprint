@@ -96,10 +96,9 @@ With the basic objects in place, a few updates will prepare the Blueprint for As
 * run.config.json
 * (optional) Blueprint.json
 
-### Editing 'assign_default.json' file
+### Blueprint Parameters
 
-The **'assign_default.json'** file is used to pass certain values to the Blueprint at assignment time, such as Azure subscription ID, managed identity name, and more. This file is in Javascript Notation (JSON) format, so is easily editable in a variety of methods.  
-Some values will require a concatentation of values. The following are values that require a "path" value in Azure:
+The blueprint parameters are... 
 
 ```json
 userAssignedIdentities
@@ -126,31 +125,50 @@ script_executionUserResourceID
 > "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]"  
 
 The following values are needed to customize the **'assign_default.json'** file to respective environments:  
-
-| Parameter | Value | Purpose |
+Required Parameters
+| Parameter | Example Value | Purpose |
 |-|-|-|  
-|**Location**|ex. '**eastus**'|The Azure region the assignment will be created in|  
-|**userAssignedIdentities**|ex. '**UAI1**'|The name, in path format, of the managed identity created from the prerequisite steps earlier|
-|**blueprintId**|ex. **'wvd_full'**|a name that you provide, that is the Blueprint name assigned in your subscription|
-|**scope**|[**YOUR AZURE SUBSCRIPTION ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|The ID of your Azure subscription|
-|**resourcePrefix**|ex. **'WVD'**|a value you determine, which will be used to prefix the name of most objects created during Blueprint assignment.<br/>**NOTE:** This prefix will be used to name WVD session host computers, so should be kept as short as possible, due to the 15 character [name limitation for WVD session hosts in Azure WVD as of 2/2/2021](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftcompute)|
-|**aDDS_domainName**|ex. **'wvdbp.contoso.com'**|the name of your Azure Active Directory instance, this Blueprint will be assigned to|
-|**ADDS_emailNotifications** (optional)|ex. **'wvdbpadmin@contoso.com'**|an optional account for e-mail notifications|
-|**script_executionUserResourceID**|ex. **'UAI1'**|the name and path of your Azure Managed Identity|
-|**script_executionUserObjectID**|[**AZURE AD USER OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the 'Object ID' of the Azure Active Directory account that will be used to execute the Blueprint|
-|**keyvault_ownerUserObjectID**|[**MANAGED IDENTITY OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the object ID of your Azure Managed Identity|
-|**Location**|ex. '**eastus**'|The geographic region that Azure Resoource Group will be created in|
+|**ADDS_domainName**|wvdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
+|**ADDS_emailNotifications**|wvdbpadmin@contoso.com|An email account that will receive ADDS notifications|
+|**script_executionUserResourceID**|/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourcegroups/RG-BLUEPRINT/providers/Microsoft.ManagedIdentity/userAssignedIdentities/deploybp|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
+|**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
+|**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
-### Editing 'run.config.json'
-
-The file 'run.config.json' in the 'Scripts' folder, contains several values that are passed in to the Blueprint. The values must be edited to the specific values for your environment.
-
-| Parameter | Value | Purpose |
-|-|-|-|  
-|**tenantID**|ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|Your Azure AD 'Tenant ID' value|
-|**subscriptionID**|ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|Your Azure AD 'Subscription ID' value|  
-|**blueprintPath**|ex. **C:\\Code\\WVDBP\\AZBluePrints-WVD\\Blueprint"**|The local folder on the device where the Blueprint objects are stored' value|  
-|**assignmentFile**|ex. **C:\\Code\\WVDBP\\AZBluePrints-WVD\\Assignments\\assign_default.json"**|The local folder on the device where the Blueprint objects are stored' value|  
+Optional Parameters
+| Parameter | Default Value | Purpose |
+|-|-|-|
+|**resourcePrefix**|WVD|A text string prefixed to the begining of each resource name.|
+|**_ScriptURI**|https://raw.githubusercontent.com/Azure/WVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
+|**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
+|**log-analytics_data-retention**|365|Number of days data will be retained.|
+|**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
+|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vnet created by the WVD Blueprint.|
+|**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
+|**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
+|**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
+|**vnet_logs-retention-in-days**|365|Number of days vnet logs will be retained.|
+|**keyvault_logs-retention-in-days**|365|Number of days keyvault logs will be retained.|
+|**DAUser_adminuser**|domainadmin@{ADDS_domainName}|This account will be a member of AAD DC Administrators and Local Admin on deployed VMs.|
+|**wvdHostpool_hostpoolname**|{resourcePrefix}-wvd-hp||
+|**wvdHostpool_workspaceName**|{resourcePrefix}-wvd-ws||
+|**wvdHostpool_hostpoolDescription**|||
+|**wvdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each WVD session host name.|
+|**wvdHostpool_vmGalleryImageOffer**|office-365||
+|**wvdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
+|**wvdHostpool_vmGalleryImageSKU**|20h1-evd-o365pp||
+|**wvdHostpool_vmImageType**|Gallery||
+|**wvdHostpool_vmDiskType**|StandardSSD_LRS||
+|**wvdHostpool_vmUseManagedDisks**|true||
+|**wvdHostpool_allApplicationGroupReferences**|||
+|**wvdHostpool_vmImageVhdUri**||(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs.|
+|**wvdHostpool_vmCustomImageSourceId**||(Required when vmImageType = CustomImage) Resource ID of the image.|
+|**wvdHostpool_networkSecurityGroupId**||The resource id of an existing network security group.|
+|**wvdHostpool_personalDesktopAssignmentType**|||
+|**wvdHostpool_customRdpProperty**||Hostpool rdp properties.|
+|**wvdHostpool_deploymentId**|||
+|**wvdHostpool_ouPath**|||
+|**wvdUsers_userPrefix**||Username prefix. A number will be added to the end of this value.|
+|**wvdUsers_userCount**|10|Total Number of WVD users to create.|
 
 ## Import, Publish and Assign the Blueprint
 
