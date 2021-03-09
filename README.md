@@ -147,7 +147,9 @@ These optional parameters either have default values or, by default, do not have
 2. Publish the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 3. Assign the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 
-## Manage the Blueprint using Azure Cloud Shell
+**NOTE:** The following two sections are two methods available to assign the WVD Blueprint.  You can select one or the other, you do not have to do both.
+
+### Manage the Blueprint using Azure Cloud Shell
 Azure hosts Azure Cloud Shell, an interactive shell environment that can be used through a web browser.
 You can use either Bash or PowerShell with Cloud Shell to work with Azure services.
 You can use the Cloud Shell preinstalled commands to import and assign the WVD Blueprint without having to install anything on your local environment.  
@@ -186,7 +188,8 @@ There are several ways to get started with Azure Cloud Shell:
 6. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
 You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
-## Manage the Blueprint using local storage on a device (Windows instructions)  
+### Manage the Blueprint using local storage on a device (Windows instructions)  
+
 You can manage the WVD Blueprint using a device that has a small amount of local storage available.
 
 1. Go the [WVD Blueprint Github repository main folder](https://github.com/Azure/WVDBlueprint).  
@@ -201,13 +204,21 @@ by double-clicking the downloaded .zip file, and then copying the main folder wi
 4. The next is to import the Blueprint to your Azure subscription.  There are the high-level steps to import the Blueprint:
 
     1. Start PowerShell.
-    2. Authenticate to your subscription by using the following PowerShell command
+    2. Run the following PowerShell commands to import the required modules needed to import the blueprint (if not previously installed)
+
+    ```PowerShell
+    Install-Module -Name Az.Blueprint
+    Import-Module Az.Blueprint
+    ```
+    >**NOTE:** Installing the PowerShell 'Az' modules does not include the Az.Blueprint modules. If you have installed the 'Az' modules, you will still need to install the Az.Blueprint modules.  
+
+    3. Authenticate to your subscription by using the following PowerShell command
 
     ```powershell
     Connect-AzAccount
     ```
 
-5. This step requires the [Azure Blueprint PowerShell modules](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#install-the-module), if not already installed.  Run the following Azure Blueprint PowerShell command:  
+    4. Run the following command to import the Blueprint to your Azure subscription:  
 
     ```powershell    
     Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\WVDBlueprint-main\Blueprint'
