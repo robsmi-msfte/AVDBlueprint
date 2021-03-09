@@ -130,7 +130,7 @@ These optional parameters either have default values or, by default, do not have
 |**wvdHostpool_customRdpProperty**||Hostpool rdp properties.|
 |**wvdHostpool_deploymentId**|||
 |**wvdHostpool_ouPath**|||
-|**wvdUsers_userPrefix**||Username prefix. A number will be added to the end of this value.|
+|**wvdUsers_userPrefix**|user|Username prefix. A number will be added to the end of this value.|
 |**wvdUsers_userCount**|10|Total Number of WVD users to create.|
 
 ## Import, Publish and Assign the Blueprint
