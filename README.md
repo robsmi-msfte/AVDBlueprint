@@ -67,10 +67,16 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
         **MORE INFO:** https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
 
+10.  The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
+
+         
+
+### Blueprint Objects and Purpose
+
 | Type | Object | Purpose |
 |-|-|-|  
-|Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc.|  
-|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint assignment|
+|Assignment file|assign_default.json|Hard-code and pass to the Blueprint, the environment specific items such as subscription, UserAssignedIdentity, etc.|  
+|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint definition|
 |Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
 |Artifact|addsDAUser.json|directs the creation of domain administrator account|
 |Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
@@ -85,18 +91,20 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 ## Blueprint Parameters
 Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
 
-
 ### Required Parameters
-The blueprint includes the following required parameters.
-| Parameter | Example Value | Purpose |
+The blueprint includes the following required parameters.  
+
+| Parameter | Example Value | Purpose |  
 |-|-|-|  
 |**ADDS_domainName**|wvdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
 |**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
 |**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
 |**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
-Optional Parameters
-These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.
+#### Optional Parameters  
+
+These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.  
+
 | Parameter | Default Value | Purpose |
 |-|-|-|
 |**resourcePrefix**|WVD|A text string prefixed to the begining of each resource name.|
@@ -138,6 +146,86 @@ These optional parameters either have default values or, by default, do not have
 1. Import the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps>\
 2. Publish the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 3. Assign the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
+
+**NOTE:** The following two sections are two methods available to assign the WVD Blueprint.  You can select one or the other, you do not have to do both.
+
+### Manage the Blueprint using Azure Cloud Shell
+Azure hosts Azure Cloud Shell, an interactive shell environment that can be used through a web browser.
+You can use either Bash or PowerShell with Cloud Shell to work with Azure services.
+You can use the Cloud Shell preinstalled commands to import and assign the WVD Blueprint without having to install anything on your local environment.  
+There are several ways to get started with Azure Cloud Shell:  
+
+1. Start Azure CloudShell:  
+
+    - **Direct link**: Open a browser to [https://shell.azure.com](https://shell.azure.com).
+
+    - **Azure portal**: Select the Cloud Shell icon on the [Azure portal](https://portal.azure.com):
+
+      ![Icon to launch the Cloud Shell from the Azure portal](./images/portal-launch-icon.png)
+
+2. Start PowerShell in Azure CloudShell ([more information here](https://docs.microsoft.com/en-us/azure/cloud-shell/overview#choice-of-preferred-shell-experience))
+
+3. Run the following command to clone the Azure WVDBlueprint repository to CloudDrive.
+
+    ```azurepowershell-interactive
+    git clone https://github.com/Azure/WVDBlueprint.git $HOME/clouddrive/WVDBlueprint
+    ```
+    >**TIP:**  Run ```dir $HOME/clouddrive``` to verify the repository was successfully cloned to your CloudDrive
+
+4. Run the following commands to import the required PowerShell modules needed to import the blueprint (if not previously installed)
+
+    ```PowerShell
+    Install-Module -Name Az.Blueprint
+    Import-Module Az.Blueprint
+    ```
+
+5. Run the following command to import the WVD Blueprint definition, and save it within the specified subscription or management group.
+    ```powershell
+    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath "$HOME/clouddrive/WVDBlueprint/blueprint"
+    ```
+    >**NOTE:** The '-InputPath' argument must point to the folder where blueprint.json file is placed.
+
+6. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
+You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
+
+### Manage the Blueprint using local storage on a device (Windows instructions)  
+
+You can manage the WVD Blueprint using a device that has a small amount of local storage available.
+
+1. Go the [WVD Blueprint Github repository main folder](https://github.com/Azure/WVDBlueprint).  
+
+2. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
+
+      ![Image for Github Download Zip option](./images/GitDownloadZip.png)  
+
+3. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
+by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location, such as 'C:\WVDBlueprint-main'.  
+
+4. The next is to import the Blueprint to your Azure subscription.  There are the high-level steps to import the Blueprint:
+
+    1. Start PowerShell.
+    2. Run the following PowerShell commands to import the required modules needed to import the blueprint (if not previously installed)
+
+    ```PowerShell
+    Install-Module -Name Az.Blueprint
+    Import-Module Az.Blueprint
+    ```
+    >**NOTE:** Installing the PowerShell 'Az' modules does not include the Az.Blueprint modules. If you have installed the 'Az' modules, you will still need to install the Az.Blueprint modules.  
+
+    3. Authenticate to your subscription by using the following PowerShell command
+
+    ```powershell
+    Connect-AzAccount
+    ```
+
+    4. Run the following command to import the Blueprint to your Azure subscription:  
+
+    ```powershell    
+    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\WVDBlueprint-main\Blueprint'
+    ```
+
+6. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
+You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
 ## Teardown
 
