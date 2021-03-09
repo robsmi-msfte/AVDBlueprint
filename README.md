@@ -83,8 +83,7 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 |Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
 ## Blueprint Parameters
-Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
-
+Blueprint parameters allow you to configure the deployment and customize the environment.
 
 ### Required Parameters
 The blueprint includes the following required parameters.
