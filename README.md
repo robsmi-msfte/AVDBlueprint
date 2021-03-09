@@ -67,12 +67,6 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
         **MORE INFO:** https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
 
-10. The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
-
-    * An "assignment" file can be customized with your Azure subscription, and related details. A sample assignment file (assign_default.json) is included with this Blueprint.
-    * Code can be created to stand up an interface, that could be used to receive the specific information, and then pass that information to the Blueprint, as well as initiate the Blueprint assigment. The following table contains the environment specific information needed to assign (deploy) the Blueprint to each respective environment.  
-    * Copy the assignment file to the 'Deploy/' folder, which has an entry in the .Gitignore file.  Files you customize in the 'Deploy' folder will not be included with subsequent pull requests.
-
 | Type | Object | Purpose |
 |-|-|-|  
 |Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc.|  
@@ -88,56 +82,25 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 |Artifact|wvdDeploy.json|Deploys WVD session hosts, created the WVD host pool and application group, and adds the session hosts to the application group|
 |Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
-## Customizing the Assignment (in preparation for deployment)
+## Blueprint Parameters
+Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
 
-With the basic objects in place, a few updates will prepare the Blueprint for Assignment to your Azure subscription.  There are two objects that can be edited fairly easily to customize for each respective environment:
 
-* assign_json
-* run.config.json
-* (optional) Blueprint.json
-
-### Blueprint Parameters
-
-The blueprint parameters are... 
-
-```json
-userAssignedIdentities
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]**"
-
-```json
-blueprintID
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/providers/Microsoft.Blueprint/blueprints/[**YOUR BLUEPRINT NAME**]"  
-
-```json
-scope
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]"  
-
-```json
-script_executionUserResourceID
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]"  
-
-The following values are needed to customize the **'assign_default.json'** file to respective environments:  
-Required Parameters
+### Required Parameters
+The blueprint includes the following required parameters.
 | Parameter | Example Value | Purpose |
 |-|-|-|  
 |**ADDS_domainName**|wvdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
-|**ADDS_emailNotifications**|wvdbpadmin@contoso.com|An email account that will receive ADDS notifications|
-|**script_executionUserResourceID**|/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx/resourcegroups/RG-BLUEPRINT/providers/Microsoft.ManagedIdentity/userAssignedIdentities/deploybp|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
+|**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
 |**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
 |**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
 Optional Parameters
+These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.
 | Parameter | Default Value | Purpose |
 |-|-|-|
 |**resourcePrefix**|WVD|A text string prefixed to the begining of each resource name.|
+|**ADDS_emailNotifications**|wvdbpadmin@contoso.com|An email account that will receive ADDS notifications|
 |**_ScriptURI**|https://raw.githubusercontent.com/Azure/WVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|
