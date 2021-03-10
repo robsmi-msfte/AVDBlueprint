@@ -89,7 +89,8 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 |Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
 ## Blueprint Parameters
-Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
+Blueprint parameters allow you to configure the deployment and customize the environment.
+
 
 ### Required Parameters
 The blueprint includes the following required parameters.  
@@ -101,9 +102,8 @@ The blueprint includes the following required parameters.
 |**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
 |**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
-#### Optional Parameters  
-
-These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.  
+### Optional Parameters
+These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.
 
 | Parameter | Default Value | Purpose |
 |-|-|-|
