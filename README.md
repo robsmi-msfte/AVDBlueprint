@@ -67,16 +67,16 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
         **MORE INFO:** https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator  
 
-10. The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
+10.  The Blueprint main file, and related artifact objects. These objects are publically available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.
 
-    * An "assignment" file can be customized with your Azure subscription, and related details. A sample assignment file (assign_default.json) is included with this Blueprint.
-    * Code can be created to stand up an interface, that could be used to receive the specific information, and then pass that information to the Blueprint, as well as initiate the Blueprint assigment. The following table contains the environment specific information needed to assign (deploy) the Blueprint to each respective environment.  
-    * Copy the assignment file to the 'Deploy/' folder, which has an entry in the .Gitignore file.  Files you customize in the 'Deploy' folder will not be included with subsequent pull requests.
+         
+
+### Blueprint Objects and Purpose
 
 | Type | Object | Purpose |
 |-|-|-|  
-|Assignment file|assign_default.json|Hard-code and pass to the Blueprint the environment specific items such as subscription, UserAssignedIdentity, etc.|  
-|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint assignment|
+|Assignment file|assign_default.json|Hard-code and pass to the Blueprint, the environment specific items such as subscription, UserAssignedIdentity, etc.|  
+|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint definition|
 |Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
 |Artifact|addsDAUser.json|directs the creation of domain administrator account|
 |Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
@@ -88,75 +88,144 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 |Artifact|wvdDeploy.json|Deploys WVD session hosts, created the WVD host pool and application group, and adds the session hosts to the application group|
 |Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
-## Customizing the Assignment (in preparation for deployment)
+## Blueprint Parameters
+Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
 
-With the basic objects in place, a few updates will prepare the Blueprint for Assignment to your Azure subscription.  There are two objects that can be edited fairly easily to customize for each respective environment:
+### Required Parameters
+The blueprint includes the following required parameters.  
 
-* assign_json
-* run.config.json
-* (optional) Blueprint.json
-
-### Editing 'assign_default.json' file
-
-The **'assign_default.json'** file is used to pass certain values to the Blueprint at assignment time, such as Azure subscription ID, managed identity name, and more. This file is in Javascript Notation (JSON) format, so is easily editable in a variety of methods.  
-Some values will require a concatentation of values. The following are values that require a "path" value in Azure:
-
-```json
-userAssignedIdentities
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]**"
-
-```json
-blueprintID
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/providers/Microsoft.Blueprint/blueprints/[**YOUR BLUEPRINT NAME**]"  
-
-```json
-scope
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]"  
-
-```json
-script_executionUserResourceID
-```
-
-> "/subscriptions/[**YOUR AZURE SUBSCRIPTION ID**]/resourceGroups/[**YOUR AZURE RESOURCE GROUP**]/providers/Microsoft.ManagedIdentity/userAssignedIdentities/[**YOUR MANAGED IDENTITY NAME]"  
-
-The following values are needed to customize the **'assign_default.json'** file to respective environments:  
-
-| Parameter | Value | Purpose |
+| Parameter | Example Value | Purpose |  
 |-|-|-|  
-|**Location**|ex. '**eastus**'|The Azure region the assignment will be created in|  
-|**userAssignedIdentities**|ex. '**UAI1**'|The name, in path format, of the managed identity created from the prerequisite steps earlier|
-|**blueprintId**|ex. **'wvd_full'**|a name that you provide, that is the Blueprint name assigned in your subscription|
-|**scope**|[**YOUR AZURE SUBSCRIPTION ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|The ID of your Azure subscription|
-|**resourcePrefix**|ex. **'WVD'**|a value you determine, which will be used to prefix the name of most objects created during Blueprint assignment.<br/>**NOTE:** This prefix will be used to name WVD session host computers, so should be kept as short as possible, due to the 15 character [name limitation for WVD session hosts in Azure WVD as of 2/2/2021](https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/resource-name-rules#microsoftcompute)|
-|**aDDS_domainName**|ex. **'wvdbp.contoso.com'**|the name of your Azure Active Directory instance, this Blueprint will be assigned to|
-|**ADDS_emailNotifications** (optional)|ex. **'wvdbpadmin@contoso.com'**|an optional account for e-mail notifications|
-|**script_executionUserResourceID**|ex. **'UAI1'**|the name and path of your Azure Managed Identity|
-|**script_executionUserObjectID**|[**AZURE AD USER OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the 'Object ID' of the Azure Active Directory account that will be used to execute the Blueprint|
-|**keyvault_ownerUserObjectID**|[**MANAGED IDENTITY OBJECT ID**]<br/>ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|the object ID of your Azure Managed Identity|
-|**Location**|ex. '**eastus**'|The geographic region that Azure Resoource Group will be created in|
+|**ADDS_domainName**|wvdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
+|**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
+|**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
+|**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
-### Editing 'run.config.json'
+#### Optional Parameters  
 
-The file 'run.config.json' in the 'Scripts' folder, contains several values that are passed in to the Blueprint. The values must be edited to the specific values for your environment.
+These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.  
 
-| Parameter | Value | Purpose |
-|-|-|-|  
-|**tenantID**|ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|Your Azure AD 'Tenant ID' value|
-|**subscriptionID**|ex. **'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'**|Your Azure AD 'Subscription ID' value|  
-|**blueprintPath**|ex. **C:\\Code\\WVDBP\\AZBluePrints-WVD\\Blueprint"**|The local folder on the device where the Blueprint objects are stored' value|  
-|**assignmentFile**|ex. **C:\\Code\\WVDBP\\AZBluePrints-WVD\\Assignments\\assign_default.json"**|The local folder on the device where the Blueprint objects are stored' value|  
+| Parameter | Default Value | Purpose |
+|-|-|-|
+|**resourcePrefix**|WVD|A text string prefixed to the begining of each resource name.|
+|**ADDS_emailNotifications**|wvdbpadmin@contoso.com|An email account that will receive ADDS notifications|
+|**_ScriptURI**|https://raw.githubusercontent.com/Azure/WVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
+|**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
+|**log-analytics_data-retention**|365|Number of days data will be retained.|
+|**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
+|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vnet created by the WVD Blueprint.|
+|**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
+|**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
+|**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
+|**vnet_logs-retention-in-days**|365|Number of days vnet logs will be retained.|
+|**keyvault_logs-retention-in-days**|365|Number of days keyvault logs will be retained.|
+|**DAUser_adminuser**|domainadmin@{ADDS_domainName}|This account will be a member of AAD DC Administrators and Local Admin on deployed VMs.|
+|**wvdHostpool_hostpoolname**|{resourcePrefix}-wvd-hp||
+|**wvdHostpool_workspaceName**|{resourcePrefix}-wvd-ws||
+|**wvdHostpool_hostpoolDescription**|||
+|**wvdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each WVD session host name.|
+|**wvdHostpool_vmGalleryImageOffer**|office-365||
+|**wvdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
+|**wvdHostpool_vmGalleryImageSKU**|20h1-evd-o365pp||
+|**wvdHostpool_vmImageType**|Gallery||
+|**wvdHostpool_vmDiskType**|StandardSSD_LRS||
+|**wvdHostpool_vmUseManagedDisks**|true||
+|**wvdHostpool_allApplicationGroupReferences**|||
+|**wvdHostpool_vmImageVhdUri**||(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs.|
+|**wvdHostpool_vmCustomImageSourceId**||(Required when vmImageType = CustomImage) Resource ID of the image.|
+|**wvdHostpool_networkSecurityGroupId**||The resource id of an existing network security group.|
+|**wvdHostpool_personalDesktopAssignmentType**|||
+|**wvdHostpool_customRdpProperty**||Hostpool rdp properties.|
+|**wvdHostpool_deploymentId**|||
+|**wvdHostpool_ouPath**|||
+|**wvdUsers_userPrefix**|user|Username prefix. A number will be added to the end of this value.|
+|**wvdUsers_userCount**|10|Total Number of WVD users to create.|
 
 ## Import, Publish and Assign the Blueprint
 
 1. Import the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps>\
 2. Publish the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 3. Assign the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
+
+**NOTE:** The following two sections are two methods available to assign the WVD Blueprint.  You can select one or the other, you do not have to do both.
+
+### Manage the Blueprint using Azure Cloud Shell
+Azure hosts Azure Cloud Shell, an interactive shell environment that can be used through a web browser.
+You can use either Bash or PowerShell with Cloud Shell to work with Azure services.
+You can use the Cloud Shell preinstalled commands to import and assign the WVD Blueprint without having to install anything on your local environment.  
+There are several ways to get started with Azure Cloud Shell:  
+
+1. Start Azure CloudShell:  
+
+    - **Direct link**: Open a browser to [https://shell.azure.com](https://shell.azure.com).
+
+    - **Azure portal**: Select the Cloud Shell icon on the [Azure portal](https://portal.azure.com):
+
+      ![Icon to launch the Cloud Shell from the Azure portal](./images/portal-launch-icon.png)
+
+2. Start PowerShell in Azure CloudShell ([more information here](https://docs.microsoft.com/en-us/azure/cloud-shell/overview#choice-of-preferred-shell-experience))
+
+3. Run the following command to clone the Azure WVDBlueprint repository to CloudDrive.
+
+    ```azurepowershell-interactive
+    git clone https://github.com/Azure/WVDBlueprint.git $HOME/clouddrive/WVDBlueprint
+    ```
+    >**TIP:**  Run ```dir $HOME/clouddrive``` to verify the repository was successfully cloned to your CloudDrive
+
+4. Run the following commands to import the required PowerShell modules needed to import the blueprint (if not previously installed)
+
+    ```PowerShell
+    Install-Module -Name Az.Blueprint
+    Import-Module Az.Blueprint
+    ```
+
+5. Run the following command to import the WVD Blueprint definition, and save it within the specified subscription or management group.
+    ```powershell
+    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath "$HOME/clouddrive/WVDBlueprint/blueprint"
+    ```
+    >**NOTE:** The '-InputPath' argument must point to the folder where blueprint.json file is placed.
+
+6. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
+You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
+
+### Manage the Blueprint using local storage on a device (Windows instructions)  
+
+You can manage the WVD Blueprint using a device that has a small amount of local storage available.
+
+1. Go the [WVD Blueprint Github repository main folder](https://github.com/Azure/WVDBlueprint).  
+
+2. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
+
+      ![Image for Github Download Zip option](./images/GitDownloadZip.png)  
+
+3. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
+by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location, such as 'C:\WVDBlueprint-main'.  
+
+4. The next is to import the Blueprint to your Azure subscription.  There are the high-level steps to import the Blueprint:
+
+    1. Start PowerShell.
+    2. Run the following PowerShell commands to import the required modules needed to import the blueprint (if not previously installed)
+
+    ```PowerShell
+    Install-Module -Name Az.Blueprint
+    Import-Module Az.Blueprint
+    ```
+    >**NOTE:** Installing the PowerShell 'Az' modules does not include the Az.Blueprint modules. If you have installed the 'Az' modules, you will still need to install the Az.Blueprint modules.  
+
+    3. Authenticate to your subscription by using the following PowerShell command
+
+    ```powershell
+    Connect-AzAccount
+    ```
+
+    4. Run the following command to import the Blueprint to your Azure subscription:  
+
+    ```powershell    
+    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\WVDBlueprint-main\Blueprint'
+    ```
+
+6. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
+You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
 ## Teardown
 
