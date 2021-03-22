@@ -223,7 +223,7 @@ You can manage the WVD Blueprint using a device that has a small amount of local
 
 1. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
 
-      ![Image for Github Download Zip option](./images/GitDownloadZip2.png)  
+      ![Image for Github Download Zip option](https://github.com/Azure/WVDBlueprint/blob/main/images/GitDownloadZip2.png)  
 
 1. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
 by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location, such as 'C:\WVDBlueprint-main'.  
