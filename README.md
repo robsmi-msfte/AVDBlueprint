@@ -51,7 +51,7 @@ The management of Blueprint definitions and Blueprint assignments are two differ
 
     When correctly configured, the Role assignments for your Azure AD group, should look like this:  
 
-    ![Blueprint Group Access Control Depiction](./images/BluePrint_GroupAccessControlDepiction.png)
+    ![Blueprint Group Access Control Depiction](https://github.com/Azure/WVDBlueprint/blob/main/images/BluePrint_GroupAccessControlDepiction.PNG)
 
 1. **An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels**  
 
