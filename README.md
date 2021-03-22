@@ -93,7 +93,7 @@ The reason is that the managed identity needs full access during the deployment,
 
     **MORE INFO:** [Add or change Azure subscription administrators](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator)  
 
-1. **The account used to assign the Blueprint, granted "User Access Administrator at the subscription level**  
+1. **The account used to assign the Blueprint, granted "User Access Administrator" at the subscription level**  
 The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a WVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
  
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
