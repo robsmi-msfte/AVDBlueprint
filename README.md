@@ -1,7 +1,6 @@
 # Instructions for customizing Azure Windows Virtual Desktop to your environment, utilizing Azure Blueprints  
 
 [Azure Blueprints](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview) provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Windows Virtual Desktop (WVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
-  
 Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview#blueprint-definition), such as:
 
 * Role Assignments
@@ -15,18 +14,7 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 1) [Azure Blueprints] (<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
 2) [Windows Virtual Desktop] (<https://docs.microsoft.com/en-us/azure/virtual-desktop/>)
 
-
-### Tip: Create a Resource Group for your Blueprint resources
-During the Blueprint deployment process, you will be creating some resources that you may want to retain after the blueprint has been deployed.
-Depending on various factors, you may create a managed identity, a storage blob, etc. To that end, you could create a resource group, and in that resource group you only create items that are related to your Blueprint work. Another reason for this is that you can build and deconstruct a Blueprint, over and over, yet retain some of the core objects necessary, which will save time and effort.  
-
-    Example: WVDBlueprint-RG
-
-### Tip: Development and/or Production environments can be used to work with the Blueprint code
-Development environments are well suited to streamlining workflows such as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.
-PowerShell or CloudShell can be utilized for various tasks. If using PowerShell, you may need to import the [Az.Blueprint module](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#add-the-azblueprint-module) for PowerShell.
 ## Prerequisites
-
 1. **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
 An Azure Global administrator account is required to successfully assign (deploy) the Azure WVD Blueprints.
 
@@ -361,6 +349,16 @@ Whatever method chosed, the access method should be "public" and "anonymous" rea
   When an Azure Key Vault is deleted, it transitions to a "soft delete" state for a period of time, before actually being deleted.
   While an Azure Key Vault is in soft delete state, another key vault cannot be created with the same name.  Therefore, if you do not change your
   Resource Prefix value for subsequent deployments, the subsequent deployments will fail with an error referencing Key Vault name.
+  
+* Create a Resource Group for your Blueprint resources
+During the Blueprint deployment process, you will be creating some resources that you may want to retain after the blueprint has been deployed.
+Depending on various factors, you may create a managed identity, a storage blob, etc. To that end, you could create a resource group, and in that resource group you only create items that are related to your Blueprint work. Another reason for this is that you can build and deconstruct a Blueprint, over and over, yet retain some of the core objects necessary, which will save time and effort.  
+
+    Example: WVDBlueprint-RG
+
+* Development and/or Production environments can be used to work with the Blueprint code
+Development environments are well suited to streamlining workflows such as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.
+PowerShell or CloudShell can be utilized for various tasks. If using PowerShell, you may need to import the [Az.Blueprint module](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#add-the-azblueprint-module) for PowerShell.
 
 ## Trademarks
 
