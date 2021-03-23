@@ -88,6 +88,13 @@ The reason is that the managed identity needs full access during the deployment,
 The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a WVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
  
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
+    
+1. **Managed identity assigned the "Global Administrator" assignment in Azure Active Directory**  
+The managed identity object has to be assigned to the "Global administrator" role assignment in Azure Active Directory. To add the managed identity to the role assignment, follow the steps in this article:
+
+    [Assign Azure AD roles to users](https://docs.microsoft.com/en-us/azure/active-directory/roles/manage-roles-portal)
+
+    **NOTE:** When you select the **"+ Add assignments"** option, the managed identity may not automatically be on the list of available entities to add. Here you can manually type in the name of the managed identity entity and that should correctly find and populate the selection area.
 
 1. **The Blueprint main file, and related artifact objects**  
 These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.  
