@@ -33,6 +33,9 @@
         "type": "string",
         "defaultValue": "[utcNow('u')]"
       },
+      "CreateFileShareScriptURI": {
+        "type": "string"
+      },
       "mgmtvmNameStatic": {
         "type": "string",
         "defaultValue": "-mgmtvm"
@@ -44,7 +47,7 @@
         },
         "defaultValue": "[concat(toLower(parameters('resourcePrefix')), parameters('mgmtvmNameStatic'))]"
       },
-      "DAUser_adminuser": {
+      "daUser_AdminUser": {
         "type": "string",
         "metadata": {
           "description": "An admin account created and added to"
@@ -62,7 +65,7 @@
         "metadata": {
           "description": "The name of the Key Vault secret."
         },
-        "defaultValue": "[first(split(parameters('DAUser_adminuser'), '@'))]"
+        "defaultValue": "[first(split(parameters('daUser_AdminUser'), '@'))]"
       },
       "vaultResourceGroupName": {
         "type": "string",
@@ -78,7 +81,7 @@
           "description": "The name of the subscription that contains the keyvault."
         }
       },
-      "ADDS_domainName": {
+      "adds_domainName": {
         "type": "string",
         "metadata": {
           "displayName": "Azure ADDS Domain"
@@ -171,8 +174,8 @@
       "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
       "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
       "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
-      "existingDomainUsername": "[first(split(parameters('DAUser_adminuser'), '@'))]",
-      "managedDomaintoJoin": "[parameters('ADDS_domainName')]",
+      "existingDomainUsername": "[first(split(parameters('daUser_AdminUser'), '@'))]",
+      "managedDomaintoJoin": "[parameters('adds_domainName')]",
       "imagePublisher": "MicrosoftWindowsServer",
       "imageOffer": "WindowsServer",
       "windowsOSVersion": "2019-Datacenter",
@@ -410,7 +413,7 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "https://wvdautodeployrepo.blob.core.windows.net/files/Create-AzAADDSJoinedFileshare.ps1"
+              "[parameters('CreateFileShareScriptURI')]"
             ],
             "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ', resourceGroup().name ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
@@ -442,7 +445,7 @@
               "value": "[parameters('ouPath')]"
             },
             "mvUser": {
-              "value": "[parameters('DAUser_adminuser')]"
+              "value": "[parameters('daUser_AdminUser')]"
             },
             "kvSub": {
               "value": "[parameters('vaultSubscription')]"
@@ -542,14 +545,14 @@
 }, 
   "resourceGroup": "ResourceGroup",
   "parameters": {
-    "ADDS_domainName": {
-      "value": "[parameters('ADDS_domainName')]"
+    "adds_domainName": {
+      "value": "[parameters('adds_domainName')]"
     },
     "ouPath": {
       "value": ""
     },
-    "DAUser_adminuser": {
-      "value": "[parameters('DAUser_adminuser')]"
+    "daUser_AdminUser": {
+      "value": "[parameters('daUser_AdminUser')]"
     },
     "resourcePrefix": {
       "value": "[parameters('resourcePrefix')]"
@@ -560,11 +563,14 @@
     "createNetworkSecurityGroup": {
       "value": false
     },
+    "CreateFileShareScriptURI": {
+      "value": "[concat(parameters('_ScriptURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
+    },
     "vmSize": {
       "value": "Standard_D2s_v3"
     },
     "existingVnetName": {
-      "value": "[parameters('ADDS_vnetName')]"
+      "value": "[parameters('adds_vnetName')]"
     },
     "existingSubnetName": {
       "value": "sharedsvcs"
