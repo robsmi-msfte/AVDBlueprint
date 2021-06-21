@@ -39,7 +39,7 @@ The management of Blueprint definitions and Blueprint assignments are two differ
 
     When correctly configured, the Role assignments for your Azure AD group, should look like this:  
 
-    ![Blueprint Group Access Control Depiction](https://github.com/Azure/WVDBlueprint/blob/main/images/BluePrint_GroupAccessControlDepiction.PNG)
+    ![Blueprint Group Access Control Depiction](https://github.com/Azure/AVDBlueprint/blob/main/images/BluePrint_GroupAccessControlDepiction.PNG)
 
 1. **An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels**  
 
@@ -82,7 +82,7 @@ The reason is that the managed identity needs full access during the deployment,
     **MORE INFO:** [Add or change Azure subscription administrators](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator)  
 
 1. **The account used to assign the Blueprint, granted "User Access Administrator" at the subscription level**  
-The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a WVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
+The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a AVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
  
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
 
@@ -103,8 +103,8 @@ These objects are publicly available on Github.com. Once the Blueprint objects h
 |Artifact|MGMTVM.json|Sets up logging of various components to Azure storage|
 |Artifact|net.json|Sets up networking and various subnets|
 |Artifact|nsg.json|Sets up network security groups|
-|Artifact|wvdDeploy.json|Deploys AVD session hosts, created the AVD host pool and application group, and adds the session hosts to the application group|
-|Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
+|Artifact|avdDeploy.json|Deploys AVD session hosts, created the AVD host pool and application group, and adds the session hosts to the application group|
+|Artifact|avdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
 ## Blueprint Parameters
 Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
@@ -114,50 +114,50 @@ The blueprint includes the following required parameters.
 
 | Parameter | Example Value | Purpose |  
 |-|-|-|  
-|**adds_domainName**|avdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
+|**adds_domainName**|avdbp.contoso.com|The domain name for the Azure ADDS domain that will be created|
 |**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
 |**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
 |**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
 ### Optional Parameters  
 
-These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assigment process.  
+These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assignment process.  
 
 | Parameter | Default Value | Purpose |
 |-|-|-|
-|**resourcePrefix**|AVD|A text string prefixed to the begining of each resource name.|
+|**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
 |**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
 |**_ScriptURI**|https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|
 |**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
-|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vnet created by the AVD Blueprint.|
+|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vNet created by the AVD Blueprint.|
 |**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
 |**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
 |**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
 |**vnet_logs-retention-in-days**|365|Number of days vnet logs will be retained.|
 |**keyvault_logs-retention-in-days**|365|Number of days keyvault logs will be retained.|
 |**daUser_AdminUser**|domainadmin@{adds_domainName}|This account will be a member of AAD DC Administrators and Local Admin on deployed VMs.|
-|**wvdHostpool_hostpoolname**|{resourcePrefix}-wvd-hp||
-|**wvdHostpool_workspaceName**|{resourcePrefix}-wvd-ws||
-|**wvdHostpool_hostpoolDescription**|||
-|**wvdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each AVD session host name.|
-|**wvdHostpool_vmGalleryImageOffer**|office-365||
-|**wvdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
-|**wvdHostpool_vmGalleryImageSKU**|20h1-evd-o365pp||
-|**wvdHostpool_vmImageType**|Gallery||
-|**wvdHostpool_vmDiskType**|StandardSSD_LRS||
-|**wvdHostpool_vmUseManagedDisks**|true||
-|**wvdHostpool_allApplicationGroupReferences**|||
-|**wvdHostpool_vmImageVhdUri**||(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs.|
-|**wvdHostpool_vmCustomImageSourceId**||(Required when vmImageType = CustomImage) Resource ID of the image.|
-|**wvdHostpool_networkSecurityGroupId**||The resource id of an existing network security group.|
-|**wvdHostpool_personalDesktopAssignmentType**|||
-|**wvdHostpool_customRdpProperty**||Hostpool rdp properties.|
-|**wvdHostpool_deploymentId**|||
-|**wvdHostpool_ouPath**|||
-|**wvdUsers_userPrefix**|user|Username prefix. A number will be added to the end of this value.|
-|**wvdUsers_userCount**|10|Total Number of WVD users to create.|
+|**avdHostpool_hostpoolname**|{resourcePrefix}-avd-hp||
+|**avdHostpool_workspaceName**|{resourcePrefix}-avd-ws||
+|**avdHostpool_hostpoolDescription**|||
+|**avdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each AVD session host name.|
+|**avdHostpool_vmGalleryImageOffer**|office-365||
+|**avdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
+|**avdHostpool_vmGalleryImageSKU**|20h1-evd-o365pp||
+|**avdHostpool_vmImageType**|Gallery||
+|**avdHostpool_vmDiskType**|StandardSSD_LRS||
+|**avdHostpool_vmUseManagedDisks**|true||
+|**avdHostpool_allApplicationGroupReferences**|||
+|**avdHostpool_vmImageVhdUri**||(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs.|
+|**avdHostpool_vmCustomImageSourceId**||(Required when vmImageType = CustomImage) Resource ID of the image.|
+|**avdHostpool_networkSecurityGroupId**||The resource id of an existing network security group.|
+|**avdHostpool_personalDesktopAssignmentType**|||
+|**avdHostpool_customRdpProperty**||Hostpool rdp properties.|
+|**avdHostpool_deploymentId**|||
+|**avdHostpool_ouPath**|||
+|**avdUsers_userPrefix**|user|Username prefix. A number will be added to the end of this value.|
+|**avdUsers_userCount**|10|Total Number of AVD users to create.|
 
 ## Import, Publish and Assign the Blueprint
 
@@ -283,7 +283,7 @@ sections of Group Policy settings applied to the AVD session hosts:
 The FSLogix are there to enable the FSLogix profile management solution.  During Blueprint deployment, some of the parameters are evaluated and used to create a variable for the FSLogix profile share UNC, as it exits in this particular deployment.  That value is then written to a new GPO that is created just prior to the share UNC enumeration, and is only applied to an OU object, also created prior to the share UNC enumeration.  
 With respect to the **"RDP session host redirection"** settings, those are set by default, based on various security recommendations, made by Microsoft and others. The **"RDP session host redirection** settings are all set in a script file called **'CreateAADDSFileShare_ConfigureGP.ps1'**.  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
 
-1. AVD session host VMs are created, and joined to the AAD DS domain.  This happens in the artifact **"WVDDeploy.json"**.
+1. AVD session host VMs are created, and joined to the AAD DS domain.  This happens in the artifact **"AVDDeploy.json"**.
 2. Later the "management VM" is created, and joined to the domain.  This domain join triggers a reboot, and the JoinDomain extension waits for the machine to reboot and check in before the "MGMTVM" artifact continues.
 3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from Azure storage, to the management VM.
 4. The Managment VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
@@ -297,8 +297,8 @@ With respect to the **"RDP session host redirection"** settings, those are set b
     7. Invokes a command to each VM in the AVD OU, to reboot with a 5 second delay
     8. On restart, the AVD VMs will run the Virtual Desktop Optimization Tool available from Github.com.
         
-Now for the tip.  If there is a particular setting that you do not want to apply, you could download a copy of the script **'Create-AzAADDSJoinedFileshare.ps1'**.  Then you can customize the script file by editing out the line that applies a particular group policy setting that you may not want to apply to the WVD sessions host.  An example will be listed just below.  
-So that the WVD session hosts can be customized to your environment, you would then create an Azure storage container, set to anonymous access, then upload your script to that location.  
+Now for the tip.  If there is a particular setting that you do not want to apply, you could download a copy of the script **'Create-AzAADDSJoinedFileshare.ps1'**.  Then you can customize the script file by editing out the line that applies a particular group policy setting that you may not want to apply to the AVD sessions host.  An example will be listed just below.  
+So that the AVD session hosts can be customized to your environment, you would then create an Azure storage container, set to anonymous access, then upload your script to that location.  
 Lastly, you would edit the Blueprint artifact file "MGMTVM", currently line 413.  But that section looks like this:
 
         "properties": {
@@ -320,14 +320,14 @@ Lastly, you would edit the script **'Create-AzAADDSJoinedFileshare.ps1'** to rem
 ### RDP Redirection Settings  
 
 ```powershell
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableAudioCapture" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCameraRedir" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCcm" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCdm" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableClip" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableLPT" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisablePNPRedir" -Value 1  
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableAudioCapture" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCameraRedir" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCcm" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCdm" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableClip" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableLPT" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisablePNPRedir" -Value 1  
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
 ```
 The group policy settings come from Microsoft documentation: [Group Policy Settings Reference Spreadsheet for Windows 10 ...](https://www.microsoft.com/en-us/download/101451).
 
@@ -340,13 +340,13 @@ The group policy settings come from Microsoft documentation: [Group Policy Setti
 
    There may be other extensions available that perform the same functionality
 
-* To store scripts and any other objects needed during Blueprint assignment on Internet connected assigments, a publically web location can be used to store scripts and other objects needed during Blueprint assigment.  
+* To store scripts and any other objects needed during Blueprint assignment on Internet connected assignments, a public web location can be used to store scripts and other objects needed during Blueprint assignment.  
 [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
-Whatever method chosed, the access method should be "public" and "anonymous" read-only access.
+Whatever method chosen, the access method should be "public" and "anonymous" read-only access.
 
 * If you need to delete a deployment with the intent of starting over with a new deployment, you will need to change the "Deployment Prefix" value in the "assign_default.json" file.
-  This file is used to prefix most of the Azure resources created during the deployment, including an [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
-  Azure Key Vault is used to store and retrieve cryptogrphic keys used by cloud apps and services, and as such is treated with great care in Azure.
+  This file is used to prefix most of the Azure resources created during the deployment, including a [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
+  Azure Key Vault is used to store and retrieve cryptographic keys used by cloud apps and services, and as such is treated with great care in Azure.
   When an Azure Key Vault is deleted, it transitions to a "soft delete" state for a period of time, before actually being deleted.
   While an Azure Key Vault is in soft delete state, another key vault cannot be created with the same name.  Therefore, if you do not change your
   Resource Prefix value for subsequent deployments, the subsequent deployments will fail with an error referencing Key Vault name.
@@ -355,7 +355,7 @@ Whatever method chosed, the access method should be "public" and "anonymous" rea
 During the Blueprint deployment process, you will be creating some resources that you may want to retain after the blueprint has been deployed.
 Depending on various factors, you may create a managed identity, a storage blob, etc. To that end, you could create a resource group, and in that resource group you only create items that are related to your Blueprint work. Another reason for this is that you can build and deconstruct a Blueprint, over and over, yet retain some of the core objects necessary, which will save time and effort.  
 
-    Example: WVDBlueprint-RG
+    Example: AVDBlueprint-RG
 
 * Development and/or Production environments can be used to work with the Blueprint code
 Development environments are well suited to streamlining workflows such as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.
