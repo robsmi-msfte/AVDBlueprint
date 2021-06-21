@@ -1,6 +1,6 @@
-# Instructions for customizing Azure Windows Virtual Desktop to your environment, utilizing Azure Blueprints  
+# Instructions for customizing Azure Virtual Desktop to your environment, utilizing Azure Blueprints  
 
-[Azure Blueprints](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview) provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Windows Virtual Desktop (WVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
+[Azure Blueprints](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview) provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Azure Virtual Desktop (AVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
 Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview#blueprint-definition), such as:
 
 * Role Assignments
@@ -8,7 +8,7 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 * Azure Resource Manager (ARM) templates
 * Resource Groups
 
-The WVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, WVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
+The AVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, AVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
 ## Recommended Reading
 
 1) [Azure Blueprints] (<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
@@ -16,12 +16,12 @@ The WVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
 ## Prerequisites
 1. **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
-An Azure Global administrator account is required to successfully assign (deploy) the Azure WVD Blueprints.
+An Azure Global administrator account is required to successfully assign (deploy) the Azure AVD Blueprints.
 
 1. **An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)**  
-The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment. There are two types of Azure Managed Identies: 'System Assigned' and 'User Assigned'. For the purpose of this WVD Blueprint, the type 'User Assigned Managed Identity' will be utilized.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**  
+The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment. There are two types of Azure Managed Identies: 'System Assigned' and 'User Assigned'. For the purpose of this AVD Blueprint, the type 'User Assigned Managed Identity' will be utilized.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**  
 
-    **NOTE:** In the case of “greenfield” deployments, the level of assignment will need to be the Azure subscription.  The WVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.  
+    **NOTE:** In the case of “greenfield” deployments, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.  
 1. **Security configuration in the environment for a Blueprint Operator**  
 The management of Blueprint definitions and Blueprint assignments are two different roles, thus the need for two different identities. A blueprint definition can use either system-assigned or user-assigned managed identities. However, when using the **Blueprint Operator** role, the blueprint definition needs to be configured to use a ***user-assigned managed identity***. Additionally, the account or security group being granted the Blueprint Operator role needs to be granted the Managed Identity Operator role on the user-assigned managed identity. Without this permission, blueprint assignments fail because of lack of permissions.  
 
@@ -103,7 +103,7 @@ These objects are publicly available on Github.com. Once the Blueprint objects h
 |Artifact|MGMTVM.json|Sets up logging of various components to Azure storage|
 |Artifact|net.json|Sets up networking and various subnets|
 |Artifact|nsg.json|Sets up network security groups|
-|Artifact|wvdDeploy.json|Deploys WVD session hosts, created the WVD host pool and application group, and adds the session hosts to the application group|
+|Artifact|wvdDeploy.json|Deploys AVD session hosts, created the AVD host pool and application group, and adds the session hosts to the application group|
 |Artifact|wvdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
 ## Blueprint Parameters
@@ -114,7 +114,7 @@ The blueprint includes the following required parameters.
 
 | Parameter | Example Value | Purpose |  
 |-|-|-|  
-|**adds_domainName**|wvdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
+|**adds_domainName**|avdbp.contoso.com|The domainname for the Azure ADDS domain that will be created|
 |**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
 |**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
 |**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
@@ -125,13 +125,13 @@ These optional parameters either have default values or, by default, do not have
 
 | Parameter | Default Value | Purpose |
 |-|-|-|
-|**resourcePrefix**|WVD|A text string prefixed to the begining of each resource name.|
-|**adds_emailNotifications**|wvdbpadmin@contoso.com|An email account that will receive ADDS notifications|
-|**_ScriptURI**|https://raw.githubusercontent.com/Azure/WVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
+|**resourcePrefix**|AVD|A text string prefixed to the begining of each resource name.|
+|**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
+|**_ScriptURI**|https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|
 |**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
-|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vnet created by the WVD Blueprint.|
+|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vnet created by the AVD Blueprint.|
 |**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
 |**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
 |**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
@@ -141,7 +141,7 @@ These optional parameters either have default values or, by default, do not have
 |**wvdHostpool_hostpoolname**|{resourcePrefix}-wvd-hp||
 |**wvdHostpool_workspaceName**|{resourcePrefix}-wvd-ws||
 |**wvdHostpool_hostpoolDescription**|||
-|**wvdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each WVD session host name.|
+|**wvdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each AVD session host name.|
 |**wvdHostpool_vmGalleryImageOffer**|office-365||
 |**wvdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
 |**wvdHostpool_vmGalleryImageSKU**|20h1-evd-o365pp||
@@ -165,12 +165,12 @@ These optional parameters either have default values or, by default, do not have
 2. Publish the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 3. Assign the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 
-**NOTE:** The following two sections are two methods available to assign the WVD Blueprint.  You can select one or the other, you do not have to do both.
+**NOTE:** The following two sections are two methods available to assign the AVD Blueprint.  You can select one or the other, you do not have to do both.
 
 ### Manage the Blueprint using Azure Cloud Shell
 Azure hosts Azure Cloud Shell, an interactive shell environment that can be used through a web browser.
 You can use either Bash or PowerShell with Cloud Shell to work with Azure services.
-You can use the Cloud Shell preinstalled commands to import and assign the WVD Blueprint without having to install anything on your local environment.  
+You can use the Cloud Shell preinstalled commands to import and assign the AVD Blueprint without having to install anything on your local environment.  
 There are several ways to get started with Azure Cloud Shell:  
 
 1. Start Azure CloudShell:  
@@ -183,10 +183,10 @@ There are several ways to get started with Azure Cloud Shell:
 
 1. Start PowerShell in Azure CloudShell ([more information here](https://docs.microsoft.com/en-us/azure/cloud-shell/overview#choice-of-preferred-shell-experience))
 
-1. Run the following command to clone the Azure WVDBlueprint repository to CloudDrive.  
+1. Run the following command to clone the Azure AVDBlueprint repository to CloudDrive.  
 
     ```dos
-    git clone https://github.com/Azure/WVDBlueprint.git $HOME/clouddrive/WVDBlueprint
+    git clone https://github.com/Azure/AVDBlueprint.git $HOME/clouddrive/AVDBlueprint
     ```
 
     **TIP:**  Run ```dir $HOME/clouddrive``` to verify the repository was successfully cloned to your CloudDrive  
@@ -198,10 +198,10 @@ There are several ways to get started with Azure Cloud Shell:
     Import-Module Az.Blueprint
     ```
 
-1. Run the following command to import the WVD Blueprint definition, and save it within the specified subscription or management group.  
+1. Run the following command to import the AVD Blueprint definition, and save it within the specified subscription or management group.  
 
     ```powershell
-    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath "$HOME/clouddrive/WVDBlueprint/blueprint"
+    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath "$HOME/clouddrive/AVDBlueprint/blueprint"
     ```  
 
     **NOTE:** The '-InputPath' argument must point to the folder where blueprint.json file is placed.
@@ -211,16 +211,16 @@ You can review newly imported Blueprint definitions and follow instructions to e
 
 ### Manage the Blueprint using local storage on a device (Windows instructions)  
 
-You can manage the WVD Blueprint using a device that has a small amount of local storage available.
+You can manage the AVD Blueprint using a device that has a small amount of local storage available.
 
-1. Go the [WVD Blueprint Github repository main folder](https://github.com/Azure/WVDBlueprint).  
+1. Go the [AVD Blueprint Github repository main folder](https://github.com/Azure/AVDBlueprint).  
 
 1. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
 
       ![Image for Github Download Zip option](./images/GitDownloadZip2.png)  
 
 1. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
-by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location, such as 'C:\WVDBlueprint-main'.  
+by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location, such as 'C:\AVDBlueprint-main'.  
 
 1. The next step is to import the Blueprint to your Azure subscription. These are the high-level steps to import the Blueprint:
 
@@ -243,7 +243,7 @@ by double-clicking the downloaded .zip file, and then copying the main folder wi
 1. Run the following command to import the Blueprint to your Azure subscription:  
 
     ```powershell    
-    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\WVDBlueprint-main\Blueprint'
+    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\AVDBlueprint-main\Blueprint'
     ```
 
 1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
@@ -251,13 +251,13 @@ You can review newly imported Blueprint definitions and follow instructions to e
 
 ## Teardown
 
-If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in a WVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
+If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
 
-The script finds and removes the following items that were previously deployed via WVD Blueprint:
+The script finds and removes the following items that were previously deployed via AVD Blueprint:
 
 * All SessionHosts and HostPools in a ResourceGroup based on resource prefix
-* All users discovered in 'WVD Users' group
-* 'WVD Users' group itself
+* All users discovered in 'AVD Users' group
+* 'AVD Users' group itself
 * 'AAD DC Admins' group
 
 Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will create one Powershell Job for each Resource Group being removed. Teardowns typically take quite some time, so this will allow you to return to prompt and keep working while the job runs in the background.  
@@ -265,7 +265,7 @@ Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will 
 **Example:**
 
 ```powershell
-#Exports logs of a WVD Blueprint deployment that used the prefix "ABC" followed by a removal:
+#Exports logs of a AVD Blueprint deployment that used the prefix "ABC" followed by a removal:
 .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
 #Use help for more details or examples:  
@@ -274,27 +274,28 @@ help .\Remove-AzWvdBpDeployment.ps1
 
 ## Tips
 
-* About the Group Policy settings that are applied to the WVD session host computers, during the Blueprint deployment. There are two 
-sections of Group Policy settings applied to the WVD session hosts:  
+* About the Group Policy settings that are applied to the AVD session host computers, during the Blueprint deployment. There are two 
+sections of Group Policy settings applied to the AVD session hosts:  
 
     - **FSLogix settings**
     - **"RDP session host lockdown" settings**  
 
 The FSLogix are there to enable the FSLogix profile management solution.  During Blueprint deployment, some of the parameters are evaluated and used to create a variable for the FSLogix profile share UNC, as it exits in this particular deployment.  That value is then written to a new GPO that is created just prior to the share UNC enumeration, and is only applied to an OU object, also created prior to the share UNC enumeration.  
-With respect to the **"RDP session host lockdown"** settings, those are set by default, based on various security recommendations, made by Microsoft and others. The **"RDP session host lockdown** settings are all set in a script file called **'Create-AzAADDSJoinedFileshare.ps1'**.  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each WVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
+With respect to the **"RDP session host redirection"** settings, those are set by default, based on various security recommendations, made by Microsoft and others. The **"RDP session host redirection** settings are all set in a script file called **'CreateAADDSFileShare_ConfigureGP.ps1'**.  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
 
-1. WVD Session Hosts are created, and joined to the AAD DS domain.  This happens in the artifact **"WVDDeploy.json"**.
+1. AVD session host VMs are created, and joined to the AAD DS domain.  This happens in the artifact **"WVDDeploy.json"**.
 2. Later the "management VM" is created, and joined to the domain.  This domain join triggers a reboot, and the JoinDomain extension waits for the machine to reboot and check in before the "MGMTVM" artifact continues.
 3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from Azure storage, to the management VM.
-4. The Managment VM runs the 'Create-AzAADDSJoinedFileshare.ps1' script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
+4. The Managment VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
 5. The domain management code does the following for the session hosts:
-    1. Creates a new GPO called **"WVD Session Host policy"**        
-    2. Creates a new OU called **"WVD Computers"**
-    3. Links the WVD GPO to the WVD OU
-    4. Restores a previous GP export, which imports a Startup script, and also copies that Startup script to the current location in SYSVOl policies
-    5. Moves only the WVD session host computer objects to the new WVD OU
-    6. Invokes a command to each VM in the WVD OU, to immediately refresh Group Policy
-    7. Invokes a command to each VM in the WVD OU, to reboot with a 5 second delay, so that the VMs can run the FSLogix startup script, which installs the FSLogix software.
+    1. Creates a new GPO called **"AVD Session Host policy"**        
+    2. Creates a new OU called **"AVD Computers"**
+    3. Links the AVD GPO to the AVD OU
+    4. Restores a previous GP export, which imports a Startup script to the new GPO Startup folder
+    5. Moves only the AVD session host computer objects to the new AVD OU
+    6. Invokes a command to each VM in the AVD OU, to immediately refresh Group Policy
+    7. Invokes a command to each VM in the AVD OU, to reboot with a 5 second delay
+    8. On restart, the AVD VMs will run the Virtual Desktop Optimization Tool available from Github.com.
         
 Now for the tip.  If there is a particular setting that you do not want to apply, you could download a copy of the script **'Create-AzAADDSJoinedFileshare.ps1'**.  Then you can customize the script file by editing out the line that applies a particular group policy setting that you may not want to apply to the WVD sessions host.  An example will be listed just below.  
 So that the WVD session hosts can be customized to your environment, you would then create an Azure storage container, set to anonymous access, then upload your script to that location.  
