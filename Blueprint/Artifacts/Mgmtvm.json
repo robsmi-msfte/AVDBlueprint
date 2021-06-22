@@ -6,11 +6,11 @@
     "displayName": "Management VM",
     "description": "Management VM",
     "dependsOn": [
-       "wvdDeploy",
-       "DNSsharedsvcs",
+       "avdDeploy",
+       "dnsSharedSvcs",
        "addsDAUser",
        "adds",
-       "wvdUsers"
+       "avdUsers"
     ],
     "template": {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",

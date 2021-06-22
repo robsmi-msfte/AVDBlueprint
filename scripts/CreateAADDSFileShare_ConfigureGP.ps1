@@ -33,7 +33,7 @@ $Scriptblock = {
     klist tickets | Out-File -append c:\windows\temp\innercontext.txt
     
 
-    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "WVD Users").Id
+    $FileShareUserGroupId = (Get-AzADGroup -DisplayName "AVD Users").Id
     
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
 
@@ -125,17 +125,17 @@ Get-Timezone | Out-File -FilePath $ScriptLogActionsTimes
 Get-Date | Out-File -append $ScriptLogActionsTimes
 "______________________________" | Out-File -append $ScriptLogActionsTimes
 
-# Download WVD post-install group policy settings zip file, and expand it
-$WVDPostInstallGPSettingsZip = "$CTempPath\WVD_PostInstall_GP_Settings.zip"
-Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/WVD_PostInstall_GP_Settings.zip' -OutFile $WVDPostInstallGPSettingsZip
-If (Test-Path $WVDPostInstallGPSettingsZip){
-Expand-Archive -LiteralPath $WVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
+# Download AVD post-install group policy settings zip file, and expand it
+$AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
+Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/AVD_PostInstall_GP_Settings.zip' -OutFile $AVDPostInstallGPSettingsZip
+If (Test-Path $AVDPostInstallGPSettingsZip){
+Expand-Archive -LiteralPath $AVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
 }
 
 # Create a startup script for the session hosts, to run the Virtual Desktop Optimization Tool
-$WVDSHSWShare = "$" + "SoftwareShare" + " = " + "'\\$ENV:ComputerName\Software'"
-$WVDSHSWShare | Out-File -FilePath "$CTempPath\PostInstallConfigureWVDSessionHosts.ps1"
-$PostInstallWVDConfig = @'
+$AVDSHSWShare = "$" + "SoftwareShare" + " = " + "'\\$ENV:ComputerName\Software'"
+$AVDSHSWShare | Out-File -FilePath "$CTempPath\PostInstallConfigureAVDSessionHosts.ps1"
+$PostInstallAVDConfig = @'
 $CTempPath = 'C:\Temp'
 $VDOTZIP = "$CTempPath\VDOT.zip"
 
@@ -157,7 +157,7 @@ If(-not(Test-Path "$CTempPath\Virtual-Desktop-Optimization-Tool-main\*.csv")){
     Invoke-Command -ScriptBlock {Shutdown -r -f -t 00}
 }
 '@
-Add-Content -Path $CTempPath\PostInstallConfigureWVDSessionHosts.ps1 -Value $PostInstallWVDConfig
+Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $PostInstallAVDConfig
 
 # Acquire FSLogix software for the group policy files only
 # since the FSLogix session host software is now included in OS
@@ -170,29 +170,29 @@ Expand-Archive -Path $FSLogixZip -DestinationPath $FSLogixSW
 # Set up a file share for the session hosts
 New-SmbShare -Name "Software" -Path $SoftwareShare
 
-# Create WVD GPO, WVD OU, link the two, then copy session host configuration start script to SYSVOL location
+# Create AVD GPO, AVD OU, link the two, then copy session host configuration start script to SYSVOL location
 $DeploymentPrefix = $ResourceGroupName.Split('-')[0]
 $Domain = Get-ADDomain
 $PDC = $Domain.PDCEmulator
 $FQDomain = $Domain.DNSRoot
-$WVDPolicy = New-GPO -Name "WVD Session Host Policy"
-$PolicyID ="{" +  $WVDPolicy.ID + "}"
-$WVDComputersOU = New-ADOrganizationalUnit -Name 'WVD Computers' -DisplayName 'WVD Computers' -Path $Domain.DistinguishedName -Server $PDC -PassThru
-New-GPLink -Target $WVDComputersOU.DistinguishedName -Name $WVDPolicy.DisplayName -LinkEnabled Yes
+$AVDPolicy = New-GPO -Name "AVD Session Host Policy"
+$PolicyID ="{" +  $AVDPolicy.ID + "}"
+$AVDComputersOU = New-ADOrganizationalUnit -Name 'AVD Computers' -DisplayName 'AVD Computers' -Path $Domain.DistinguishedName -Server $PDC -PassThru
+New-GPLink -Target $AVDComputersOU.DistinguishedName -Name $AVDPolicy.DisplayName -LinkEnabled Yes
 
-# Get credentials and use those to move WVD session hosts to their new OU
+# Get credentials and use those to move AVD session hosts to their new OU
 $KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
 $DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
 $DAUserName = $DAUserUPN.Split('@')[0]
 $DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName).SecretValue
 $DACredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $DAUserUPN, $DAPass
-$WVDComputersToMove = Get-ADComputer -Filter * -Server $PDC| Where-Object {($_.DNSHostName -like "$DeploymentPrefix*" -and $_.DNSHostName -notlike "*mgmtvm*")}
-Foreach ($W in $WVDComputersToMove) {Move-ADObject -Credential $DACredential -Identity $W.DistinguishedName -TargetPath $WVDComputersOU.DistinguishedName -Server $PDC}
+$AVDComputersToMove = Get-ADComputer -Filter * -Server $PDC| Where-Object {($_.DNSHostName -like "$DeploymentPrefix*" -and $_.DNSHostName -notlike "*mgmtvm*")}
+Foreach ($W in $AVDComputersToMove) {Move-ADObject -Credential $DACredential -Identity $W.DistinguishedName -TargetPath $AVDComputersOU.DistinguishedName -Server $PDC}
 
-# Create a "GPO Central Store", by copying a "PolicyDefinitions" folder from one of the new WVD session hosts
-$VMsToManage = (Get-ADComputer -Filter * -Server $PDC -SearchBase $WVDComputersOU.DistinguishedName -SearchScope Subtree).name
-$WVDSH1PolicyDefinitionsUNC = "\\" + $VMsToManage[0] + "\C$\Windows\PolicyDefinitions"
-Copy-Item -Path $WVDSH1PolicyDefinitionsUNC -Destination "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse -Force
+# Create a "GPO Central Store", by copying a "PolicyDefinitions" folder from one of the new AVD session hosts
+$VMsToManage = (Get-ADComputer -Filter * -Server $PDC -SearchBase $AVDComputersOU.DistinguishedName -SearchScope Subtree).name
+$AVDSH1PolicyDefinitionsUNC = "\\" + $VMsToManage[0] + "\C$\Windows\PolicyDefinitions"
+Copy-Item -Path $AVDSH1PolicyDefinitionsUNC -Destination "\\$FQDomain\SYSVOL\$FQDomain\Policies" -Recurse -Force
 
 # Now that GPO Central Store exists, copy in the FSLogix Group Policy template files
 $PolicyDefinitions = "\\$FQDomain\SYSVOL\$FQDomain\Policies\PolicyDefinitions"
@@ -213,22 +213,22 @@ $StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName).file.core.windo
 $StorageShareName = Get-AzRmStorageShare -StorageAccount $CurrentStorageAccountName
 $StorageUNC = "\\$StorageFQDN\$($StorageShareName.Name)"
 
-# Import WVD GP startup settings from an export and apply that to the WVD GPO
+# Import AVD GP startup settings from an export and apply that to the AVD GPO
 $Pattern = "\{[0-9a-fA-F]{8}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{4}\-[0-9a-fA-F]{12}\}"
 Get-ChildItem -Path $CTempPath | Where-Object {$_.Name -match $Pattern}
 $GPOBackupGuid = (Get-ChildItem -Path $CTempPath | Where-Object { $_.Name -match $Pattern }).Name -replace "{" -replace "}"
-Import-GPO -BackupId $GPOBackupGuid -Path $CTempPath -TargetName $WVDPolicy.DisplayName
+Import-GPO -BackupId $GPOBackupGuid -Path $CTempPath -TargetName $AVDPolicy.DisplayName
 
-# Now that the WVD Startup folder is created, copy the WVD SH Startup script to the Scripts Startup folder
+# Now that the AVD Startup folder is created, copy the AVD SH Startup script to the Scripts Startup folder
 $PolicyStartupFolder = "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
-Copy-Item "$CTempPath\PostInstallConfigureWVDSessionHosts.ps1" -Destination $PolicyStartupFolder -Force -ErrorAction SilentlyContinue
+Copy-Item "$CTempPath\PostInstallConfigureAVDSessionHosts.ps1" -Destination $PolicyStartupFolder -Force -ErrorAction SilentlyContinue
 
-# Now apply the rest of the WVD group policy settings
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type DWORD -ValueName "FlipFlopProfileDirectoryName" -Value 1
-Set-GPRegistryValue -Name "WVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
+# Now apply the rest of the AVD group policy settings
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type STRING -ValueName "VHDLocations" -Value $StorageUNC
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type DWORD -ValueName "Enabled" -Value 1
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type DWORD -ValueName "DeleteLocalProfileWhenVHDShouldApply" -Value 1
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\Profiles" -Type DWORD -ValueName "FlipFlopProfileDirectoryName" -Value 1
+Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
 
 #Force a GPUpdate now, then reboot so they can take effect, and so the Startup script can run to install FSLogix
 Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}

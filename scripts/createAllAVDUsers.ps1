@@ -1,13 +1,13 @@
-param ($totalUsers, $prefix, $domainname, $keyvault, $forcePasswordChange, $adGroup, $wvdAppGroup, $wvdRolename, $appGroupRG)
+param ($totalUsers, $prefix, $domainname, $keyvault, $forcePasswordChange, $adGroup, $avdAppGroup, $avdRolename, $appGroupRG)
 
 Write-host "Total Users: $totalUsers"
 Write-host "Prefix: $prefix"
 Write-host "AD Group: $adGroup"
 Write-host "KeyVault: $keyvault"
 Write-host "Force PW Change: $forcePasswordChange"
-Write-host "WVD App Group $wvdAppGroup"
-Write-host " WVD Role: $wvdRolename"
-Write-host "WVD App Group RG: $appGroupRG"
+Write-host "AVD App Group $avdAppGroup"
+Write-host "AVD Role: $avdRolename"
+Write-host "AVD App Group RG: $appGroupRG"
 
 for ($i = 1 ; $i -le $totalUsers ; $i++) {
     $displayName = $prefix + $i
@@ -19,5 +19,5 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
     }
 
     .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
-    .\assignWVDRole.ps1 -upn "$userPrincipalName" -roleName "$wvdRolename" -appGroupName "$wvdAppGroup" -appGroupRG "$appGroupRG"
+    .\assignAVDRole.ps1 -upn "$userPrincipalName" -roleName "$avdRolename" -appGroupName "$avdAppGroup" -appGroupRG "$appGroupRG"
 }

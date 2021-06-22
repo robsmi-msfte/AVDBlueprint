@@ -1,13 +1,13 @@
 <#
 .SYNOPSIS
-    Exports logs from and removes an entire WVD Blueprint deployment
+    Exports logs from and removes an entire AVD Blueprint deployment
 .DESCRIPTION
-    Exports logs found in a WVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime    
+    Exports logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime    
 
-    Finds and removes the following items that were previously deployed via WVD Blueprint:
+    Finds and removes the following items that were previously deployed via AVD Blueprint:
     - All SessionHosts and HostPools in a ResourceGroup based on resource prefix
-    - All users discovered in 'WVD Users' group
-    - 'WVD Users' group itself
+    - All users discovered in 'AVD Users' group
+    - 'AVD Users' group itself
     - 'AAD DC Admins' group
 
     
@@ -17,17 +17,17 @@
 
     
 .LINK
-    https://github.com/Azure/WVDBlueprint
+    https://github.com/Azure/AVDBlueprint
 
 .EXAMPLE
-    .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
+    .\Remove-AzAvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
-    Exports logs of a WVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
+    Exports logs of a AVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
 
 .EXAMPLE
-    .\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -DisableLogExport
+    .\Remove-AzAvdBpDeployment.ps1 -Verbose -Prefix "ABC" -DisableLogExport
 
-    Performs a removal of a WVD Blueprint deployment that used the prefix "ABC" without first exporting the deployment's logs
+    Performs a removal of a AVD Blueprint deployment that used the prefix "ABC" without first exporting the deployment's logs
 
 .INPUTS
     None. You cannot pipe objects into this script.
@@ -112,12 +112,12 @@ $RemovalScope | ForEach-Object {
     }
 }
 
-Write-Verbose "Processing tenant level items created by WVD Blueprint"
+Write-Verbose "Processing tenant level items created by AVD Blueprint"
 
-$RemoveWvdUsers = Get-AzADGroup -DisplayName "WVD Users" | Get-AzADGroupMember
-Write-Verbose "Found $($RemoveWvdUsers.count) WVD users"
-$RemoveWvdUsers | ForEach-Object {
-    if ($PSCmdlet.ShouldProcess($_.DisplayName, "Remove WVD User")) {
+$RemoveAvdUsers = Get-AzADGroup -DisplayName "AVD Users" | Get-AzADGroupMember
+Write-Verbose "Found $($RemoveAvdUsers.count) AVD users"
+$RemoveAvdUsers | ForEach-Object {
+    if ($PSCmdlet.ShouldProcess($_.DisplayName, "Remove AVD User")) {
         Remove-AzADUser -DisplayName $_.DisplayName -Force
     }
 }
@@ -130,11 +130,11 @@ $RemoveDomAdminUser | ForEach-Object {
     }
 }
 
-$RemoveWvdGroup = Get-AzADGroup -DisplayName "WVD Users"
-if ($RemoveWvdGroup) {
-    Write-Verbose "Found '$($RemoveWvdGroup.DisplayName)' group"
-    if ($PSCmdlet.ShouldProcess($RemoveWvdGroup.DisplayName, "Remove WVD Group")) {
-        $RemoveWvdGroup | Remove-AzADGroup -Force
+$RemoveAvdGroup = Get-AzADGroup -DisplayName "AVD Users"
+if ($RemoveAvdGroup) {
+    Write-Verbose "Found '$($RemoveAvdGroup.DisplayName)' group"
+    if ($PSCmdlet.ShouldProcess($RemoveAvdGroup.DisplayName, "Remove AVD Group")) {
+        $RemoveAvdGroup | Remove-AzADGroup -Force
     }
 }
 

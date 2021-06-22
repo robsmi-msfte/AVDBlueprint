@@ -10,13 +10,13 @@
         }
     },
     "properties": {
-      "displayName": "WVD Blueprint - Full Deployment (Default)",
-      "description": "Deploys a default WVD deployment with all dependencies.",
+      "displayName": "AVD Blueprint - Full Deployment (Default)",
+      "description": "Deploys a default AVD deployment with all dependencies.",
       "blueprintId": "[INSERT BLUEPRINT ID]",
       "scope": "[SUBSCRIPTION ID]",
       "parameters": {
         "resourcePrefix": {
-            "value": "WVD"
+            "value": "AVD"
         },
         "ADDS_domainName": {
             "value": "[DOMAINNAME]"

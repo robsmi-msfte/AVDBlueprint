@@ -1,12 +1,12 @@
 {
     "kind": "template",
     "type": "Microsoft.Blueprint/blueprints/artifacts",
-    "name": "wvdUsers",
+    "name": "avdUsers",
     "properties": {
-      "displayName": "WVD User Accounts",
+      "displayName": "AVD User Accounts",
       "description": "",
       "dependsOn": [
-         "wvdDeploy"
+         "avdDeploy"
       ],
       "template": {
         "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -18,17 +18,17 @@
               "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
             }
           },
-          "aad_wvduserGroup": {
+          "aad_avduserGroup": {
             "type": "string",
             "metadata": {
-                "displayName": "AAD WVD Test Users Group"
+                "displayName": "AAD AVD Test Users Group"
             },
-            "defaultValue": "WVD Users"
+            "defaultValue": "AVD Users"
           },
-          "createWVDUserScriptURI": {
+          "createAVDUserScriptURI": {
             "type": "string"
           },
-          "assignWVDRoleScriptURI": {
+          "assignAVDRoleScriptURI": {
             "type": "string"
           },
           "addADUserScriptURI": {
@@ -58,7 +58,7 @@
             },
             "defaultValue": "user"
           },
-          "wvdUsers_userCount": {
+          "avdUsers_userCount": {
             "type": "int",
             "metadata": {
               "displayName": "Total test users",
@@ -101,8 +101,8 @@
           "hostpoolName": "[replace(parameters('hostpoolName'),'\"','')]",
           "pw_secret_value": "[concat(toUpper(uniqueString(parameters('secret-unique-value1'))), uniqueString(parameters('secret-unique-value2')), toLower(uniqueString(parameters('secret-unique-value3'))), '!')]",
           "forcePasswordChange": true,
-          "wvd_appGroupName": "[concat(variables('hostpoolName'),'-DAG')]",
-          "wvd_UserRole": "Desktop Virtualization User"
+          "avd_appGroupName": "[concat(variables('hostpoolName'),'-DAG')]",
+          "avd_UserRole": "Desktop Virtualization User"
         },
         "resources": [
           {
@@ -117,16 +117,16 @@
             }, 
             "copy": {
               "name": "usersecrets",
-              "count": "[parameters('wvdUsers_userCount')]"
+              "count": "[parameters('avdUsers_userCount')]"
             }
           },
           {
             "type": "Microsoft.Resources/deploymentScripts",
             "apiVersion": "2020-10-01",
-            "name": "createWVDUsers",
+            "name": "createAVDUsers",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-              "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('key-vault-name'), concat(parameters('userPrefix'), parameters('wvdUsers_userCount')))]"
+              "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('key-vault-name'), concat(parameters('userPrefix'), parameters('avdUsers_userCount')))]"
             ],
             "kind": "AzurePowerShell",
             "identity": {
@@ -139,15 +139,15 @@
             "properties": {
               "forceUpdateTag": "[parameters('utcValue')]",
               "azPowerShellVersion": "5.4",
-              "arguments": "[concat('-totalUsers', ' ''', parameters('wvdUsers_userCount'), ''' ', '-prefix', ' ''', parameters('userPrefix'), ''' ', '-domainname', ' ''', parameters('domainname'), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-wvdAppGroup', ' ''', variables('wvd_appGroupName'), ''' ', '-wvdRolename', ' ''', variables('wvd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_wvduserGroup'), '''')]",
-              "primaryScriptUri": "[parameters('createWVDUserScriptURI')]",
+              "arguments": "[concat('-totalUsers', ' ''', parameters('avdUsers_userCount'), ''' ', '-prefix', ' ''', parameters('userPrefix'), ''' ', '-domainname', ' ''', parameters('domainname'), ''' ', '-keyvault', ' ', variables('key-vault-name'), ' ', '-forcePasswordChange', ' ', variables('forcePasswordChange'), ' ', '-appGroupRG', ' ''', resourceGroup().name, ''' ', '-avdAppGroup', ' ''', variables('avd_appGroupName'), ''' ', '-avdRoleName', ' ''', variables('avd_UserRole'), ''' ', '-adGroup', ' ''', parameters('aad_avduserGroup'), '''')]",
+              "primaryScriptUri": "[parameters('createAVDUserScriptURI')]",
               "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
               "retentionInterval": "P1D",
               "supportingScriptUris": [
                 "[parameters('addADUserScriptURI')]",
                 "[parameters('assignADGroupScriptURI')]",
-                "[parameters('assignWVDRoleScriptURI')]"
+                "[parameters('assignAVDRoleScriptURI')]"
               ]
             }
           }
@@ -163,22 +163,22 @@
           "value": "[parameters('adds_domainName')]"
         },
         "hostpoolName": {
-          "value": "[parameters('wvdHostPool_hostpoolName')]"
+          "value": "[parameters('avdHostPool_hostpoolName')]"
         },
         "userPrefix": {
-          "value": "[parameters('wvdUsers_userPrefix')]"
+          "value": "[parameters('avdUsers_userPrefix')]"
         },
-        "wvdUsers_userCount": {
-            "value": "[parameters('wvdUsers_userCount')]"
+        "avdUsers_userCount": {
+            "value": "[parameters('avdUsers_userCount')]"
         },
-        "aad_wvduserGroup": {
-          "value": "WVD Users"
+        "aad_avduserGroup": {
+          "value": "AVD Users"
         },
-        "createWVDUserScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/createAllWVDUsers.ps1')]"
+        "createAVDUserScriptURI": {
+          "value": "[concat(parameters('_ScriptURI'),'/createAllAVDUsers.ps1')]"
         },
-        "assignWVDRoleScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/assignWVDRole.ps1')]"
+        "assignAVDRoleScriptURI": {
+          "value": "[concat(parameters('_ScriptURI'),'/assignAVDRole.ps1')]"
         },
         "addADUserScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/addADuser.ps1')]"
