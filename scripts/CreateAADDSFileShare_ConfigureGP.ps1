@@ -130,7 +130,7 @@ Get-Date | Out-File -append $ScriptLogActionsTimes
 
 # Download AVD post-install group policy settings zip file, and expand it
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
-Invoke-WebRequest -Uri "[concat(parameters('$ScriptURI'), '/AVD_PostInstall_GP_Settings.zip')]" -OutFile $AVDPostInstallGPSettingsZip
+Invoke-WebRequest -Uri "$ScriptURI/AVD_PostInstall_GP_Settings.zip" -OutFile 'C:\Temp\AVD_PostInstall_GP_Settings.zip'
 If (Test-Path $AVDPostInstallGPSettingsZip){
 Expand-Archive -LiteralPath $AVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
 }
