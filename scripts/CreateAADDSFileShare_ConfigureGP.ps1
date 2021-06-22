@@ -4,7 +4,10 @@ Param(
     [string] $ResourceGroupName,
 
     [Parameter(Mandatory=$true)]
-    [string] $StorageAccountName
+    [string] $StorageAccountName,
+
+    [Parameter(Mandatory=$true)]
+    [string] $ScriptURI
 )
 #Install RSAT-AD Tools, GP Tools, Az PS, and download components
 Install-WindowsFeature -name GPMC
@@ -127,7 +130,7 @@ Get-Date | Out-File -append $ScriptLogActionsTimes
 
 # Download AVD post-install group policy settings zip file, and expand it
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
-Invoke-WebRequest -Uri 'https://agblueprintsa.blob.core.windows.net/blueprintscripts/AVD_PostInstall_GP_Settings.zip' -OutFile $AVDPostInstallGPSettingsZip
+Invoke-WebRequest -Uri "[concat(parameters('$ScriptURI'), '/AVD_PostInstall_GP_Settings.zip')]" -OutFile $AVDPostInstallGPSettingsZip
 If (Test-Path $AVDPostInstallGPSettingsZip){
 Expand-Archive -LiteralPath $AVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
 }
@@ -219,7 +222,7 @@ Get-ChildItem -Path $CTempPath | Where-Object {$_.Name -match $Pattern}
 $GPOBackupGuid = (Get-ChildItem -Path $CTempPath | Where-Object { $_.Name -match $Pattern }).Name -replace "{" -replace "}"
 Import-GPO -BackupId $GPOBackupGuid -Path $CTempPath -TargetName $AVDPolicy.DisplayName
 
-# Now that the AVD Startup folder is created, copy the AVD SH Startup script to the Scripts Startup folder
+# Now that the AVD GP Startup folder is created, copy the AVD SH Startup script to the Scripts Startup folder
 $PolicyStartupFolder = "\\$FQDomain\SYSVOL\$FQDomain\Policies\$PolicyID\Machine\Scripts\Startup"
 Copy-Item "$CTempPath\PostInstallConfigureAVDSessionHosts.ps1" -Destination $PolicyStartupFolder -Force -ErrorAction SilentlyContinue
 
