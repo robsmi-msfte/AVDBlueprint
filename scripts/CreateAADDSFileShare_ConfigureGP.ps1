@@ -25,7 +25,7 @@ $Scriptblock = {
     [Parameter(Mandatory=$true,Position=1)]
     [string] $StorageAccountName,
 
-    [Parameter(Mandatory=$true,Position=2)]
+    [Parameter(Mandatory=$true)]
     [string] $ScriptURI
     )
     
