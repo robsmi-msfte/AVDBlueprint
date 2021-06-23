@@ -24,9 +24,6 @@ $Scriptblock = {
 
     [Parameter(Mandatory=$true,Position=1)]
     [string] $StorageAccountName,
-    
-    [Parameter(Mandatory=$true)]
-    [string] $ScriptURI
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
