@@ -25,12 +25,13 @@ $Scriptblock = {
     [Parameter(Mandatory=$true,Position=1)]
     [string] $StorageAccountName,
     
-    [Parameter(Mandatory=$true,Position=1)]
+    [Parameter(Mandatory=$true,Position=2)]
     [string] $ScriptURI
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
     $ScriptURI | Out-File -FilePath C:\Windows\Temp\ScriptURI.txt
+    
     #Login with Managed Identity
     Connect-AzAccount -Identity
 
