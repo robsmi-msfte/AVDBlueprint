@@ -251,9 +251,10 @@
           "21h1-evd-o365pp-g2"
       ],
         "metadata": {
-          "displayName": "Gallery Image SKU"
+          "displayName": "Gallery Image SKU",
+          "description": "20h1=2004, 20h2=2009, 21h1=21h1"
         },
-        "defaultValue": "20h1-evd-o365pp"
+        "defaultValue": "21h1-evd-o365pp"
       },
       "avdHostPool_vmImageType": {
         "type": "string",
