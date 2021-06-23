@@ -133,9 +133,10 @@ Get-Date | Out-File -append $ScriptLogActionsTimes
 
 # Download AVD post-install group policy settings zip file, and expand it
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
-$CTempPath | Out-File -append $ScriptLogActionsTimes
-$AVDPostInstallGPSettingsZip | Out-File -append $ScriptLogActionsTimes
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
+$CTempPath | Out-File -append $ScriptLogActionsTimes
+$ScriptURI  | Out-File -append $ScriptLogActionsTimes
+$AVDPostInstallGPSettingsZip | Out-File -append $ScriptLogActionsTimes
 $ZipFileURI | Out-File -append $ScriptLogActionsTimes
 
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
