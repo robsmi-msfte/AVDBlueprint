@@ -30,8 +30,7 @@ $Scriptblock = {
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
-    $ScriptURI | Out-File -FilePath C:\Windows\Temp\ScriptURI.txt
-    
+        
     #Login with Managed Identity
     Connect-AzAccount -Identity
 
@@ -132,18 +131,10 @@ Param(
 # Set up a log to measure GP settings time to complete
 $CTempPath = 'C:\Temp'
 New-Item -ItemType Directory -Path $CTempPath
-$ScriptLogActionsTimes = 'C:\Temp\ScriptActionLogTimes.txt'
-Get-Timezone | Out-File -FilePath $ScriptLogActionsTimes
-Get-Date | Out-File -append $ScriptLogActionsTimes
-"______________________________" | Out-File -append $ScriptLogActionsTimes
 
 # Download AVD post-install group policy settings zip file, and expand it
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
-$AVDPostInstallGPSettingsZip | Out-File -append $ScriptLogActionsTimes
-$ScriptURI  | Out-File -append $ScriptLogActionsTimes
-$CTempPath | Out-File -append $ScriptLogActionsTimes
-$ZipFileURI | Out-File -append $ScriptLogActionsTimes
 
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
 If (Test-Path $AVDPostInstallGPSettingsZip){
