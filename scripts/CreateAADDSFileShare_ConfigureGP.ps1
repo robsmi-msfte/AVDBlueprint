@@ -23,7 +23,7 @@ $Scriptblock = {
     [string] $ResourceGroupName,
 
     [Parameter(Mandatory=$true,Position=1)]
-    [string] $StorageAccountName,
+    [string] $StorageAccountName
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
