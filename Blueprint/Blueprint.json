@@ -1,10 +1,10 @@
 {
   "type": "Microsoft.Blueprint/blueprints",
-  "name": "WVD Blueprint",
+  "name": "AVD Blueprint",
   "properties": {
     "targetScope": "subscription",
     "parameters": {
-      "wvdUsers_userPrefix": {
+      "avdUsers_userPrefix": {
         "type": "string",
         "metadata": {
           "displayName": "Test User prefix",
@@ -12,23 +12,23 @@
         },
         "defaultValue": "user"
       },
-      "wvdUsers_userCount": {
+      "avdUsers_userCount": {
         "type": "int",
         "metadata": {
-          "displayName": "Total WVD users to create.",
-          "description": "Total Number of WVD users to create."
+          "displayName": "Total AVD users to create.",
+          "description": "Total Number of AVD users to create."
         },
         "defaultValue": 10
       },
-      "wvdHostpool_vmNumberOfInstances": {
+      "avdHostPool_vmNumberOfInstances": {
         "type": "int",
         "metadata": {
-          "displayName": "Total WVD users to create.",
-          "description": "Total Number of WVD users to create."
+          "displayName": "AVD VMs to create.",
+          "description": "Total Number of AVD virtual machines to create."
         },
         "defaultValue": 2
       },
-      "wvdHostpool_vmSize": {
+      "avdHostPool_vmSize": {
         "type": "string",
         "metadata": {
           "displayName": "Azure VM size of the session host(s).",
@@ -36,7 +36,7 @@
         },
         "defaultValue": "Standard_D4s_v3"
       },
-      "wvdHostpool_loadBalancerType": {
+      "avdHostPool_loadBalancerType": {
         "type": "string",
         "metadata": {
           "displayName": "The host pool session balancing method.",
@@ -49,7 +49,7 @@
           ],
           "defaultValue": "BreadthFirst"
       },
-      "wvdHostpool_maxSessionLimit": {
+      "avdHostPool_maxSessionLimit": {
         "type": "int",
         "metadata": {
           "displayName": "User session limit per session host, in the host pool",
@@ -103,7 +103,7 @@
         "metadata": {
           "displayName": "Resource Prefix"
         },
-        "defaultValue": "WVD"
+        "defaultValue": "AVD"
       },
       "_ScriptURI": {
         "type": "string",
@@ -111,7 +111,7 @@
           "displayName": "Script URI",
           "description": "URI where Powershell scripts executed by the blueprint are located."
         },
-        "defaultValue": "https://raw.githubusercontent.com/Azure/WVDBlueprint/main/scripts"
+        "defaultValue": ""
       },
       "log-analytics_service-tier": {
         "type": "string",
@@ -142,7 +142,7 @@
       "vnet_vnet-address-prefix": {
         "type": "string",
         "metadata": {
-          "displayName": "Address prefix of the vnet created by the WVD Blueprint."
+          "displayName": "Address prefix of the vnet created by the AVD Blueprint."
         },
         "defaultValue": "10.0.0.0/16",
         "allowedValues": []
@@ -197,144 +197,152 @@
         },
         "defaultValue": "[concat( 'domainadmin@', parameters('adds_domainName'))]"
       },
-      "wvdHostpool_hostpoolname": {
+      "avdHostPool_hostpoolname": {
         "type": "string",
         "metadata": {
-          "displayName": "WVD Hostpool Name"
+          "displayName": "AVD Hostpool Name"
         },
-        "defaultValue": "[concat(parameters('resourcePrefix'), '-wvd-hp')]"
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-avd-hp')]"
       },
-      "wvdHostpool_workspaceName": {
+      "avdHostPool_workspaceName": {
         "type": "string",
         "metadata": {
-          "displayName": "WVD Workspace Name"
+          "displayName": "AVD Workspace Name"
         },
-        "defaultValue": "[concat(parameters('resourcePrefix'), '-wvd-ws')]"
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-avd-ws')]"
       },
-      "wvdHostpool_hostpoolDescription": {
+      "avdHostPool_hostpoolDescription": {
         "type": "string",
         "metadata": {
-          "displayName": "Hostpool Description"
+          "displayName": "AVD Hostpool Description"
         },
         "defaultValue": ""
       },
-      "wvdHostpool_vmNamePrefix": {
+      "avdHostPool_vmNamePrefix": {
         "type": "string",
         "metadata": {
           "displayName": "VM Prefix",
-          "description": "Prefix added to each WVD session host name."
+          "description": "Prefix added to each AVD session host name."
         },
         "defaultValue": "[concat(parameters('resourcePrefix'), 'VM')]"
       },
-      "wvdHostpool_vmGalleryImageOffer": {
+      "avdHostPool_vmGalleryImageOffer": {
         "type": "string",
         "metadata": {
           "displayName": "Gallery Image Offer"
         },
         "defaultValue": "office-365"
       },
-      "wvdHostpool_vmGalleryImagePublisher": {
+      "avdHostPool_vmGalleryImagePublisher": {
         "type": "string",
         "metadata": {
           "displayName": "Gallery Image Publisher"
         },
         "defaultValue": "MicrosoftWindowsDesktop"
       },
-      "wvdHostpool_vmGalleryImageSKU": {
+      "avdHostPool_vmGalleryImageSKU": {
         "type": "string",
+        "allowedValues": [
+          "20h1-evd-o365pp",
+          "20h1-evd-o365pp-g2",
+          "20h2-evd-o365pp",
+          "20h2-evd-o365pp-g2",
+          "21h1-evd-o365pp",
+          "21h1-evd-o365pp-g2"
+      ],
         "metadata": {
           "displayName": "Gallery Image SKU"
         },
         "defaultValue": "20h1-evd-o365pp"
       },
-      "wvdHostpool_vmImageType": {
+      "avdHostPool_vmImageType": {
         "type": "string",
         "metadata": {
           "displayName": "VM Image Type"
         },
         "defaultValue": "Gallery"
       },
-      "wvdHostpool_vmDiskType": {
+      "avdHostPool_vmDiskType": {
         "type": "string",
         "metadata": {
           "displayName": "VM Image Type"
         },
         "defaultValue": "StandardSSD_LRS"
       },
-      "wvdHostpool_vmUseManagedDisks": {
+      "avdHostPool_vmUseManagedDisks": {
         "type": "bool",
         "metadata": {
           "displayName": "Use Managed Disks"
         },
         "defaultValue": true
       },
-      "wvdHostpool_allApplicationGroupReferences": {
+      "avdHostPool_allApplicationGroupReferences": {
         "type": "string",
         "metadata": {
-          "displayName": "allApplicationGroupReferences (WVDHostpool)",
+          "displayName": "allApplicationGroupReferences (AVDHostpool)",
           "description": "The existing app groups references of the workspace selected."
         },
         "defaultValue": "",
         "allowedValues": []
       },
-      "wvdHostpool_vmImageVhdUri": {
+      "avdHostPool_vmImageVhdUri": {
         "type": "string",
         "metadata": {
-          "displayName": "vmImageVhdUri (WVDHostpool)",
+          "displayName": "vmImageVhdUri (AVDHostpool)",
           "description": "(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs. For example, https://rdsstorage.blob.core.windows.net/vhds/sessionhostimage.vhd"
         },
         "defaultValue": "",
         "allowedValues": []
       },
-      "wvdHostpool_vmCustomImageSourceId": {
+      "avdHostPool_vmCustomImageSourceId": {
         "type": "string",
         "metadata": {
-          "displayName": "vmCustomImageSourceId (WVDHostpool)",
+          "displayName": "vmCustomImageSourceId (AVDHostpool)",
           "description": "(Required when vmImageType = CustomImage) Resource ID of the image."
         },
         "defaultValue": "",
         "allowedValues": []
       },
-      "wvdHostpool_networkSecurityGroupId": {
+      "avdHostPool_networkSecurityGroupId": {
         "type": "string",
         "metadata": {
-          "displayName": "networkSecurityGroupId (WVDHostpool)",
+          "displayName": "networkSecurityGroupId (AVDHostpool)",
           "description": "The resource ID of an existing network security group."
         },
         "defaultValue": "",
         "allowedValues": []
       },
-      "wvdHostpool_personalDesktopAssignmentType": {
+      "avdHostPool_personalDesktopAssignmentType": {
         "type": "string",
         "metadata": {
-          "displayName": "personalDesktopAssignmentType (WVDHostpool)",
+          "displayName": "personalDesktopAssignmentType (AVDHostpool)",
           "description": "Set the type of assignment for a Personal hostpool type"
         },
         "defaultValue": "",
         "allowedValues": ["Automatic", "Direct", ""]
       },
-      "wvdHostpool_customRdpProperty": {
+      "avdHostPool_customRdpProperty": {
         "type": "string",
         "metadata": {
-          "displayName": "customRdpProperty (WVDHostpool)",
+          "displayName": "customRdpProperty (AVDHostpool)",
           "description": "Hostpool RDP properties."
         },
         "defaultValue": "",
         "allowedValues": []
       },
-      "wvdHostpool_deploymentId": {
+      "avdHostPool_deploymentId": {
         "type": "string",
         "metadata": {
-          "displayName": "deploymentId (WVDHostpool)",
+          "displayName": "deploymentId (AVDHostpool)",
           "description": "GUID for the deployment"
         },
         "defaultValue": "",
         "allowedValues": []
       },
-      "wvdHostpool_ouPath": {
+      "avdHostPool_ouPath": {
         "type": "string",
         "metadata": {
-          "displayName": "ouPath (WVDHostpool)",
+          "displayName": "ouPath (AVDHostpool)",
           "description": "OUPath for the domain join"
         },
         "defaultValue": "",

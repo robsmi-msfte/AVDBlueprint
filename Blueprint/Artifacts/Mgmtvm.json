@@ -6,11 +6,11 @@
     "displayName": "Management VM",
     "description": "Management VM",
     "dependsOn": [
-       "wvdDeploy",
-       "DNSsharedsvcs",
-       "addsDAUser",
-       "adds",
-       "wvdUsers"
+      "avdDeploy",
+      "dnsSharedSvcs",
+      "addsDAUser",
+      "adds",
+      "avdUsers"
     ],
     "template": {
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
@@ -33,7 +33,10 @@
         "type": "string",
         "defaultValue": "[utcNow('u')]"
       },
-      "CreateFileShareScriptURI": {
+      "CreateConfigureFileShareAndGPScriptURI": {
+        "type": "string"
+      },
+      "_ScriptURI": {
         "type": "string"
       },
       "mgmtvmNameStatic": {
@@ -159,9 +162,6 @@
         "metadata": {
           "description": "Location for all resources."
         }
-      },
-      "ScriptBaseURI":{
-        "type": "string"
       },
       "VMUserAssignedIdentity":{
         "type": "string"
@@ -413,9 +413,9 @@
           "autoUpgradeMinorVersion": true,
           "settings": {
             "fileUris": [
-              "[parameters('CreateFileShareScriptURI')]"
+              "[parameters('CreateConfigureFileShareAndGPScriptURI')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File Create-AzAADDSJoinedFileshare.ps1 -ResourceGroupName ', resourceGroup().name ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name ,' -ScriptURI ',parameters('_ScriptURI') ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
@@ -563,8 +563,11 @@
     "createNetworkSecurityGroup": {
       "value": false
     },
-    "CreateFileShareScriptURI": {
-      "value": "[concat(parameters('_ScriptURI'),'/Create-AzAADDSJoinedFileshare.ps1')]"
+    "CreateConfigureFileShareAndGPScriptURI": {
+      "value": "[concat(parameters('_ScriptURI'),'/CreateAADDSFileShare_ConfigureGP.ps1')]"
+    },
+    "_ScriptURI": {
+      "value": "[parameters('_ScriptURI')]"
     },
     "vmSize": {
       "value": "Standard_D2s_v3"
@@ -580,9 +583,6 @@
     },
     "usePublicIP": {
       "value": true
-    },
-    "ScriptBaseURI": {
-      "value": "[parameters('_ScriptURI')]"
     },
     "VMUserAssignedIdentity":{
       "value": "[parameters('script_executionUserResourceID')]"

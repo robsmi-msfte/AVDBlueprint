@@ -266,10 +266,10 @@ Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will 
 
 ```powershell
 #Exports logs of a AVD Blueprint deployment that used the prefix "ABC" followed by a removal:
-.\Remove-AzWvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
+.\Remove-AzAvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
 #Use help for more details or examples:  
-help .\Remove-AzWvdBpDeployment.ps1
+help .\Remove-AzAvdBpDeployment.ps1
 ```
 
 ## Tips

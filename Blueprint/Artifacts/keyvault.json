@@ -107,7 +107,7 @@
         "diagnostic-storageAccount-name": "[toLower(substring(replace(concat(variables('diagnostic-storageAccount-prefix'), variables('uniqueString'), variables('uniqueString')), '-', ''), 0, 23) )]",
         "vnet-resourceGroup": "[concat(variables('deployment-prefix'), '-rg')]",
         "vnet-name": "[concat(variables('deployment-prefix'), '-vnet')]",
-        "identityName": "wvdeploy",
+        "identityName": "avddeploy",
         "sharedsvcs-subnet-ID": "[concat(resourceId(variables('vnet-resourceGroup'), 'Microsoft.Network/virtualNetworks', variables('vnet-name')) , '/subnets/sharedsvcs')]",
         "access-policies": [
           {
