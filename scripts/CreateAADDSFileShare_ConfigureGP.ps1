@@ -119,11 +119,6 @@ $Scriptblock = {
 ############# Group Policy and FSLogix Session Host Section #################
     
 Connect-AzAccount -Identity
-
-Param(
-    [Parameter(Mandatory=$true)]
-    [string] $ScriptURI
-)
         
 # Set up a log to measure GP settings time to complete
 $CTempPath = 'C:\Temp'
