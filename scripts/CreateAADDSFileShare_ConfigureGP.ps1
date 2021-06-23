@@ -38,7 +38,6 @@ $Scriptblock = {
 
     klist tickets | Out-File -append c:\windows\temp\innercontext.txt
     
-
     $FileShareUserGroupId = (Get-AzADGroup -DisplayName "AVD Users").Id
     
     $Location = (Get-AzResourceGroup -ResourceGroupName $ResourceGroupName).Location
