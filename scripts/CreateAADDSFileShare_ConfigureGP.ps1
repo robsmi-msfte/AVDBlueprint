@@ -14,7 +14,7 @@ Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
-
+$ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
@@ -23,11 +23,14 @@ $Scriptblock = {
     [string] $ResourceGroupName,
 
     [Parameter(Mandatory=$true,Position=1)]
-    [string] $StorageAccountName
+    [string] $StorageAccountName,
+    
+    [Parameter(Mandatory=$true,Position=1)]
+    [string] $ScriptURI
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
-
+    $ScriptURI | Out-File -FilePath C:\Windows\Temp\ScriptURI.txt
     #Login with Managed Identity
     Connect-AzAccount -Identity
 
@@ -282,7 +285,7 @@ Get-AzContext | Out-File -append c:\windows\temp\outercontext.txt
 klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 
 #Run the $scriptblock in the DAuser context
-Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName
+Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI
 
 #Clean up DAuser context
 Unregister-PSSessionConfiguration -Name DASessionConf -Force
