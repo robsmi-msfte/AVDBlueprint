@@ -143,18 +143,20 @@ $CTempPath = 'C:\Temp'
 $VDOTZIP = "$CTempPath\VDOT.zip"
 
 #Test if VDOT has run before and if it has not, run it
-If(-not(Test-Path "$CTempPath\Virtual-Desktop-Optimization-Tool-main\*.csv")){
-    Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Force
+If(-not(Test-Path "$CTempPath\System32\Winevt\Logs\Virtual Desktop Optimization.evtx")){
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
     New-Item -ItemType Directory -Path $CTempPath -ErrorAction SilentlyContinue
     Copy-Item "$SoftwareShare\VDOT.zip" $CTempPath
     Expand-Archive -Path $VDOTZIP -DestinationPath $CTempPath
     Get-ChildItem -Path C:\Temp\Virtual* -Recurse -Force | Unblock-File
-    $VDOTString = 'C:\Temp\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -Optimizations All -Verbose'
+    $VDOTString = "$CTempPath\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -AcceptEula -Verbose"
     Invoke-Expression $VDOTString
+    Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope LocalMachine -Force
     
+    #Reset the PowerShell Execution Policy back to default globally
     $PSExecutionPolicy = Get-ExecutionPolicy
-    If ($PSExecutionPolicy -ne "Restricted"){
-    Set-ExecutionPolicy -ExecutionPolicy Restricted -Force
+    If ($PSExecutionPolicy -ne "Undefined"){
+    Set-ExecutionPolicy -ExecutionPolicy Undefined -Force
     }
         
     Invoke-Command -ScriptBlock {Shutdown -r -f -t 00}
