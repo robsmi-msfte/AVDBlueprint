@@ -143,7 +143,7 @@ $CTempPath = 'C:\Temp'
 $VDOTZIP = "$CTempPath\VDOT.zip"
 
 #Test if VDOT has run before and if it has not, run it
-If(-not(Test-Path "$CTempPath\System32\Winevt\Logs\Virtual Desktop Optimization.evtx")){
+If(-not(Test-Path "$env:SystemRoot\System32\Winevt\Logs\Virtual Desktop Optimization.evtx")){
     Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
     New-Item -ItemType Directory -Path $CTempPath -ErrorAction SilentlyContinue
     Copy-Item "$SoftwareShare\VDOT.zip" $CTempPath
