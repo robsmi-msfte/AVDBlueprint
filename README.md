@@ -249,10 +249,6 @@ by double-clicking the downloaded .zip file, and then copying the main folder wi
 1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
 You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
-## Utilizing the AVD solution once the Blueprint is complete
-The user accounts that are created, all have the same password currently.  That password is set in Key Vault, and is synced to Azure Active Directory.  However, there is still the requirement to change the password on first use, when using Azure Active Directory, Domain Services (AAD DS).  Therefore, the process would be to send a user one of the account names, and most likely in a seperate message the password.  Probably the second e-mail would contain what to expect, which really is that on first logon the password must be changed.
-
-One other consideration is amount of time to get the password hash stored correctly in AAD DS.  There is a very slight chance the user could attempt to log in before their new password hash is ready for use.  The user might get a message that the username and/or password is incorrect.  If that occurs, the user can usually wait 15 seconds or so and try again.  Subsequent attempts should result in logging in to the Session Desktop.  
 ## Teardown
 
 If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
