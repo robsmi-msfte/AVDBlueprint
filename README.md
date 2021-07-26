@@ -9,12 +9,14 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 * Resource Groups
 
 The AVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, AVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
+
 ## Recommended Reading
 
 1) [Azure Blueprints] (<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
 2) [Windows Virtual Desktop] (<https://docs.microsoft.com/en-us/azure/virtual-desktop/>)
 
 ## Prerequisites
+
 1. **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
 An Azure Global administrator account is required to successfully assign (deploy) the Azure AVD Blueprints.
 
@@ -83,7 +85,7 @@ The reason is that the managed identity needs full access during the deployment,
 
 1. **The account used to assign the Blueprint, granted "User Access Administrator" at the subscription level**  
 The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a AVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
- 
+
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
 
 1. **The Blueprint main file, and related artifact objects**  
@@ -107,9 +109,11 @@ These objects are publicly available on Github.com. Once the Blueprint objects h
 |Artifact|avdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
 
 ## Blueprint Parameters
+
 Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
 
 ### Required Parameters
+
 The blueprint includes the following required parameters.  
 
 | Parameter | Example Value | Purpose |  
@@ -127,7 +131,7 @@ These optional parameters either have default values or, by default, do not have
 |-|-|-|
 |**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
 |**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
-|**_ScriptURI**|https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts|URI where Powershell scripts executed by the blueprint are located.|
+|**_ScriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|
 |**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
@@ -168,6 +172,7 @@ These optional parameters either have default values or, by default, do not have
 **NOTE:** The following two sections are two methods available to assign the AVD Blueprint.  You can select one or the other, you do not have to do both.
 
 ### Manage the Blueprint using Azure Cloud Shell
+
 Azure hosts Azure Cloud Shell, an interactive shell environment that can be used through a web browser.
 You can use either Bash or PowerShell with Cloud Shell to work with Azure services.
 You can use the Cloud Shell preinstalled commands to import and assign the AVD Blueprint without having to install anything on your local environment.  
@@ -175,9 +180,9 @@ There are several ways to get started with Azure Cloud Shell:
 
 1. Start Azure CloudShell:  
 
-    - **Direct link**: Open a browser to [https://shell.azure.com](https://shell.azure.com).
+    * **Direct link**: Open a browser to [https://shell.azure.com](https://shell.azure.com).
 
-    - **Azure portal**: Select the Cloud Shell icon on the [Azure portal](https://portal.azure.com):
+    * **Azure portal**: Select the Cloud Shell icon on the [Azure portal](https://portal.azure.com):
 
       ![Icon to launch the Cloud Shell from the Azure portal](./images/portal-launch-icon.png)
 
@@ -242,7 +247,7 @@ by double-clicking the downloaded .zip file, and then copying the main folder wi
 
 1. Run the following command to import the Blueprint to your Azure subscription:  
 
-    ```powershell    
+    ```powershell
     Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\AVDBlueprint-main\Blueprint'
     ```
 
@@ -274,11 +279,26 @@ help .\Remove-AzAvdBpDeployment.ps1
 
 ## Tips
 
-* About the Group Policy settings that are applied to the AVD session host computers, during the Blueprint deployment. There are two 
+### Preexisting Active Directory
+
+If there is already an active Active Directory environment in the target environment, it is possile to have this blueprint integrate with that rather than deploy a new one. Two actions need to be taken to support this:
+
+1. Delete the adds.json artifact from the Artifacts folder
+2. Remove all "adds" entries from the "dependsOn" section of the following artifacts:
+    * addsDAUser.json
+    * avdDeploy.json
+    * DNSsharedSvcs.json
+    * mgmtvm.json
+
+### Group Policy Settings
+
+Regarding Group Policy settings that are applied to the AVD session host computers, during the Blueprint deployment. There are two
 sections of Group Policy settings applied to the AVD session hosts:  
 
-    - **FSLogix settings**
-    - **"RDP session host lockdown" settings**  
+* **FSLogix settings**
+* **Session Host RDP lockdown settings**  
+
+#### FSLogix Settings
 
 The FSLogix are there to enable the FSLogix profile management solution.  During Blueprint deployment, some of the parameters are evaluated and used to create a variable for the FSLogix profile share UNC, as it exits in this particular deployment.  That value is then written to a new GPO that is created just prior to the share UNC enumeration, and is only applied to an OU object, also created prior to the share UNC enumeration.  
 With respect to the **"RDP session host redirection"** settings, those are set by default, based on various security recommendations, made by Microsoft and others. The **"RDP session host redirection** settings are all set in a script file called **'CreateAADDSFileShare_ConfigureGP.ps1'**.  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
@@ -288,7 +308,7 @@ With respect to the **"RDP session host redirection"** settings, those are set b
 3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from Azure storage, to the management VM.
 4. The Managment VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
 5. The domain management code does the following for the session hosts:
-    1. Creates a new GPO called **"AVD Session Host policy"**        
+    1. Creates a new GPO called **"AVD Session Host policy"**
     2. Creates a new OU called **"AVD Computers"**
     3. Links the AVD GPO to the AVD OU
     4. Restores a previous GP export, which imports a Startup script to the new GPO Startup folder
@@ -296,28 +316,39 @@ With respect to the **"RDP session host redirection"** settings, those are set b
     6. Invokes a command to each VM in the AVD OU, to immediately refresh Group Policy
     7. Invokes a command to each VM in the AVD OU, to reboot with a 5 second delay
     8. On restart, the AVD VMs will run the Virtual Desktop Optimization Tool available from Github.com.
-        
+
 Now for the tip.  If there is a particular setting that you do not want to apply, you could download a copy of the script **'Create-AzAADDSJoinedFileshare.ps1'**.  Then you can customize the script file by editing out the line that applies a particular group policy setting that you may not want to apply to the AVD sessions host.  An example will be listed just below.  
 So that the AVD session hosts can be customized to your environment, you would then create an Azure storage container, set to anonymous access, then upload your script to that location.  
 Lastly, you would edit the Blueprint artifact file "MGMTVM", currently line 413.  But that section looks like this:
 
-        "properties": {
-          "publisher": "Microsoft.Compute",
-          "type": "CustomScriptExtension",
-          "typeHandlerVersion": "1.7",
-          "autoUpgradeMinorVersion": true,
-          "settings": {
-            "fileUris": [
-                "https://agblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"  
+```json
+"properties": {
+    "publisher": "Microsoft.Compute",
+    "type": "CustomScriptExtension",
+    "typeHandlerVersion": "1.7",
+    "autoUpgradeMinorVersion": true,
+    "settings": {
+        "fileUris": [
+            "https://agblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1" 
+```
 
 You would edit the value inside the quotes, to point to your specific storage location.  For example, you might change yours to something like this:
 
-            "fileUris": [
-                "https://contosoblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
+```json
+"properties": {
+    "publisher": "Microsoft.Compute",
+    "type": "CustomScriptExtension",
+    "typeHandlerVersion": "1.7",
+    "autoUpgradeMinorVersion": true,
+    "settings": {
+    "settings":{
+        "fileUris": [
+            "https://contosoblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
+```
 
 Lastly, you would edit the script **'Create-AzAADDSJoinedFileshare.ps1'** to remove the setting you are interested in.  Here are the settings details:  
 
-### RDP Redirection Settings  
+#### Session Host RDP lockdown settings  
 
 ```powershell
 Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableAudioCapture" -Value 1  
@@ -329,8 +360,8 @@ Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies
 Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisablePNPRedir" -Value 1  
 Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
 ```
-The group policy settings come from Microsoft documentation: [Group Policy Settings Reference Spreadsheet for Windows 10 ...](https://www.microsoft.com/en-us/download/101451).
 
+The group policy settings come from Microsoft documentation: [Group Policy Settings Reference Spreadsheet for Windows 10 ...](https://www.microsoft.com/en-us/download/101451).
 
 * [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
 
@@ -366,6 +397,7 @@ PowerShell or CloudShell can be utilized for various tasks. If using PowerShell,
 This project may contain trademarks or logos for projects, products, or services. Authorized use of Microsoft trademarks or logos is subject to and must follow  [Microsoft's Trademark & Brand Guidelines](https://www.microsoft.com/en-us/legal/intellectualproperty/trademarks/usage/general) . Use of Microsoft trademarks or logos in modified versions of this project must not cause confusion or imply Microsoft sponsorship. Any use of third-party trademarks or logos are subject to those third-party's policies.
 
 ## Disclaimer
+
 This Sample Code is provided for the purpose of illustration only and is not intended to be used in a production environment.
 THIS SAMPLE CODE AND ANY RELATED INFORMATION ARE PROVIDED "AS IS" WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESSED OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY AND/OR FITNESS FOR A PARTICULAR PURPOSE. We grant You a nonexclusive, royalty-free right to use and modify the Sample Code and to reproduce and distribute the object code form of the Sample Code, provided that You agree: (i) to not use Our name, logo, or trademarks to market Your software product in which the Sample Code is embedded; (ii) to include a valid copyright notice on Your software product in which the Sample Code is embedded; and (iii) to indemnify, hold harmless, and defend Us and Our suppliers from and against any claims or lawsuits, including attorneys’ fees, that arise or result from the use or distribution of the Sample Code.
 
