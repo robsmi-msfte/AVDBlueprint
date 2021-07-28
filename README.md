@@ -403,6 +403,10 @@ To deploy this blueprint into Azure sovereign clouds, two steps are necessary:
 
 Ammend all references to `Connect-AZAccount` in CreateAADDSFileshare_ConfigureGP.ps1 with the appropriate -Environment argument. A complete list of environments may be obtained using the [`Get-AzEnvironment`](https://docs.microsoft.com/en-us/powershell/module/az.accounts/get-azenvironment?view=azps-6.2.1) cmdlet in Powershell.
 
+```powershell
+Connect-AzAccount -Identity -Environment AzureUSGovernment
+```
+
 #### Location Fields In The Assignment File
 
 The location field for the assignment file itself should reflect a region in the sovereign cloud relevant to the deployment...
