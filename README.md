@@ -329,7 +329,7 @@ Lastly, you would edit the Blueprint artifact file "MGMTVM", currently line 413.
     "autoUpgradeMinorVersion": true,
     "settings": {
         "fileUris": [
-            "https://agblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1" 
+            "https://contosoblueprints.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1" 
 ```
 
 You would edit the value inside the quotes, to point to your specific storage location.  For example, you might change yours to something like this:
@@ -343,7 +343,7 @@ You would edit the value inside the quotes, to point to your specific storage lo
     "settings": {
     "settings":{
         "fileUris": [
-            "https://contosoblueprintsa.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
+            "https://contosoblueprints.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
 ```
 
 Lastly, you would edit the script **'Create-AzAADDSJoinedFileshare.ps1'** to remove the setting you are interested in.  Here are the settings details:  
@@ -391,6 +391,47 @@ Depending on various factors, you may create a managed identity, a storage blob,
 * Development and/or Production environments can be used to work with the Blueprint code
 Development environments are well suited to streamlining workflows such as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.
 PowerShell or CloudShell can be utilized for various tasks. If using PowerShell, you may need to import the [Az.Blueprint module](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#add-the-azblueprint-module) for PowerShell.
+
+### Sovereign Clouds
+
+To deploy this blueprint into Azure sovereign clouds, two steps are necessary:
+
+1. Edits to CreateAADDSFileshare_ConfigureGP.ps1
+2. Location fields in the assignment file
+
+#### Edits to CreateAADDSFileshare_ConfigureGP.ps1
+
+Ammend all references to `Connect-AzAccount` in CreateAADDSFileshare_ConfigureGP.ps1 with the appropriate `-Environment` argument. A complete list of environments may be obtained using the [`Get-AzEnvironment`](https://docs.microsoft.com/en-us/powershell/module/az.accounts/get-azenvironment?view=azps-6.2.1) cmdlet in Powershell.
+
+For example, to use the Azure US Government sovereign cloud, the `Connect-AzAccount` cmdlet would look like:
+
+```powershell
+Connect-AzAccount -Identity -Environment AzureUSGovernment
+```
+
+#### Location Fields In The Assignment File
+
+The location field for the assignment file itself should reflect a region in the sovereign cloud relevant to the deployment...
+
+```json
+{
+    "name": "AVD Blueprint - Default Configuration",
+    "type": "Microsoft.Blueprint/blueprintAssignments",
+    "apiVersion": "2018-11-01-preview",
+    "location": "**regionname**",
+    "identity": {
+        "type": "UserAssigned",
+```
+
+...as well as the ResourceGroup location defined further down in the assignment file:
+
+```json
+      "resourceGroups": {
+        "ResourceGroup": {
+          "location": "**regionname**"
+        }
+      }
+```
 
 ## Trademarks
 
