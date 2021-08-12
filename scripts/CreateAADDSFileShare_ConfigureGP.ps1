@@ -82,7 +82,7 @@ $Scriptblock = {
     $credential = New-Object System.Management.Automation.PSCredential -ArgumentList "Azure\$($storageAccount.StorageAccountName)", $SecureKey
 
     #Mount share to set NTFS ACLs
-    $StorageFQDN = "$($StorageAccount.StorageAccountName).file.core.windows.net"
+    $StorageFQDN = "$($StorageAccount.StorageAccountName).file.core.usgovcloudapi.net"
     $StorageUNC = "\\$StorageFQDN\$($StorageShare.Name)"
     New-PSDrive -Name Z -PSProvider FileSystem -Root $StorageUNC -Credential $credential
 
