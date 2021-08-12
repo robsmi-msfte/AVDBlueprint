@@ -214,7 +214,7 @@ Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
 # Determine profile share name and set a variable
 $DeploymentPrefixSS = ($DeploymentPrefix +,'sharedsvcs*')
 $CurrentStorageAccountName = Get-AzStorageAccount -ResourceGroup $ResourceGroupName | Where-Object {($_.StorageAccountName -Like "$DeploymentPrefix*" -and $_.StorageAccountName -notlike "$DeploymentPrefixSS")}
-$StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName).file.core.windows.net"
+$StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName)."file.core.usgovcloudapi.net"
 $StorageShareName = Get-AzRmStorageShare -StorageAccount $CurrentStorageAccountName
 $StorageUNC = "\\$StorageFQDN\$($StorageShareName.Name)"
 
