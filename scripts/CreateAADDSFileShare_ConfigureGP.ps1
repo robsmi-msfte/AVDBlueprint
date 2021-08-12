@@ -32,7 +32,7 @@ $Scriptblock = {
     Start-Transcript -OutputDirectory C:\Windows\Temp
         
     #Login with Managed Identity
-    Connect-AzAccount -Identity
+    Connect-AzAccount -Identity -EnvironmentName AzureUSGovernment
 
     whoami | Out-File -append c:\windows\temp\innercontext.txt
 
@@ -120,7 +120,7 @@ $Scriptblock = {
 
 ############# Group Policy and FSLogix Session Host Section #################
     
-Connect-AzAccount -Identity
+Connect-AzAccount -Identity -EnvironmentName AzureUSGovernment
 
 # Set up a log to measure GP settings time to complete
 $CTempPath = 'C:\Temp'
@@ -246,7 +246,7 @@ Get-Date | Out-File -Append $ScriptLogActionsTimes
 }
 
 #Get an Azure Managed Identity context
-Connect-AzAccount -Identity
+Connect-AzAccount -Identity -EnvironmentName AzureUSGovernment
 
 #Create a DAuser context, using password from Key Vault
 $KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
