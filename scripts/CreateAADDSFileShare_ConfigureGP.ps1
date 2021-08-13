@@ -7,7 +7,13 @@ Param(
     [string] $StorageAccountName,
 
     [Parameter(Mandatory=$true)]
-    [string] $ScriptURI
+    [string] $ScriptURI,
+
+    [Parameter(Mandatory=$true)]
+    [string] $AzureEnvironmentName,
+
+    [Parameter(Mandatory=$true)]
+    [string] $AzureStorageFQDN
 )
 #Install RSAT-AD Tools, GP Tools, Az PS, and download components
 Install-WindowsFeature -name GPMC
@@ -26,13 +32,19 @@ $Scriptblock = {
     [string] $StorageAccountName,
     
     [Parameter(Mandatory=$true,Position=2)]
-    [string] $ScriptURI
+    [string] $ScriptURI,
+
+    [Parameter(Mandatory=$true,Position=2)]
+    [string] $AzureEnvironmentName,
+
+    [Parameter(Mandatory=$true,Position=2)]
+    [string] $AzureStorageFQDN
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
         
     #Login with Managed Identity
-    Connect-AzAccount -Identity -EnvironmentName AzureUSGovernment
+    Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
     whoami | Out-File -append c:\windows\temp\innercontext.txt
 
@@ -82,7 +94,7 @@ $Scriptblock = {
     $credential = New-Object System.Management.Automation.PSCredential -ArgumentList "Azure\$($storageAccount.StorageAccountName)", $SecureKey
 
     #Mount share to set NTFS ACLs
-    $StorageFQDN = "$($StorageAccount.StorageAccountName).file.core.usgovcloudapi.net"
+    $StorageFQDN = "$($StorageAccount.StorageAccountName).$AzureStorageFQDN"
     $StorageUNC = "\\$StorageFQDN\$($StorageShare.Name)"
     New-PSDrive -Name Z -PSProvider FileSystem -Root $StorageUNC -Credential $credential
 
@@ -120,7 +132,7 @@ $Scriptblock = {
 
 ############# Group Policy and FSLogix Session Host Section #################
     
-Connect-AzAccount -Identity -EnvironmentName AzureUSGovernment
+Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
 # Set up a log to measure GP settings time to complete
 $CTempPath = 'C:\Temp'
@@ -214,7 +226,7 @@ Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
 # Determine profile share name and set a variable
 $DeploymentPrefixSS = ($DeploymentPrefix +,'sharedsvcs*')
 $CurrentStorageAccountName = Get-AzStorageAccount -ResourceGroup $ResourceGroupName | Where-Object {($_.StorageAccountName -Like "$DeploymentPrefix*" -and $_.StorageAccountName -notlike "$DeploymentPrefixSS")}
-$StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName)."file.core.usgovcloudapi.net"
+$StorageFQDN = "$($CurrentStorageAccountName.StorageAccountName).$AzureStorageFQDN"
 $StorageShareName = Get-AzRmStorageShare -StorageAccount $CurrentStorageAccountName
 $StorageUNC = "\\$StorageFQDN\$($StorageShareName.Name)"
 
@@ -246,7 +258,7 @@ Get-Date | Out-File -Append $ScriptLogActionsTimes
 }
 
 #Get an Azure Managed Identity context
-Connect-AzAccount -Identity -EnvironmentName AzureUSGovernment
+Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
 #Create a DAuser context, using password from Key Vault
 $KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
@@ -273,7 +285,7 @@ Get-AzContext | Out-File -append c:\windows\temp\outercontext.txt
 klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 
 #Run the $scriptblock in the DAuser context
-Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI
+Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI,$AzureEnvironmentName,$AzureStorageFQDN
 
 #Clean up DAuser context
 Unregister-PSSessionConfiguration -Name DASessionConf -Force
