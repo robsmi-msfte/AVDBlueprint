@@ -34,10 +34,10 @@ $Scriptblock = {
     [Parameter(Mandatory=$true,Position=2)]
     [string] $ScriptURI,
 
-    [Parameter(Mandatory=$true,Position=2)]
+    [Parameter(Mandatory=$true,Position=3)]
     [string] $AzureEnvironmentName,
 
-    [Parameter(Mandatory=$true,Position=2)]
+    [Parameter(Mandatory=$true,Position=4)]
     [string] $AzureStorageFQDN
     )
     
