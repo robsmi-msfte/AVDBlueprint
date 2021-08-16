@@ -20,7 +20,7 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
     }
 
     .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
-    Start-Sleep -s 1
+    Start-Sleep -s 2
     .\assignAVDRole.ps1 -upn "$userPrincipalName" -roleName "$avdRolename" -appGroupName "$avdAppGroup" -appGroupRG "$appGroupRG"
     Start-Sleep -s 1
 }
