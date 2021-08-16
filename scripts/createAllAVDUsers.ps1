@@ -16,10 +16,11 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
     
     if ($null -eq (Get-AzADUser -UserPrincipalName $userPrincipalName)) {
         .\addADuser.ps1 -displayName "$displayName" -userPrincipalName "$userPrincipalName" -keyVault $keyvault -forcePasswordChange $forcePasswordChange
-        Start-Sleep -s 4
+        Start-Sleep -s 3
     }
 
     .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
     Start-Sleep -s 1
     .\assignAVDRole.ps1 -upn "$userPrincipalName" -roleName "$avdRolename" -appGroupName "$avdAppGroup" -appGroupRG "$appGroupRG"
+    Start-Sleep -s 1
 }
