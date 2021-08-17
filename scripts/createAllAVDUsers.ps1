@@ -19,5 +19,5 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
     }
 
     .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
-    .\assignAVDRole.ps1 -upn "$userPrincipalName" -roleName "$avdRolename" -appGroupName "$avdAppGroup" -appGroupRG "$appGroupRG"
+    
 }
