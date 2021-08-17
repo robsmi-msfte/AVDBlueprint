@@ -111,8 +111,65 @@
                   "metadata": {
                       "description": "Whether to create a new availability set for the VMs"
                   },
-                  "defaultValue": false
+                  "defaultValue": true
               },
+              "availabilityOption": {
+                  "type": "string",
+                  "metadata": {
+                      "description": "Select the availability options for the VMs."
+                  },
+                  "defaultValue": "AvailabilitySet",
+                  "allowedValues": [
+                      "None", "AvailabilitySet", "AvailabilityZone"
+                  ]
+              },
+              "availabilitySetName": {
+                "type": "string",
+                "metadata": {
+                    "description": "The name of availability set to be used when creating the session host VMs."
+                }
+               },
+               "availabilitySetUpdateDomainCount": {
+                "type": "int",
+                "metadata": {
+                    "description": "The platform update domain count of the availability set to be created."
+                },
+                "defaultValue": 5,
+                "allowedValues": [
+                    1,
+                    2,
+                    3,
+                    4,
+                    5,
+                    6,
+                    7,
+                    8,
+                    9,
+                    10,
+                    11,
+                    12,
+                    13,
+                    14,
+                    15,
+                    16,
+                    17,
+                    18,
+                    19,
+                    20
+                ]
+            },
+            "availabilitySetFaultDomainCount": {
+                "type": "int",
+                "metadata": {
+                    "description": "The platform fault domain count of avaiability set to be created."
+                },
+                "defaultValue": 2,
+                "allowedValues": [
+                    1,
+                    2,
+                    3
+                ]
+            },
               "vmResourceGroup": {
                   "type": "string",
                   "metadata": {
@@ -759,7 +816,16 @@
               "value": "[parameters('daUser_AdminUser')]"
           },
           "createAvailabilitySet": {
-              "value": true
+              "value": "[parameters('CreateAvailabilitySet')]"
+          },
+          "availabilitySetName": {
+            "value": "[parameters('availabilitySetName')]"
+          },
+          "availabilitySetUpdateDomainCount": {
+            "value": "[parameters('availabilitySetUpdateDomainCount')]"
+          },
+          "availabilitySetFaultDomainCount": {
+            "value": "[parameters('availabilitySetFaultDomainCount')]"
           },
           "vmResourceGroup": {
               "value": "[resourceGroup().name]"
@@ -814,6 +880,9 @@
           },
           "availabilitySetTags": {
               "value": {}
+          },
+          "availabilityOption": {
+            "value": "[parameters('availabilityOption')]"
           },
           "networkInterfaceTags": {
               "value": {}

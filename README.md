@@ -407,17 +407,24 @@ PowerShell or CloudShell can be utilized for various tasks. If using PowerShell,
 To deploy this blueprint into Azure sovereign clouds, two steps are necessary:
 
 1. Edits to CreateAADDSFileshare_ConfigureGP.ps1
-2. Location fields in the assignment file
+2. Change **Location** fields in the assignment file
 
 #### Edits to CreateAADDSFileshare_ConfigureGP.ps1
 
-Ammend all references to `Connect-AzAccount` in CreateAADDSFileshare_ConfigureGP.ps1 with the appropriate `-Environment` argument. A complete list of environments may be obtained using the [`Get-AzEnvironment`](https://docs.microsoft.com/en-us/powershell/module/az.accounts/get-azenvironment?view=azps-6.2.1) cmdlet in Powershell.
+##### Connect-AzAccount
+
+Amend all references to `Connect-AzAccount` in CreateAADDSFileshare_ConfigureGP.ps1 with the appropriate `-EnvironmentName` argument. A complete list of environments may be obtained using the [`Get-AzEnvironment`](https://docs.microsoft.com/en-us/powershell/module/az.accounts/get-azenvironment?view=azps-6.2.1) cmdlet in Powershell.
 
 For example, to use the Azure US Government sovereign cloud, the `Connect-AzAccount` cmdlet would look like:
 
 ```powershell
-Connect-AzAccount -Identity -Environment AzureUSGovernment
+Connect-AzAccount -Identity -Environment 'AzureUSGovernment'
 ```
+
+
+##### $StorageFQDN
+
+The storage fully qualified domain name (FQDN) in Azure Commercial is "file.core.windows.net".  In Azure Gov, that FQDN is "file.core.usgovcloudapi.net".  There are two places in the script the FQDN is referenced.  The easiest method is find and replace "file.core.windows.net" with "file.core.usgovcloudapi.net".
 
 #### Location Fields In The Assignment File
 

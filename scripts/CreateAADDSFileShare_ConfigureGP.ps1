@@ -248,11 +248,13 @@ Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\FSLogix\
 Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
 
 # Add the 'AVD Users' AAD group to the AVD DAG created earlier
+
 $AADAVDUsersGroupId = (Get-AzADGroup -DisplayName 'AVD Users').Id
 $AVDHostPool = Get-AzWvdHostPool
 $AVDDAG = (Get-AzWvdApplicationGroup).Name
 
 New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop Virtualization User" -ResourceName $AVDDAG -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups'
+=======
 
 #Force a GPUpdate now, then reboot so they can take effect, and so the Startup script can run to install FSLogix
 Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}

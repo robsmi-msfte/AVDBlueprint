@@ -41,8 +41,8 @@
           }
         },
         "enable-ddos-protection": {
-          "type": "string",
-          "defaultValue": "true",
+          "type": "bool",
+          "defaultValue": true,
           "metadata": {
             "displayName": "Enable Virtual Network DDoS protection",
             "description": "Determines whether or not DDoS Protection is enabled in the Virtual Network"
