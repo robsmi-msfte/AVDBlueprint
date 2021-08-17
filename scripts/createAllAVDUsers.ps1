@@ -15,13 +15,7 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
     Write-host "Creating $userPrincipalName"
     
     if ($null -eq (Get-AzADUser -UserPrincipalName $userPrincipalName)) {
-        Start-Sleep -s 2
         .\addADuser.ps1 -displayName "$displayName" -userPrincipalName "$userPrincipalName" -keyVault $keyvault -forcePasswordChange $forcePasswordChange
-        Start-Sleep -s 2
     }
-
     .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
-    Start-Sleep -s 2
-    .\assignAVDRole.ps1 -upn "$userPrincipalName" -roleName "$avdRolename" -appGroupName "$avdAppGroup" -appGroupRG "$appGroupRG"
-    
 }
