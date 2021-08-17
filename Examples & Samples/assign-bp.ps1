@@ -12,6 +12,6 @@ If (!(Get-AzContext)) {
     Connect-AzAccount -Tenant $tenantID -Subscription $subID
 }
 
-$bpAssignment = New-AzBlueprintAssignment -Name $assignmentName -SubscriptionId $subscriptionID -AssignmentFile $assignFile
+$bpAssignment = New-AzBlueprintAssignment -Name $assignmentName -SubscriptionId $subID -AssignmentFile $assignFile
 
 Write-Output $bpAssignment
