@@ -17,5 +17,7 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
     if ($null -eq (Get-AzADUser -UserPrincipalName $userPrincipalName)) {
         .\addADuser.ps1 -displayName "$displayName" -userPrincipalName "$userPrincipalName" -keyVault $keyvault -forcePasswordChange $forcePasswordChange
     }
+
     .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
+    
 }
