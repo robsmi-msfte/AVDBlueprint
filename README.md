@@ -14,13 +14,18 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
 ## High Level steps to get started
 
-* Meet pre-requisites in your Azure subscription.
-* Download and edit the sample files in the folder "Examples and Samples".
-* Edit the sample file **"assign_default.json"**.  This file is what makes the Blueprint unique to your environment.  You can specify a small number of parameters such as the required ones only.  The Blueprint has default values for many parameters.  Or you can override a parameter value of your preference.  An example might be Azure virtual machine size, or Windows Gallery image SKU.
+* **Meet pre-requisites** in your Azure subscription.
+* **Download and edit the sample files in the folder** "Examples and Samples".
+* **Edit the sample file "assign_default.json"**.  This file is what makes the Blueprint unique to your environment.  You can specify a small number of parameters such as the required ones only.  The Blueprint has default values for many parameters.  Or you can override a parameter value of your preference.  An example might be Azure virtual machine size, or Windows Gallery image SKU.
 Though you can also set and change parameters in the Azure Portal, there are a lot to set and some could be ambiguous.
-* The easiest and fastest way to add this Blueprint definition is by using the sample file """import-bp.ps1"**.  Note that "import-bp.ps1" references another file "run.config.json". You can use "import-bp.ps1" as is, with no edits.  The changes needed to the "run.config.json" file are TenantID, SubscriptionID, Blueprint Name, Blueprint Path, Assignment file name and path.  It is possible to create this Blueprint using the Azure portal, but is difficult and has already been done here.
-* Publish the Blueprint (This can be done automatically with the included sample file **"import-bp.ps1"**).
+* **Import the Blueprint to your Azure subscription.** The easiest and fastest way to add this Blueprint definition is by using the sample file **import-bp.ps1**.  Note that "import-bp.ps1" references another file **run.config.json**. You can use "import-bp.ps1" as is, with no edits.  The changes needed to the "run.config.json" file are TenantID, SubscriptionID, Blueprint Name, Blueprint Path, Assignment file name and path.  It is possible to create this Blueprint using the Azure portal, but is difficult and that work has already been done in this Blueprint.
+* **Publish the Blueprint** (This can be done automatically with the included sample file **import-bp.ps1**).
 The act of publishing a Blueprint definition makes that Blueprint available to be assigned to a subscription by creating a unique version of your Blueprint definition.
+
+> [!NOTE]
+> The included sample file **import-bp.ps1** accomplishes the import and publishing steps in one script.
+
+* **Assign the Blueprint**, which is the process of "assigning" a published Blueprint definition version, and which initiates the Blueprint deployment.
 
 > [!IMPORTANT]
 > It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
