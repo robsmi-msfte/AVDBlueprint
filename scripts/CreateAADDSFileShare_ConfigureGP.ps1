@@ -250,7 +250,6 @@ Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies
 # Add the 'AVD Users' AAD group to the AVD DAG created earlier
 
 $AADAVDUsersGroupId = (Get-AzADGroup -DisplayName 'AVD Users').Id
-$AVDHostPool = Get-AzWvdHostPool
 $AVDDAG = (Get-AzWvdApplicationGroup).Name
 
 New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop Virtualization User" -ResourceName $AVDDAG -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups'
