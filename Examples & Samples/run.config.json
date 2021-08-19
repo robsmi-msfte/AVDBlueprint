@@ -1,0 +1,11 @@
+{
+    "args": {
+        "tenantID": "31c75423-32d6-4322-88b7-c478bdde4858",
+        "subscriptionID": "291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
+        "blueprintName": "AVDBlueprint",
+        "blueprintPath": "C:\\VSCode\\AVDBlueprint\\Blueprint",
+        "assignmentFile": "C:\\VSCode\\CustomizedFiles\\assign_default.json"
+    }
+}
+DELETE THIS LINE: The TenantID and SubID above are samples from public Microsoft documentation for Contoso, a fictional organization
+DELETE THIS LINE: Change BlueprintName, if desired, and path to the actual path on your local device where your copy of the Blueprint files are located
