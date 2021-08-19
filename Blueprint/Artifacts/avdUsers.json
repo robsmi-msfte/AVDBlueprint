@@ -28,9 +28,6 @@
           "createAVDUserScriptURI": {
             "type": "string"
           },
-          "assignAVDRoleScriptURI": {
-            "type": "string"
-          },
           "addADUserScriptURI": {
             "type": "string"
           },
@@ -146,9 +143,8 @@
               "retentionInterval": "P1D",
               "supportingScriptUris": [
                 "[parameters('addADUserScriptURI')]",
-                "[parameters('assignADGroupScriptURI')]",
-                "[parameters('assignAVDRoleScriptURI')]"
-              ]
+                "[parameters('assignADGroupScriptURI')]"
+               ]
             }
           }
         ],
@@ -176,9 +172,6 @@
         },
         "createAVDUserScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/createAllAVDUsers.ps1')]"
-        },
-        "assignAVDRoleScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/assignAVDRole.ps1')]"
         },
         "addADUserScriptURI": {
           "value": "[concat(parameters('_ScriptURI'),'/addADuser.ps1')]"
