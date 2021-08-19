@@ -29,7 +29,7 @@ The act of publishing a Blueprint definition makes that Blueprint available to b
 
 > [!IMPORTANT]
 > It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
-https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance
+<https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance>
 
 ## Prerequisites
 
@@ -367,58 +367,25 @@ During Blueprint deployment, some of the parameters are evaluated and used to cr
 
 This Blueprint adds as a default, one RDP redirection setting:
 
-> "fEnableTimeZoneRedirection"
+> "fEnableTimeZoneRedirection"  
 
- There are several Windows policy settings that control certain aspects of the user experience while connected to a session host. The **"Remote Desktop Session Host redirection"** settings are set in the script,  **'CreateAADDSFileShare_ConfigureGP.ps1'**.  This script is run from the "management VM" in the "MGMTVM" artifact.  If you wish to add additional redirection settings, the best way may be to 
+There are several Windows policy settings that control certain aspects of the user experience while connected to a session host. The **"Remote Desktop Session Host redirection"** settings are set in the script,  **'CreateAADDSFileShare_ConfigureGP.ps1'**.  This script is run from the "management VM" in the "MGMTVM" artifact.  If you wish to add additional redirection settings, the best way may be through current or planned management methods such as Group Policy.
 
-
-
-  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
+There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
 
 1. AVD session host VMs are created, and joined to the AAD DS domain.  This happens in the artifact **"AVDDeploy.json"**.
 2. Later the "management VM" is created, and joined to the domain.  This domain join triggers a reboot, and the JoinDomain extension waits for the machine to reboot and check in before the "MGMTVM" artifact continues.
-3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from Azure storage, to the management VM.
+3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from the ScriptURI parameter value, to the management VM.
 4. The Management VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
 5. The domain management code does the following for the session hosts:
     1. Creates a new GPO called **"AVD Session Host policy"**
     2. Creates a new OU called **"AVD Computers"**
     3. Links the AVD GPO to the AVD OU
-    4. Restores a previous GP export, which imports a Startup script to the new GPO Startup folder
+    4. Restores a previous GP export (downloaded via ScriptURI parameter), which imports a policy Startup script to the new GPO Startup folder
     5. Moves only the AVD session host computer objects to the new AVD OU
     6. Invokes a command to each VM in the AVD OU, to immediately refresh Group Policy
     7. Invokes a command to each VM in the AVD OU, to reboot with a 5 second delay
     8. On restart, the AVD VMs will run the Virtual Desktop Optimization Tool available from Github.com.
-
-Now for the tip.  If there is a particular setting that you do not want to apply, you could download a copy of the script **'Create-AzAADDSJoinedFileshare.ps1'**.  Then you can customize the script file by editing out the line that applies a particular group policy setting that you may not want to apply to the AVD sessions host.  An example will be listed just below.  
-So that the AVD session hosts can be customized to your environment, you would then create an Azure storage container, set to anonymous access, then upload your script to that location.  
-Lastly, you would edit the Blueprint artifact file "MGMTVM", currently line 413.  But that section looks like this:
-
-```json
-"properties": {
-    "publisher": "Microsoft.Compute",
-    "type": "CustomScriptExtension",
-    "typeHandlerVersion": "1.7",
-    "autoUpgradeMinorVersion": true,
-    "settings": {
-        "fileUris": [
-            "https://contosoblueprints.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1" 
-```
-
-You would edit the value inside the quotes, to point to your specific storage location.  For example, you might change yours to something like this:
-
-```json
-"properties": {
-    "publisher": "Microsoft.Compute",
-    "type": "CustomScriptExtension",
-    "typeHandlerVersion": "1.7",
-    "autoUpgradeMinorVersion": true,
-    "settings": {
-    "settings":{
-        "fileUris": [
-            "https://myazureaccount.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
-```
-
-Lastly, you would edit the script **'Create-AzAADDSJoinedFileshare.ps1'** to remove the setting you are interested in.  Here are the settings details:  
 
 #### Session Host RDP lockdown settings  
 
@@ -435,13 +402,17 @@ Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies
 
 The group policy settings come from Microsoft documentation: [Group Policy Settings Reference Spreadsheet for Windows 10 ...](https://www.microsoft.com/en-us/download/101451).
 
-* [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
+### Development Tools
 
-  * Azure Resource Manager Tools  
-  * XML Formatter  
-  * PowerShell extension (so that all work can be performed within one tool)  
+[Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
 
-   There may be other extensions available that perform the same functionality
+* Azure Resource Manager Tools  
+* XML Formatter  
+* PowerShell extension (so that all work can be performed within one tool)  
+
+There may be other extensions available that perform the same or similar functionality.
+
+### Accessing the Blueprint files and scripts
 
 * To store scripts and any other objects needed during Blueprint assignment on Internet connected assignments, a public web location can be used to store scripts and other objects needed during Blueprint assignment.  
 [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
@@ -483,12 +454,13 @@ More information about using Blueprint Assignment files can be found at the foll
 
 https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps
 
-* If you need to delete a deployment with the intent of starting over with a new deployment, you will need to change the "Deployment Prefix" value in the "assign_default.json" file.
-  This file is used to prefix most of the Azure resources created during the deployment, including a [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
-  Azure Key Vault is used to store and retrieve cryptographic keys used by cloud apps and services, and as such is treated with great care in Azure.
-  When an Azure Key Vault is deleted, it transitions to a "soft delete" state for a period of time, before actually being deleted.
-  While an Azure Key Vault is in soft delete state, another key vault cannot be created with the same name.  Therefore, if you do not change your
-  Resource Prefix value for subsequent deployments, the subsequent deployments will fail with an error referencing Key Vault name.
+### Deployment Prefix Recommendations
+
+If you need to delete a deployment with the intent of starting over with a new deployment, you will need to change the "Deployment Prefix" value in the "assign_default.json" file.
+The "Deployment Prefix" parameter is used to prefix most of the Azure resources created during the deployment, including a [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
+Azure Key Vault is used to store and retrieve cryptographic keys used by cloud apps and services, and as such is treated with great care in Azure.
+When an Azure Key Vault is deleted, it transitions to a "soft delete" state for a period of time, before actually being deleted.
+While an Azure Key Vault created by this Blueprint deployment is in soft delete state, that key vault cannot be purged. While a key vault exists in any state, another key vault cannot be created with the same name.  Therefore, if you do not change your Resource Prefix value for subsequent deployments, the subsequent deployments will fail with an error referencing Key Vault name.
   
 * Create a Resource Group for your Blueprint resources
 During the Blueprint deployment process, you will be creating some resources that you may want to retain after the blueprint has been deployed.
@@ -502,10 +474,11 @@ PowerShell or CloudShell can be utilized for various tasks. If using PowerShell,
 
 ### Sovereign Clouds
 
-To deploy this blueprint into Azure sovereign clouds, two steps are necessary:
+If you are using an assignment file, you can change several values and utilize in Sovereign clouds without having to edit the Blueprint files or scripts.
 
-1. Edits to CreateAADDSFileshare_ConfigureGP.ps1
-2. Change **Location** fields in the assignment file
+1. Edit the "assign_default.json"
+1. Change **Location** field at top and bottom of file to the new location being deployed to.
+1. Change the parameter "
 
 #### Edits to CreateAADDSFileshare_ConfigureGP.ps1
 
