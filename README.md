@@ -1,4 +1,6 @@
-# Instructions for customizing Azure Virtual Desktop to your environment, utilizing Azure Blueprints  
+# Instructions for customizing and deploying Azure Virtual Desktop to your environment, utilizing Azure Blueprints  
+
+## Overview
 
 [Azure Blueprints](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview) provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Azure Virtual Desktop (AVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
 Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview#blueprint-definition), such as:
@@ -10,12 +12,24 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 
 The AVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, AVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
 
-## Recommended Reading
+## High Level steps to get started
 
-1) [Azure Blueprints] (<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
-2) [Windows Virtual Desktop] (<https://docs.microsoft.com/en-us/azure/virtual-desktop/>)
+* Meet pre-requisites in your Azure subscription.
+* Download and edit the sample files in the folder "Examples and Samples".
+* Edit the sample file **"assign_default.json"**.  This file is what makes the Blueprint unique to your environment.  You can specify a small number of parameters such as the required ones only.  The Blueprint has default values for many parameters.  Or you can override a parameter value of your preference.  An example might be Azure virtual machine size, or Windows Gallery image SKU.
+Though you can also set and change parameters in the Azure Portal, there are a lot to set and some could be ambiguous.
+* The easiest and fastest way to add this Blueprint definition is by using the sample file """import-bp.ps1"**.  Note that "import-bp.ps1" references another file "run.config.json". You can use "import-bp.ps1" as is, with no edits.  The changes needed to the "run.config.json" file are TenantID, SubscriptionID, Blueprint Name, Blueprint Path, Assignment file name and path.  It is possible to create this Blueprint using the Azure portal, but is difficult and has already been done here.
+* Publish the Blueprint (This can be done automatically with the included sample file **"import-bp.ps1"**).
+The act of publishing a Blueprint definition makes that Blueprint available to be assigned to a subscription by creating a unique version of your Blueprint definition.
+
+> [!IMPORTANT]
+> It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
+https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance
 
 ## Prerequisites
+
+1. **An [Azure tenant](https://docs.microsoft.com/en-us/microsoft-365/education/deploy/intro-azure-active-directory#what-is-an-azure-ad-tenant)**. In this Blueprint by default, a new instance of Azure Active Directory Domain Services is created.  Though not a hard requirement, it is recommended that the domain name you specify is the same as your Azure Active Directory "Primary domain" name.  Though you can create a long tenant domain name prefix, you cannot in AAD DS, therefore it is recommended to have your domain name prefix 15 characters or less.  
+In the case of an existing domain, this Blueprint can still be utilized.  There are instructions in this guide in the **"Tips"** section on this topic.
 
 1. **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
 An Azure Global administrator account is required to successfully assign (deploy) the Azure AVD Blueprints.
@@ -24,12 +38,13 @@ An Azure Global administrator account is required to successfully assign (deploy
 The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment. There are two types of Azure Managed Identies: 'System Assigned' and 'User Assigned'. For the purpose of this AVD Blueprint, the type 'User Assigned Managed Identity' will be utilized.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**  
 
     **NOTE:** In the case of “greenfield” deployments, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.  
+
 1. **Security configuration in the environment for a Blueprint Operator**  
 The management of Blueprint definitions and Blueprint assignments are two different roles, thus the need for two different identities. A blueprint definition can use either system-assigned or user-assigned managed identities. However, when using the **Blueprint Operator** role, the blueprint definition needs to be configured to use a ***user-assigned managed identity***. Additionally, the account or security group being granted the Blueprint Operator role needs to be granted the Managed Identity Operator role on the user-assigned managed identity. Without this permission, blueprint assignments fail because of lack of permissions.  
 
     The high-level configuration steps are as follows (documentation [here](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator)):  
 
-    * [Create an Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal) (example: ‘Blueprint Operators’)  
+    * [Create an Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal) (example: **Blueprint Operators**)  
     * At the subscription level, assign roles to the group previously created, by going to the following location in the Azure Portal  
     > **Azure Portal** -> **Home** -> **Subscriptions** -> (***your subscription***) -> **Access Control (IAM)**  
     * [Add the managed identity created in Step 2 of this document, and the Global Administrator accounts to the Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal#create-a-basic-group-and-add-members)  
@@ -98,7 +113,7 @@ The account used to manage the subscription and later assign the Blueprint, shou
 
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
 
-1. **The Blueprint main file, and related artifact objects**  
+1. **The Blueprint main file (Blueprint.json), and related artifact objects**  
 These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.  
 
 ## Blueprint Objects and Purpose
@@ -158,7 +173,7 @@ These optional parameters either have default values or, by default, do not have
 |**avdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each AVD session host name.|
 |**avdHostpool_vmGalleryImageOffer**|office-365||
 |**avdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
-|**avdHostpool_vmGalleryImageSKU**|20h1-evd-o365pp||
+|**avdHostpool_vmGalleryImageSKU**|21h1-evd-o365pp||
 |**avdHostpool_vmImageType**|Gallery||
 |**avdHostpool_vmDiskType**|StandardSSD_LRS||
 |**avdHostpool_vmUseManagedDisks**|true||
@@ -179,7 +194,7 @@ These optional parameters either have default values or, by default, do not have
 2. Publish the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 3. Assign the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
 
-**NOTE:** The following two sections are two methods available to assign the AVD Blueprint.  You can select one or the other, you do not have to do both.
+**NOTE:** The following three sections are example methods available to assign the AVD Blueprint.  There are sample assignment files in the Github repository in the 'Examples & Samples' folder.
 
 ### Manage the Blueprint using Azure Cloud Shell
 
@@ -224,7 +239,7 @@ There are several ways to get started with Azure Cloud Shell:
 1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
 You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
-### Manage the Blueprint using local storage on a device (Windows instructions)  
+### Manage the Blueprint using local storage on a device and publish in Azure portal (Windows instructions)  
 
 You can manage the AVD Blueprint using a device that has a small amount of local storage available.
 
@@ -264,6 +279,30 @@ by double-clicking the downloaded .zip file, and then copying the main folder wi
 1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
 You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
+### Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)
+
+This method performs all activities on the local machine.  This example uses Visual Studio Code.  You can use Visual Studio code as the one-stop development and deployment toolset.  Several extensions make working with ARM templates a little easier:
+
+1. Install Visual Studio Code (the following extensions are recommended):
+    * GitLens--Git supercharged
+    * PowerShell
+    * Azure CLI Tools
+    * Azure Resource Manager (ARM) Tools
+1. Go the [AVD Blueprint Github repository main folder](https://github.com/Azure/AVDBlueprint) in your favorite web browser
+
+1. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
+
+      ![Image for Github Download Zip option](./images/GitDownloadZip2.png)
+
+1. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
+by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location.
+        The example files in this repository use this path:
+
+    > C:\VSCode\AVDBlueprint
+        You can put the files from the "Samples & Examples" folder in the following location (as an example)  
+        **C:\VSCode\CustomizedFiles**  
+        That way if you customize your files but decide to reinitialize your local repository, your customized files remain unchanged.  
+
 ## Teardown
 
 If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
@@ -291,7 +330,7 @@ help .\Remove-AzAvdBpDeployment.ps1
 
 ### Preexisting Active Directory
 
-If there is already an active Active Directory environment in the target environment, it is possile to have this blueprint integrate with that rather than deploy a new one. Two actions need to be taken to support this:
+If there is already an active Active Directory environment in the target environment, it is possible to have this blueprint integrate with that rather than deploy a new one. Two actions need to be taken to support this:
 
 1. Delete the adds.json artifact from the Artifacts folder
 2. Remove all "adds" entries from the "dependsOn" section of the following artifacts:
@@ -310,13 +349,31 @@ sections of Group Policy settings applied to the AVD session hosts:
 
 #### FSLogix Settings
 
-The FSLogix are there to enable the FSLogix profile management solution.  During Blueprint deployment, some of the parameters are evaluated and used to create a variable for the FSLogix profile share UNC, as it exits in this particular deployment.  That value is then written to a new GPO that is created just prior to the share UNC enumeration, and is only applied to an OU object, also created prior to the share UNC enumeration.  
-With respect to the **"RDP session host redirection"** settings, those are set by default, based on various security recommendations, made by Microsoft and others. The **"RDP session host redirection** settings are all set in a script file called **'CreateAADDSFileShare_ConfigureGP.ps1'**.  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
+The FSLogix Windows policy settings are the mechanism used to enable the FSLogix profile management solution.  This Blueprint currently utilizes Azure Files as the FSLogix profile container storage location.  These settings are documented in [this article](https://docs.microsoft.com/en-us/fslogix/configure-profile-container-tutorial).
+
+During Blueprint deployment, some of the parameters are evaluated and used to create a variable for the FSLogix profile share UNC path, as it exits in each unique deployment.  The parameter is then written to a new Group Policy Object that is applied to the Active Directory Organizational Unit that is created by the script run from the management VM, for the AVD session host VMs.  Here is the complete list of FSLogix settings applied by this Blueprint:
+
+> VHDLocation == {unique UNC path for each deployment}  
+> Enabled == Yes  
+> DeleteLocalProfileWhenVHDShouldApply == Enabled  
+> FlipFlopProfileDirectoryName == Enabled  
+
+#### Remote Desktop Session Host redirection settings
+
+This Blueprint adds as a default, one RDP redirection setting:
+
+> "fEnableTimeZoneRedirection"
+
+ There are several Windows policy settings that control certain aspects of the user experience while connected to a session host. The **"Remote Desktop Session Host redirection"** settings are set in the script,  **'CreateAADDSFileShare_ConfigureGP.ps1'**.  This script is run from the "management VM" in the "MGMTVM" artifact.  If you wish to add additional redirection settings, the best way may be to 
+
+
+
+  There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
 
 1. AVD session host VMs are created, and joined to the AAD DS domain.  This happens in the artifact **"AVDDeploy.json"**.
 2. Later the "management VM" is created, and joined to the domain.  This domain join triggers a reboot, and the JoinDomain extension waits for the machine to reboot and check in before the "MGMTVM" artifact continues.
 3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from Azure storage, to the management VM.
-4. The Managment VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
+4. The Management VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
 5. The domain management code does the following for the session hosts:
     1. Creates a new GPO called **"AVD Session Host policy"**
     2. Creates a new OU called **"AVD Computers"**
@@ -353,7 +410,7 @@ You would edit the value inside the quotes, to point to your specific storage lo
     "settings": {
     "settings":{
         "fileUris": [
-            "https://contosoblueprints.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
+            "https://myazureaccount.blob.core.windows.net/blueprintscripts/Create-AzAADDSJoinedFileshare.ps1"
 ```
 
 Lastly, you would edit the script **'Create-AzAADDSJoinedFileshare.ps1'** to remove the setting you are interested in.  Here are the settings details:  
@@ -384,6 +441,42 @@ The group policy settings come from Microsoft documentation: [Group Policy Setti
 * To store scripts and any other objects needed during Blueprint assignment on Internet connected assignments, a public web location can be used to store scripts and other objects needed during Blueprint assignment.  
 [Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
 Whatever method chosen, the access method should be "public" and "anonymous" read-only access.
+Another method that could be used to access scripts is a "fork" from the Azure AVD Blueprint repository.  You can fork to your Github repository, then edit the scripts or Blueprint files if needed, then change the parameter "_ScriptURI" to your location.
+For example, I created a fork of the Azure AVD Blueprint repository to my personal repository at "https://github.com/robsmi-msfte/AVDBlueprint".  To get the value for "_ScriptURI", click the scripts folder, then click one of the scripts.  To the right, click the button called "Raw".  Then, copy the URL from your web browser, up to the word "scripts", but don't include the trailing slash.  For example, here would be my "_ScriptURI":
+
+https://raw.githubusercontent.com/robsmi-msfte/AVDBlueprint/main/scripts
+
+You can then set this value in either your Blueprint file, but preferably in a Blueprint Assignment file.  An Assignment file is a JSON file that is used to set specific parameter values and pass those values to the Blueprint and the Blueprint artifacts.  Here is a small example of a Blueprint Assignment file:
+```JSON
+{  
+    "name": "AVD Blueprint - Default Configuration",  
+    "type": "Microsoft.Blueprint/blueprintAssignments",
+    "apiVersion": "2018-11-01-preview",
+    "location": "centralus",
+    "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+            "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1" : {}
+        }
+    },
+    "properties": {
+      "displayName": "AVD Blueprint - Full Deployment (Default)",
+      "description": "Deploys a default Azure Virtual Desktop (AVD) deployment with all dependencies.",
+      "blueprintId": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/providers/Microsoft.Blueprint/blueprints/AVDBlueprint",
+      "scope": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
+      "parameters": {
+        "resourcePrefix": {
+            "value": "AVD001"
+        },
+        "_ScriptURI": {
+          "value": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
+          "description": "The URL to the script folder available during Blueprint assignment."
+}
+```
+
+More information about using Blueprint Assignment files can be found at the following location:
+
+https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps
 
 * If you need to delete a deployment with the intent of starting over with a new deployment, you will need to change the "Deployment Prefix" value in the "assign_default.json" file.
   This file is used to prefix most of the Azure resources created during the deployment, including a [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
@@ -449,6 +542,25 @@ The location field for the assignment file itself should reflect a region in the
         }
       }
 ```
+
+## Recommended Reading
+
+1) [Azure Blueprints] (<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
+2) [Azure Virtual Desktop] (<https://docs.microsoft.com/en-us/azure/virtual-desktop/>)
+
+## Change List
+
+* Added examples and samples. Recents updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can use an "Assignment" file, which is JSON language, and a sample is now included in the "Examples and Samples" folder
+
+* Edited the two sample PowerShell scripts that perform the Import, Publish, and Assignment tasks.  The script named "assign-bp.ps1" performs the import and publish functions.  The file "assign-bp.ps1" performs the Blueprint assignment.  These two example files can be used as-is, without modification.  Of the remaining two files; "run.config.json" and "assign_default.json" samples, the "run.config.json" would most likely only be edited once, to include your unique values of TenantID and SubscriptionID.  The remaining file "assign_default.json" is the only file you need edit afterward to customize the Blueprint experience.  There is a new section in the section of this Readme called **Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)**.
+
+* 08/10/2021: Streamlined Log Analytics by removing log collection for components not in use by this Blueprint.  Also, updated the API version for several resources with the Log Analytics artifact, for compatibility across several clouds.
+
+* 08/10/2021: Updated the list of Azure VM sizes in the "AllowedValues" list in the "avdHostPool_vmGalleryImageSKU" parameter.  Based on what is available as of 08/18/21, from "19h2" to "21h1", with and without Office 365.
+
+* 08/10/2021: Edited Blueprint parameter "AzureEnvironmentName" to included allowed values for AzureCloud and AzureUSGovernment.  The default value is AzureCloud.  You can override that value with an Assignment file.
+
+* 08/10/2021: Edited Blueprint parameter "AzureStorageFQDN" to include the storage endpoints for both Azure Commercial and Azure Government.  The default value is Azure Commercial (file.core.windows.net)
 
 ## Trademarks
 
