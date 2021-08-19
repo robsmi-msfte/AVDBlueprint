@@ -15,10 +15,13 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 ## High Level steps to get started
 
 * **Meet pre-requisites** in your Azure subscription.
-* **Download and edit the sample files in the folder** "Examples and Samples".
+* **Download all Blueprint files locally** to a folder on your device, such as example: **'C:\VSCode\AVDBlueprint'**
+* **Edit the sample file "run.config.json".  This is where you specify your TenantID, SubscriptionID, Blueprint name, local file path to Blueprint files, and local file path to your assignment file.
 * **Edit the sample file "assign_default.json"**.  This file is what makes the Blueprint unique to your environment.  You can specify a small number of parameters such as the required ones only.  The Blueprint has default values for many parameters.  Or you can override a parameter value of your preference.  An example might be Azure virtual machine size, or Windows Gallery image SKU.
 Though you can also set and change parameters in the Azure Portal, there are a lot to set and some could be ambiguous.
-* **Import the Blueprint to your Azure subscription.** The easiest and fastest way to add this Blueprint definition is by using the sample file **import-bp.ps1**.  Note that "import-bp.ps1" references another file **run.config.json**. You can use "import-bp.ps1" as is, with no edits.  The changes needed to the "run.config.json" file are TenantID, SubscriptionID, Blueprint Name, Blueprint Path, Assignment file name and path.  It is possible to create this Blueprint using the Azure portal, but is difficult and that work has already been done in this Blueprint.
+* **Import the Blueprint to your Azure subscription.** The easiest and fastest way to add this Blueprint definition is by using the sample file **import-bp.ps1**.  Note that 'import-bp.ps1' references another file **run.config.json**. You can use 'import-bp.ps1' as is, with no edits.  
+It is possible to create this Blueprint using the Azure portal, but is difficult and that work has already been done in this Blueprint.
+The process of importing the Blueprint to Azure, uploads the Blueprint file and all the artifact files.
 * **Publish the Blueprint** (This can be done automatically with the included sample file **import-bp.ps1**).
 The act of publishing a Blueprint definition makes that Blueprint available to be assigned to a subscription by creating a unique version of your Blueprint definition.
 
@@ -27,20 +30,20 @@ The act of publishing a Blueprint definition makes that Blueprint available to b
 
 * **Assign the Blueprint**, which is the process of "assigning" a published Blueprint definition version, and which initiates the Blueprint deployment.
 
-> [!IMPORTANT]
-> It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
-<https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance>
-
 ## Prerequisites
 
 1. **An [Azure tenant](https://docs.microsoft.com/en-us/microsoft-365/education/deploy/intro-azure-active-directory#what-is-an-azure-ad-tenant)**. In this Blueprint by default, a new instance of Azure Active Directory Domain Services is created.  Though not a hard requirement, it is recommended that the domain name you specify is the same as your Azure Active Directory "Primary domain" name.  Though you can create a long tenant domain name prefix, you cannot in AAD DS, therefore it is recommended to have your domain name prefix 15 characters or less.  
 In the case of an existing domain, this Blueprint can still be utilized.  There are instructions in this guide in the **"Tips"** section on this topic.
 
+> [!IMPORTANT]
+> It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
+<https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance>
+
 1. **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
 An Azure Global administrator account is required to successfully assign (deploy) the Azure AVD Blueprints.
 
 1. **An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)**  
-The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment. There are two types of Azure Managed Identies: 'System Assigned' and 'User Assigned'. For the purpose of this AVD Blueprint, the type 'User Assigned Managed Identity' will be utilized.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**  
+The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment. There are two types of Azure Managed Identities: 'System Assigned' and 'User Assigned'. For the purpose of this AVD Blueprint, the type 'User Assigned Managed Identity' will be utilized.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**  
 
     **NOTE:** In the case of “greenfield” deployments, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.  
 
@@ -286,7 +289,7 @@ You can review newly imported Blueprint definitions and follow instructions to e
 
 ### Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)
 
-This method performs all activities on the local machine.  This example uses Visual Studio Code.  You can use Visual Studio code as the one-stop development and deployment toolset.  Several extensions make working with ARM templates a little easier:
+This method performs all activities on the local machine.  This example uses Visual Studio Code.  You can use Visual Studio code as the one-stop development and deployment tool set.  Several extensions make working with ARM templates a little easier:
 
 1. Install Visual Studio Code (the following extensions are recommended):
     * GitLens--Git supercharged
@@ -319,7 +322,7 @@ The script finds and removes the following items that were previously deployed v
 * 'AVD Users' group itself
 * 'AAD DC Admins' group
 
-Use of `-verbose`, `-whatif` or `-comfirm` ARE supported. Also, the script will create one Powershell Job for each Resource Group being removed. Teardowns typically take quite some time, so this will allow you to return to prompt and keep working while the job runs in the background.  
+Use of `-verbose`, `-whatif` or `-confirm` ARE supported. Also, the script will create one Powershell Job for each Resource Group being removed. Teardowns typically take quite some time, so this will allow you to return to prompt and keep working while the job runs in the background.  
 
 **Example:**
 
@@ -414,15 +417,16 @@ There may be other extensions available that perform the same or similar functio
 
 ### Accessing the Blueprint files and scripts
 
-* To store scripts and any other objects needed during Blueprint assignment on Internet connected assignments, a public web location can be used to store scripts and other objects needed during Blueprint assignment.  
-[Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.
-Whatever method chosen, the access method should be "public" and "anonymous" read-only access.
-Another method that could be used to access scripts is a "fork" from the Azure AVD Blueprint repository.  You can fork to your Github repository, then edit the scripts or Blueprint files if needed, then change the parameter "_ScriptURI" to your location.
+To store scripts and any other objects needed during Blueprint assignment on Internet connected assignments, a public web location can be used to store scripts and other objects needed during Blueprint assignment.  
+[Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.  
+Whatever method chosen, the access method should be "public" and "anonymous" read-only access.  
+Another method that could be used to access scripts is a "fork" from the Azure AVD Blueprint repository.  You can fork to your Github repository, then edit the scripts or Blueprint files if needed, then change the parameter "_ScriptURI" to your location.  
 For example, I created a fork of the Azure AVD Blueprint repository to my personal repository at "https://github.com/robsmi-msfte/AVDBlueprint".  To get the value for "_ScriptURI", click the scripts folder, then click one of the scripts.  To the right, click the button called "Raw".  Then, copy the URL from your web browser, up to the word "scripts", but don't include the trailing slash.  For example, here would be my "_ScriptURI":
 
-https://raw.githubusercontent.com/robsmi-msfte/AVDBlueprint/main/scripts
+<https://raw.githubusercontent.com/robsmi-msfte/AVDBlueprint/main/scripts>
 
 You can then set this value in either your Blueprint file, but preferably in a Blueprint Assignment file.  An Assignment file is a JSON file that is used to set specific parameter values and pass those values to the Blueprint and the Blueprint artifacts.  Here is a small example of a Blueprint Assignment file:
+
 ```JSON
 {  
     "name": "AVD Blueprint - Default Configuration",  
@@ -452,7 +456,7 @@ You can then set this value in either your Blueprint file, but preferably in a B
 
 More information about using Blueprint Assignment files can be found at the following location:
 
-https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps
+<https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps>
 
 ### Deployment Prefix Recommendations
 
@@ -478,7 +482,9 @@ If you are using an assignment file, you can change several values and utilize i
 
 1. Edit the "assign_default.json"
 1. Change **Location** field at top and bottom of file to the new location being deployed to.
-1. Change the parameter "
+1. Change the parameter **'AzureEnvironmentName'** value to **AzureUSGovernment**
+1. Change the parameter **'AzureStorageFQDN'** value to **file.core.usgovcloudapi.net**
+1. Assign the Blueprint with your customized "assign_default.json".  You can utilize the Azure Blueprint files URI, use your fork URI, Azure Storage, or other Internet accessible location where a copy of all the Blueprint script files can be accessed.
 
 #### Edits to CreateAADDSFileshare_ConfigureGP.ps1
 
@@ -491,7 +497,6 @@ For example, to use the Azure US Government sovereign cloud, the `Connect-AzAcco
 ```powershell
 Connect-AzAccount -Identity -Environment 'AzureUSGovernment'
 ```
-
 
 ##### $StorageFQDN
 
@@ -528,7 +533,7 @@ The location field for the assignment file itself should reflect a region in the
 
 ## Change List
 
-* Added examples and samples. Recents updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can use an "Assignment" file, which is JSON language, and a sample is now included in the "Examples and Samples" folder
+* Added examples and samples. Recent updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can use an "Assignment" file, which is JSON language, and a sample is now included in the "Examples and Samples" folder
 
 * Edited the two sample PowerShell scripts that perform the Import, Publish, and Assignment tasks.  The script named "assign-bp.ps1" performs the import and publish functions.  The file "assign-bp.ps1" performs the Blueprint assignment.  These two example files can be used as-is, without modification.  Of the remaining two files; "run.config.json" and "assign_default.json" samples, the "run.config.json" would most likely only be edited once, to include your unique values of TenantID and SubscriptionID.  The remaining file "assign_default.json" is the only file you need edit afterward to customize the Blueprint experience.  There is a new section in the section of this Readme called **Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)**.
 
