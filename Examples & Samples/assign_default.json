@@ -1,0 +1,87 @@
+{
+    "name": "AVD Blueprint - Default Configuration",
+    "type": "Microsoft.Blueprint/blueprintAssignments",
+    "apiVersion": "2018-11-01-preview",
+    "location": "centralus",
+    "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+            "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1" : {}
+        }
+    },
+    "properties": {
+      "displayName": "AVD Blueprint - Full Deployment (Default)",
+      "description": "Deploys a default Azure Virtual Desktop (AVD) deployment with all dependencies.",
+      "blueprintId": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/providers/Microsoft.Blueprint/blueprints/AVDBlueprint",
+      "scope": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
+      "parameters": {
+        "resourcePrefix": {
+            "value": "AVD001"
+        },
+        "_ScriptURI": {
+          "value": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
+          "description": "The URL to the script folder available during Blueprint assignment."
+        },
+        "avdHostPool_vmGalleryImageSKU": {
+          "value": "21h1-evd-o365pp",
+          "allowedValues": [
+            "19h2-evd-o365pp",
+            "19h2-evd-o365pp-g2",
+            "20h1-evd-o365pp",
+            "20h1-evd-o365pp-g2",
+            "20h2-evd-o365pp",
+            "20h2-evd-o365pp-g2",
+            "21h1-evd-o365pp",
+            "21h1-evd-o365pp-g2",
+            "19h2-evd",
+            "19h2-evd-g2",
+            "20h1-evd",
+            "20h1-evd-g2",
+            "20h2-evd",
+            "20h2-evd-g2",
+            "21h1-evd",
+            "21h1-evd-g2"
+          ]
+        },
+        "avdHostPool_vmSize": {
+          "value": "Standard_B12ms",
+          "description": "The Azure VM size of the session hosts being created by this Blueprint. To select a different size, find the VM size and change the value of this parameter to match"
+        },
+        "avdHostPool_vmNumberOfInstances": {
+          "value": 2
+        },
+        "avdHostPool_maxSessionLimit": {
+          "value": 16
+        },
+        "avdUsers_userCount": {
+          "value": 40
+        },
+        "vnet_enable-ddos-protection": {
+          "value": false
+        },
+        "ADDS_domainName": {
+          "value": "corp.contoso.com"
+        },
+        "ADDS_emailNotifications": {
+          "value": "admin@contoso.com" 
+        },
+        "script_executionUserResourceID": {
+          "value": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1",
+          "description": "ARM path to the managed identity by name"
+        },
+        "script_executionUserObjectID": {
+          "value": "11111111-1111-1111-1111-111111111111",
+          "description":"The object ID of the Azure global administrator account used to initiate the Blueprint assignment"
+        },
+        "keyvault_ownerUserObjectID": {
+          "value": "22222222-2222-2222-2222-222222222222",
+          "description": "The Object ID of the managed identity"
+        }
+      },
+      "resourceGroups": {
+        "ResourceGroup": {
+          "location": "centralus"
+        }
+      }
+    }
+  }
