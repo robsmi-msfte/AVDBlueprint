@@ -14,75 +14,72 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
 ## High Level steps to get started
 
-* **Meet pre-requisites** in your Azure subscription.
-* **Download all Blueprint files locally** to a folder on your device, such as example: **'C:\VSCode\AVDBlueprint'**
-* **Edit the sample file "run.config.json".  This is where you specify your TenantID, SubscriptionID, Blueprint name, local file path to Blueprint files, and local file path to your assignment file.
-* **Edit the sample file "assign_default.json"**.  This file is what makes the Blueprint unique to your environment.  You can specify a small number of parameters such as the required ones only.  The Blueprint has default values for many parameters.  Or you can override a parameter value of your preference.  An example might be Azure virtual machine size, or Windows Gallery image SKU.
-Though you can also set and change parameters in the Azure Portal, there are a lot to set and some could be ambiguous.
-* **Import the Blueprint to your Azure subscription.** The easiest and fastest way to add this Blueprint definition is by using the sample file **import-bp.ps1**.  Note that 'import-bp.ps1' references another file **run.config.json**. You can use 'import-bp.ps1' as is, with no edits.  
-It is possible to create this Blueprint using the Azure portal, but is difficult and that work has already been done in this Blueprint.
-The process of importing the Blueprint to Azure, uploads the Blueprint file and all the artifact files.
+* **Configure pre-requisites** in your Azure subscription.
+* **Download all Blueprint files locally** to a folder on your device, such as example: **'C:\VSCode'**.
+* **Edit the included sample files** to customize to your environment.
+* **Import the Blueprint to your Azure subscription.** The easiest and fastest way to add this Blueprint definition is by using the sample file **import-bp.ps1**.
 * **Publish the Blueprint** (This can be done automatically with the included sample file **import-bp.ps1**).
-The act of publishing a Blueprint definition makes that Blueprint available to be assigned to a subscription by creating a unique version of your Blueprint definition.
 
 > [!NOTE]
 > The included sample file **import-bp.ps1** accomplishes the import and publishing steps in one script.
 
-* **Assign the Blueprint**, which is the process of "assigning" a published Blueprint definition version, and which initiates the Blueprint deployment.
+* **Assign the Blueprint**, which is the process of "assigning" a published Blueprint definition version to your subscription, and which initiates the Blueprint deployment.
 
 ## Prerequisites
 
-1. **An [Azure tenant](https://docs.microsoft.com/en-us/microsoft-365/education/deploy/intro-azure-active-directory#what-is-an-azure-ad-tenant)**. In this Blueprint by default, a new instance of Azure Active Directory Domain Services is created.  Though not a hard requirement, it is recommended that the domain name you specify is the same as your Azure Active Directory "Primary domain" name.  Though you can create a long tenant domain name prefix, you cannot in AAD DS, therefore it is recommended to have your domain name prefix 15 characters or less.  
+* **An [Azure tenant](https://docs.microsoft.com/en-us/microsoft-365/education/deploy/intro-azure-active-directory#what-is-an-azure-ad-tenant)**. In this Blueprint by default, a new instance of Azure Active Directory Domain Services is created.  Though not a hard requirement, it is recommended that the domain name you specify is the same as your Azure Active Directory "Primary domain" name.  Though you can create a long tenant domain name prefix, you cannot in AAD DS, therefore it is recommended to have your domain name prefix 15 characters or less.  
 In the case of an existing domain, this Blueprint can still be utilized.  There are instructions in this guide in the **"Tips"** section on this topic.
 
 > [!IMPORTANT]
 > It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
 <https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance>
 
-1. **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
+* **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
 An Azure Global administrator account is required to successfully assign (deploy) the Azure AVD Blueprints.
 
-1. **An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)**  
-The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment. There are two types of Azure Managed Identities: 'System Assigned' and 'User Assigned'. For the purpose of this AVD Blueprint, the type 'User Assigned Managed Identity' will be utilized.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**  
+* **An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)**  
+The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment.  This AVD Blueprint utilizes type 'User Assigned Managed Identity'.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**
 
-    **NOTE:** In the case of “greenfield” deployments, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.  
+> [!NOTE]
+> In the case of deploying to an otherwise empty subscription, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.
 
-1. **Security configuration in the environment for a Blueprint Operator**  
-The management of Blueprint definitions and Blueprint assignments are two different roles, thus the need for two different identities. A blueprint definition can use either system-assigned or user-assigned managed identities. However, when using the **Blueprint Operator** role, the blueprint definition needs to be configured to use a ***user-assigned managed identity***. Additionally, the account or security group being granted the Blueprint Operator role needs to be granted the Managed Identity Operator role on the user-assigned managed identity. Without this permission, blueprint assignments fail because of lack of permissions.  
+* **Security configuration in the environment for a Blueprint Operator**  
+The management of Blueprint definitions and Blueprint assignments are two different roles, thus the need for two different identities (Azure administrator and managed identity). The security group being granted the **Blueprint Operator** role needs to also be granted the **Managed Identity Operator** role. Without this permission, blueprint assignments fail because of lack of permissions.  One method is to add the two identities to the one security group (example *Blueprint Operators*), and then you only need add the required roles to the security group.
 
-    The high-level configuration steps are as follows (documentation [here](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator)):  
+    The steps to create a security group and assign the roles are as follows (documentation [here](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator)):  
 
-    * [Create an Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal) (example: **Blueprint Operators**)  
-    * At the subscription level, assign roles to the group previously created, by going to the following location in the Azure Portal  
-    > **Azure Portal** -> **Home** -> **Subscriptions** -> (***your subscription***) -> **Access Control (IAM)**  
-    * [Add the managed identity created in Step 2 of this document, and the Global Administrator accounts to the Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal#create-a-basic-group-and-add-members)  
-    * Assign permissions to the group, to allow members to create objects at the subscription level:
+  * [Create an Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal) (example: **Blueprint Operators**)  
+  * At the subscription level, assign roles to the group previously created, by going to the following location in the Azure Portal  
+  > **Azure Portal** -> **Home** -> **Subscriptions** -> (***your subscription***) -> **Access Control (IAM)**  
+  * [Add the managed identity created earlier in this section, and the Global Administrator accounts to the Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal#create-a-basic-group-and-add-members)  
+  * Assign permissions to the group , to allow members to create objects at the subscription level:
 
-        * [Blueprint Contributor](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#blueprint-contributor)
-        * [Blueprint Operator](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#blueprint-operator)
-        * [Managed Identity Operator](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#managed-identity-operator)  
+    * [Blueprint Contributor](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#blueprint-contributor)
+    * [Blueprint Operator](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#blueprint-operator)
+    * [Managed Identity Operator](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#managed-identity-operator)  
 
     When correctly configured, the Role assignments for your Azure AD group, should look like this:  
 
     ![Blueprint Group Access Control Depiction](https://github.com/Azure/AVDBlueprint/blob/main/images/BluePrint_GroupAccessControlDepiction.PNG)
 
-1. **An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels**  
+* **An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels**  
 
-1. **Azure Blueprint resource provider registered to your subscription** through Azure PowerShell with this PowerShell command:  
+* **Azure Blueprint resource provider registered to your subscription** through Azure PowerShell with this PowerShell command:  
 
-    ```PowerShell
+    ```powershell
     Register-AzResourceProvider -ProviderNamespace Microsoft.Blueprint
     ```
 
     You should receive this output from the Register-AzResourceProvider command:  
 
-    ```ProviderNamespace   Microsoft.Blueprint  
-    RegistrationState : Registering  
-    ResourceTypes     : {blueprints, blueprints/artifacts, blueprints/versions, blueprints/versions/artifacts…}  
-    Locations         : {}  
+    ```powershell
+    ProviderNamespace   Microsoft.Blueprint
+    RegistrationState : Registering
+    ResourceTypes     : {blueprints, blueprints/artifacts, blueprints/versions, blueprints/versions/artifacts…}
+    Locations         : {}
     ```
 
-1. **Azure Active Directory provider registered to your subscription** (if not already registered):  
+* **Azure Active Directory provider registered to your subscription** (if not already registered):  
 Check the current provider registration status in your subscription:  
 
     ```powershell
@@ -91,118 +88,73 @@ Check the current provider registration status in your subscription:
 
     If necessary, register the Azure AD resource provider:
 
-    ```powershell
+    ```PowerShell
     Register-AzResourceProvider -ProviderNamespace Microsoft.AAD
     ```
 
-1. **Azure Active Directory Domain Services Enterprise application registered to your subscription**
+* **Azure Active Directory Domain Services Enterprise application registered to your subscription**
 
     Documentation: [Create an Azure Active Directory Domain Services managed domain using an Azure Resource Manager template](https://docs.microsoft.com/en-us/azure/active-directory-domain-services/template-create-instance)
 
     Run the following PowerShell command:
 
-    ```powershell
+    ```PowerShell
     New-AzureADServicePrincipal -AppId "6ba9a5d4-8456-4118-b521-9c5ca10cdf84"
     ```
 
-1. **[Domain Controller Services service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)** (if it does not already exist), with this PowerShell command
+* **[Domain Controller Services service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal)** (if it does not already exist), with this PowerShell command
 
-    ```powershell
+    ```PowerShell
     New-AzureADServicePrincipal -AppId "2565bd9d-da50-47d4-8b85-4c97f669dc36"
     ```  
 
-1. **Managed identity assigned the Owner role at the subscription level**  
+* **Managed identity assigned the Owner role at the subscription level**  
 The reason is that the managed identity needs full access during the deployment, for example to initiate the creation of an instance of Azure AD DS.  
 
     **MORE INFO:** [Add or change Azure subscription administrators](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator)  
 
-1. **The account used to assign the Blueprint, granted "User Access Administrator" at the subscription level**  
+* **The account used to assign the Blueprint, granted "User Access Administrator" at the subscription level**  
 The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a AVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
 
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
 
-1. **The Blueprint main file (Blueprint.json), and related artifact objects**  
+* **The Blueprint main file (Blueprint.json), and related artifact objects**  
 These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.  
 
-## Blueprint Objects and Purpose
+## Managing and Assigning/Deploying the AVD Blueprint
 
-| Type | Object | Purpose |
-|-|-|-|  
-|Assignment file|assign_default.json|Hard-code and pass to the Blueprint, the environment specific items such as subscription, UserAssignedIdentity, etc.|  
-|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint definition|
-|Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
-|Artifact|addsDAUser.json|directs the creation of domain administrator account|
-|Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
-|Artifact|keyvault.json|directs the creation of Azure Key Vault resources, used to store and retrieve credentials used at various points during the Blueprint assignment|
-|Artifact|log-analytics.json|Sets up logging of various components to Azure storage|
-|Artifact|MGMTVM.json|Sets up logging of various components to Azure storage|
-|Artifact|net.json|Sets up networking and various subnets|
-|Artifact|nsg.json|Sets up network security groups|
-|Artifact|avdDeploy.json|Deploys AVD session hosts, created the AVD host pool and application group, and adds the session hosts to the application group|
-|Artifact|avdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
+> [!NOTE]
+> The following sub-sections are example methods available to assign the AVD Blueprint.  There are sample assignment files in the Github repository in the 'Examples & Samples' folder.
 
-## Blueprint Parameters
+### Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)
 
-Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
+This method performs all activities on the local machine.  This example uses Visual Studio Code as the tool to edit, save, connect to Azure, and deploy.  Several extensions make working with ARM templates a little easier:
 
-### Required Parameters
+* Install Visual Studio Code (the following extensions are recommended):
+  * GitLens--Git supercharged
+  * PowerShell
+  * Azure CLI Tools
+  * Azure Resource Manager (ARM) Tools
 
-The blueprint includes the following required parameters.  
+* Go the [AVD Blueprint Github repository main folder](https://github.com/Azure/AVDBlueprint) in your favorite web browser
 
-| Parameter | Example Value | Purpose |  
-|-|-|-|  
-|**adds_domainName**|avdbp.contoso.com|The domain name for the Azure ADDS domain that will be created|
-|**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
-|**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
-|**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
+* Click or tap the down arrow on the green button called **'Code'**, then tap or click the option 'Download Zip'.  
 
-### Optional Parameters  
+    ![Image for Github Download Zip option](./images/GitDownloadZip2.png)
 
-These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assignment process.  
+* Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing, by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location.
+The example files in this repository use this path:
 
-| Parameter | Default Value | Purpose |
-|-|-|-|
-|**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
-|**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
-|**_ScriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
-|**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
-|**log-analytics_data-retention**|365|Number of days data will be retained.|
-|**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
-|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vNet created by the AVD Blueprint.|
-|**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
-|**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
-|**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
-|**vnet_logs-retention-in-days**|365|Number of days vnet logs will be retained.|
-|**keyvault_logs-retention-in-days**|365|Number of days keyvault logs will be retained.|
-|**daUser_AdminUser**|domainadmin@{adds_domainName}|This account will be a member of AAD DC Administrators and local admin on deployed VMs.|
-|**avdHostpool_hostpoolname**|{resourcePrefix}-avd-hp||
-|**avdHostpool_workspaceName**|{resourcePrefix}-avd-ws||
-|**avdHostpool_hostpoolDescription**|||
-|**avdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each AVD session host name.|
-|**avdHostpool_vmGalleryImageOffer**|office-365||
-|**avdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
-|**avdHostpool_vmGalleryImageSKU**|21h1-evd-o365pp||
-|**avdHostpool_vmImageType**|Gallery||
-|**avdHostpool_vmDiskType**|StandardSSD_LRS||
-|**avdHostpool_vmUseManagedDisks**|true||
-|**avdHostpool_allApplicationGroupReferences**|||
-|**avdHostpool_vmImageVhdUri**||(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs.|
-|**avdHostpool_vmCustomImageSourceId**||(Required when vmImageType = CustomImage) Resource ID of the image.|
-|**avdHostpool_networkSecurityGroupId**||The resource id of an existing network security group.|
-|**avdHostpool_personalDesktopAssignmentType**|||
-|**avdHostpool_customRdpProperty**||Hostpool rdp properties.|
-|**avdHostpool_deploymentId**|||
-|**avdHostpool_ouPath**|||
-|**avdUsers_userPrefix**|user|Username prefix. A number will be added to the end of this value.|
-|**avdUsers_userCount**|10|Total Number of AVD users to create.|
+    > C:\VSCode\AVDBlueprint  
+    > C:\VSCode\AVDBlueprint\Blueprint  
+    > C:\VSCode\AVDBlueprint\Blueprint\Artifacts  
+    > C:\VSCode\AVDBlueprint\Blueprint\Examples and Samples  
+    > C:\VSCode\AVDBlueprint\Blueprint\images  
+    > C:\VSCode\AVDBlueprint\Blueprint\scripts  
+    > C:\VSCode\AVDBlueprint_CustomizedFiles
 
-## Import, Publish and Assign the Blueprint
-
-1. Import the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps>
-2. Publish the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
-3. Assign the Blueprint - <https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>
-
-**NOTE:** The following three sections are example methods available to assign the AVD Blueprint.  There are sample assignment files in the Github repository in the 'Examples & Samples' folder.
+  > [!TIP]
+  > If you use the folder structure above, copy the files from folder **'Examples and Scripts'** to the folder **'AVDBlueprint_CustomizedFiles'**.  This in case you want to reinitialize your local copy of the Blueprint, you can do so by just deleting the entire 'AVDBlueprint' folder, then re-copy and extract, or clone using Github/Visual Studio Code, and your customized files are not deleted or changed.
 
 ### Manage the Blueprint using Azure Cloud Shell
 
@@ -287,30 +239,6 @@ by double-clicking the downloaded .zip file, and then copying the main folder wi
 1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
 You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
 
-### Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)
-
-This method performs all activities on the local machine.  This example uses Visual Studio Code.  You can use Visual Studio code as the one-stop development and deployment tool set.  Several extensions make working with ARM templates a little easier:
-
-1. Install Visual Studio Code (the following extensions are recommended):
-    * GitLens--Git supercharged
-    * PowerShell
-    * Azure CLI Tools
-    * Azure Resource Manager (ARM) Tools
-1. Go the [AVD Blueprint Github repository main folder](https://github.com/Azure/AVDBlueprint) in your favorite web browser
-
-1. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
-
-      ![Image for Github Download Zip option](./images/GitDownloadZip2.png)
-
-1. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
-by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location.
-        The example files in this repository use this path:
-
-    > C:\VSCode\AVDBlueprint
-        You can put the files from the "Samples & Examples" folder in the following location (as an example)  
-        **C:\VSCode\CustomizedFiles**  
-        That way if you customize your files but decide to reinitialize your local repository, your customized files remain unchanged.  
-
 ## Teardown
 
 If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
@@ -353,7 +281,7 @@ Regarding Group Policy settings that are applied to the AVD session host compute
 sections of Group Policy settings applied to the AVD session hosts:  
 
 * **FSLogix settings**
-* **Session Host RDP lockdown settings**  
+* **Remote Desktop Session Host redirection settings**  
 
 #### FSLogix Settings
 
@@ -528,8 +456,11 @@ The location field for the assignment file itself should reflect a region in the
 
 ## Recommended Reading
 
-1) [Azure Blueprints] (<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
-2) [Azure Virtual Desktop] (<https://docs.microsoft.com/en-us/azure/virtual-desktop/>)
+1) [Azure Blueprints](<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
+2) [Azure Virtual Desktop](<https://docs.microsoft.com/en-us/azure/virtual-desktop/>)
+3) [Import the Blueprint](<https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps>)
+4) [Publish the Blueprint](<https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>)
+5) [Assign the Blueprint](<https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal>)
 
 ## Change List
 
@@ -544,6 +475,80 @@ The location field for the assignment file itself should reflect a region in the
 * 08/10/2021: Edited Blueprint parameter "AzureEnvironmentName" to included allowed values for AzureCloud and AzureUSGovernment.  The default value is AzureCloud.  You can override that value with an Assignment file.
 
 * 08/10/2021: Edited Blueprint parameter "AzureStorageFQDN" to include the storage endpoints for both Azure Commercial and Azure Government.  The default value is Azure Commercial (file.core.windows.net)
+
+## Blueprint objects, purpose, and parameter documentation
+
+### Blueprint Objects and Purpose
+
+| Type | Object | Purpose |
+|-|-|-|  
+|Assignment file|assign_default.json|Hard-code and pass to the Blueprint, the environment specific items such as subscription, UserAssignedIdentity, etc.|  
+|Blueprint file|Blueprint.json|The is the central file of an Azure Blueprint definition|
+|Artifact|adds.json|directs the creation of Azure Active Directory Domain Services resources|
+|Artifact|addsDAUser.json|directs the creation of domain administrator account|
+|Artifact|DNSsharedsvcs.json|directs the creation of domain name services (DNS) resources|
+|Artifact|keyvault.json|directs the creation of Azure Key Vault resources, used to store and retrieve credentials used at various points during the Blueprint assignment|
+|Artifact|log-analytics.json|Sets up logging of various components to Azure storage|
+|Artifact|MGMTVM.json|Sets up logging of various components to Azure storage|
+|Artifact|net.json|Sets up networking and various subnets|
+|Artifact|nsg.json|Sets up network security groups|
+|Artifact|avdDeploy.json|Deploys AVD session hosts, created the AVD host pool and application group, and adds the session hosts to the application group|
+|Artifact|avdTestUsers.json|Creates users in AAD DS, that are available to log in after the deployment is complete|
+
+### Blueprint Parameters
+
+Blueprint parameters, located in blueprint.json, allow to configure the deployment and customize the environment.
+
+### Required Parameters
+
+The blueprint includes the following required parameters.  
+
+| Parameter | Example Value | Purpose |  
+|-|-|-|  
+|**adds_domainName**|avdbp.contoso.com|The domain name for the Azure ADDS domain that will be created|
+|**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
+|**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
+|**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
+
+### Optional Parameters  
+
+These optional parameters either have default values or, by default, do not have values. You can override them during the blueprint assignment process.  
+
+| Parameter | Default Value | Purpose |
+|-|-|-|
+|**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
+|**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
+|**_ScriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
+|**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
+|**log-analytics_data-retention**|365|Number of days data will be retained.|
+|**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
+|**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vNet created by the AVD Blueprint.|
+|**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
+|**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
+|**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
+|**vnet_logs-retention-in-days**|365|Number of days vnet logs will be retained.|
+|**keyvault_logs-retention-in-days**|365|Number of days keyvault logs will be retained.|
+|**daUser_AdminUser**|domainadmin@{adds_domainName}|This account will be a member of AAD DC Administrators and local admin on deployed VMs.|
+|**avdHostpool_hostpoolname**|{resourcePrefix}-avd-hp||
+|**avdHostpool_workspaceName**|{resourcePrefix}-avd-ws||
+|**avdHostpool_hostpoolDescription**|||
+|**avdHostpool_vmNamePrefix**|{resourcePrefix}vm|Prefix added to each AVD session host name.|
+|**avdHostpool_vmGalleryImageOffer**|office-365||
+|**avdHostpool_vmGalleryImagePublisher**|MicrosoftWindowsDesktop||
+|**avdHostpool_vmGalleryImageSKU**|21h1-evd-o365pp||
+|**avdHostpool_vmImageType**|Gallery||
+|**avdHostpool_vmDiskType**|StandardSSD_LRS||
+|**avdHostpool_vmUseManagedDisks**|true||
+|**avdHostpool_allApplicationGroupReferences**|||
+|**avdHostpool_vmImageVhdUri**||(Required when vmImageType = CustomVHD) URI of the sysprepped image vhd file to be used to create the session host VMs.|
+|**avdHostpool_vmCustomImageSourceId**||(Required when vmImageType = CustomImage) Resource ID of the image.|
+|**avdHostpool_networkSecurityGroupId**||The resource id of an existing network security group.|
+|**avdHostpool_personalDesktopAssignmentType**|||
+|**avdHostpool_customRdpProperty**||Hostpool rdp properties.|
+|**avdHostpool_deploymentId**|||
+|**avdHostpool_ouPath**|||
+|**avdUsers_userPrefix**|user|Username prefix. A number will be added to the end of this value.|
+|**avdUsers_userCount**|10|Total Number of AVD users to create.|
 
 ## Trademarks
 
