@@ -138,7 +138,7 @@ This method performs all activities on the local machine.  This example uses Vis
 
 * Go the [AVD Blueprint Github repository main folder](https://github.com/Azure/AVDBlueprint) in your favorite web browser
 
-* Click or tap the down arrow on the green button called **'Code'**, then tap or click the option 'Download Zip'.  
+* Click or tap the down arrow on the green button called **'Code'**, then tap or click the option 'Download Zip'.
 
     ![Image for Github Download Zip option](./images/GitDownloadZip2.png)
 
@@ -151,12 +151,12 @@ The example files in this repository use this path:
     > C:\VSCode\AVDBlueprint\Blueprint\Examples and Samples  
     > C:\VSCode\AVDBlueprint\Blueprint\images  
     > C:\VSCode\AVDBlueprint\Blueprint\scripts  
-    > C:\VSCode\AVDBlueprint_CustomizedFiles
+    > C:\VSCode\AVDBlueprint_CustomizedFiles <-- This folder at same level of Blueprint repository in case you want to delete and unzip new or Git clone.
 
   > [!TIP]
-  > If you use the folder structure above, copy the files from folder **'Examples and Scripts'** to the folder **'AVDBlueprint_CustomizedFiles'**.  This in case you want to reinitialize your local copy of the Blueprint, you can do so by just deleting the entire 'AVDBlueprint' folder, then re-copy and extract, or clone using Github/Visual Studio Code, and your customized files are not deleted or changed.
+  > If you use the folder structure above, copy the files from folder **'Examples and Scripts'** to the folder **'AVDBlueprint_CustomizedFiles'**.  Then customize your files so you won't have to customize them again, or at least maybe not all the way from scratch.
 
-* Copy the scripts in the 'Examples and Samples' folder to a folder you create, then customize them
+* Customize the following files from the **'Examples and Samples'** folder.
 
   1. Create a folder, for example 'C:\VSCode\AVDBlueprint_CustomizedFiles'.
   1. Copy the files from 'C:\VSCode\AVDBlueprint\Blueprint\Examples and Samples' to 'C:\VSCode\AVDBlueprint_CustomizedFiles'
@@ -166,92 +166,39 @@ The example files in this repository use this path:
       1. If desired, change the **'blueprintName'** value (you can use the sample name)
       1. If desired, change the **'blueprintPath'** path value (you can use the sample directory names and structure)
       1. If desired, change the **'assignmentFile'** path value (you can use the sample directory names and structure)
-  1. Edit the file **'import-bp.json'** to point to file '
+  1. Edit the file **'import-bp.json'** to point to file *'run.config.json'*.
       1. If you are using the sample folder structure, this file does not need to be edited.
-      1. If you are using a folder structure with different paths and names, edit line
-
-### Manage the Blueprint using Azure Cloud Shell
-
-Azure hosts Azure Cloud Shell, an interactive shell environment that can be used through a web browser.
-You can use either Bash or PowerShell with Cloud Shell to work with Azure services.
-You can use the Cloud Shell preinstalled commands to import and assign the AVD Blueprint without having to install anything on your local environment.  
-There are several ways to get started with Azure Cloud Shell:  
-
-1. Start Azure CloudShell:  
-
-    * **Direct link**: Open a browser to [https://shell.azure.com](https://shell.azure.com).
-
-    * **Azure portal**: Select the Cloud Shell icon on the [Azure portal](https://portal.azure.com):
-
-      ![Icon to launch the Cloud Shell from the Azure portal](./images/portal-launch-icon.png)
-
-1. Start PowerShell in Azure CloudShell ([more information here](https://docs.microsoft.com/en-us/azure/cloud-shell/overview#choice-of-preferred-shell-experience))
-
-1. Run the following command to clone the Azure AVDBlueprint repository to CloudDrive.  
-
-    ```dos
-    git clone https://github.com/Azure/AVDBlueprint.git $HOME/clouddrive/AVDBlueprint
-    ```
-
-    **TIP:**  Run ```dir $HOME/clouddrive``` to verify the repository was successfully cloned to your CloudDrive  
-
-1. Run the following commands to import the required PowerShell modules needed to import the blueprint (if not previously installed)
-
-    ```PowerShell
-    Install-Module -Name Az.Blueprint
-    Import-Module Az.Blueprint
-    ```
-
-1. Run the following command to import the AVD Blueprint definition, and save it within the specified subscription or management group.  
-
-    ```powershell
-    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath "$HOME/clouddrive/AVDBlueprint/blueprint"
-    ```  
-
-    **NOTE:** The '-InputPath' argument must point to the folder where blueprint.json file is placed.
-
-1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
-You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
-
-### Manage the Blueprint using local storage on a device and publish in Azure portal (Windows instructions)  
-
-You can manage the AVD Blueprint using a device that has a small amount of local storage available.
-
-1. Go the [AVD Blueprint Github repository main folder](https://github.com/Azure/AVDBlueprint).  
-
-1. Click or tap the down arrow on the green button called 'Code', then tap or click the option 'Download Zip'.  
-
-      ![Image for Github Download Zip option](./images/GitDownloadZip2.png)  
-
-1. Once the .zip file is downloaded to your local device, you can expand the contents to any location of your choosing,
-by double-clicking the downloaded .zip file, and then copying the main folder within the zip to any location, such as 'C:\AVDBlueprint-main'.  
-
-1. The next step is to import the Blueprint to your Azure subscription. These are the high-level steps to import the Blueprint:
-
-    * Start PowerShell.
-    * Run the following PowerShell commands to import the required modules needed to import the blueprint (if not previously installed)
-
-    ```PowerShell
-    Install-Module -Name Az.Blueprint
-    Import-Module Az.Blueprint
-    ```  
-
-    **NOTE:** Installing the PowerShell 'Az' modules does not include the Az.Blueprint modules. If you have installed the 'Az' modules, you will still need to install the Az.Blueprint modules.  
-
-1. Authenticate to your subscription by using the following PowerShell command
-
-    ```powershell
-    Connect-AzAccount
-    ```
-
-1. Run the following command to import the Blueprint to your Azure subscription:  
-
-    ```powershell
-    Import-AzBlueprintWithArtifact -Name "YourBlueprintName" -SubscriptionId "00000000-1111-0000-1111-000000000000" -InputPath 'C:\AVDBlueprint-main\Blueprint'
-    ```
-
-1. From the Azure Portal, browse to [Azure Blueprint service tab](https://portal.azure.com/#blade/Microsoft_Azure_Policy/BlueprintsMenuBlade/GetStarted) and select "**Blueprint definitions**".  
-You can review newly imported Blueprint definitions and follow instructions to edit, publish and assign blueprint. ([More information](https://docs.microsoft.com/en-us/azure/governance/blueprints/create-blueprint-portal#edit-a-blueprint))  
+      1. If you are using a folder structure with different paths and names, edit line 1 argument, so the path resolves to the file 'run.config.json'.
+  1. Edit the file **'assign-bp.json'** to point to file *'run.config.json'*.
+      1. If you are using the sample folder structure, this file does not need to be edited.
+      1. If you are using a folder structure with different paths and names, edit line 1 argument, so the path resolves to the file 'run.config.json'.
+  1. Edit the file **'assign_default.json'**
+      1. Change the two **'Location'** parameters to point to the Azure location you are deploying to.  You can log in to your Azure tenant using PowerShell, or Azure Cloud Shell, and run the command **'Get-AzLocation | ft location'**.
+      1. Change the parameter value **'userAssignedIdentities'** to the path to your user-assigned managed identity.  The easiest way to get this value is the following:
+          1. In the Azure portal, start typing 'Managed Identities', and in the results list, click **'Managed Identities'**
+          1. Click the name of your managed identity
+          1. In the **'Settings'** section/blade, click **'Properties'**
+          1. Copy the value of **'Resource ID'**, then paste that into the **'userAssignedIdentities'** parameter value
+      1. In the **'Properties'** section of the 'assign_default.json':
+          1. Edit the value of the **'BlueprintID'**, and replace the sample Azure subscription ID (between the second and third '/' characters from the left) with your subscription ID.
+          1. Edit the value of the **'scope'**, and replace the sample Azure subscription ID  (between the second and third '/' characters from the left) with your subscription ID.
+      1. The following parameter values are in the  **'Parameters'** section of the **'assign_default.json'**
+          1. The following parameter values are ***required*** to be changed, to your Azure environment values.
+              1. **'ADDS_domainName'**: The name of the Azure Active Directory Directory Services instance that will be created and synced to your Azure AD tenant.
+              1. **'ADDS_emailNotifications'**: Not currently implemented, but should be changed to a local admin e-mail account.
+              1. **'script_executionUserResourceID'**: ARM path to the managed identity by name.  Get this in the Azure portal, Managed Identities, Identity, Properties, **'Resource ID'**.
+              1. **'script_executionUserObjectID'**: The GUID/object ID of the Azure global administrator account used to initiate the Blueprint assignment.  You can get this in Azure AD, Users, username, then **'Object ID'** (under Identities)
+              1. **'keyvault_ownerUserObjectID'**: The GUID/object ID of the managed identity used during the Blueprint assignment.  You can get this in Azure Portal, Managed Identities, click identity name, the copy the 'Object ID' in the 'Essentials' section.
+          1. The following parameter values are not required, though you may want to edit some of the default values to your environment and/or requirements.
+              1. **'_ScriptURI'**: You can leave this to the current default, or if you fork the main repository to a new repository and wish to use that URI, you can.
+              1. **'AzureEnvironmentName'**: The current default is 'Azure Cloud' (Azure Commercial).  You can change this value in case you are deploying to *Azure Gov*.
+              1. **'AzureStorageFQDN'**: The current default is 'Azure Cloud' (Azure Commercial).  You can change this value in case you are deploying to *Azure Gov*.
+              1. **'avdHostPool_vmGalleryImageSKU'**: The version of Windows 10 EVD being deployed.  The 'Allowed Values' list are other available Windows versions from the Azure Gallery.
+              1. **'avdHostPool_vmSize'**: The Azure VM size.  You can change this value to any AVD supported VM size in the region you are assigning/deploying to.
+              1. **'avdHostPool_vmNumberOfInstances'**: The number of EVD VMs that this Blueprint assignment will create.
+              1. **'avdHostPool_maxSessionLimit'**: The maximum number of users that can log in to a Windows EVD session host, in the host pool created by this Blueprint assignment.
+              1. **'avdUsers_userCount'**: The number of test users created by this Blueprint assignment.
+              1. **'vnet_enable-ddos-protection'**: Controls whether this Blueprint creates an [Azure DDoS plan](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview) or not.
 
 ## Teardown
 
