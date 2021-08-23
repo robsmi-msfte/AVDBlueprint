@@ -119,7 +119,7 @@ The account used to manage the subscription and later assign the Blueprint, shou
     **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
 
 * **The Blueprint main file (Blueprint.json), and related artifact objects**  
-These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment. The necessary customizations can be applied in a few different ways.  
+These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment.
 
 ## Managing and Assigning/Deploying the AVD Blueprint
 
