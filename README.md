@@ -126,7 +126,7 @@ These objects are publicly available on Github.com. Once the Blueprint objects h
 > [!NOTE]
 > The following sub-sections are example methods available to assign the AVD Blueprint.  There are sample assignment files in the Github repository in the 'Examples & Samples' folder.
 
-### Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)
+### Manage and Deploy the AVD Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)
 
 This method performs all activities on the local machine.  This example uses Visual Studio Code as the tool to edit, save, connect to Azure, and deploy.  Several extensions make working with ARM templates a little easier:
 
@@ -155,6 +155,20 @@ The example files in this repository use this path:
 
   > [!TIP]
   > If you use the folder structure above, copy the files from folder **'Examples and Scripts'** to the folder **'AVDBlueprint_CustomizedFiles'**.  This in case you want to reinitialize your local copy of the Blueprint, you can do so by just deleting the entire 'AVDBlueprint' folder, then re-copy and extract, or clone using Github/Visual Studio Code, and your customized files are not deleted or changed.
+
+* Copy the scripts in the 'Examples and Samples' folder to a folder you create, then customize them
+
+  1. Create a folder, for example 'C:\VSCode\AVDBlueprint_CustomizedFiles'.
+  1. Copy the files from 'C:\VSCode\AVDBlueprint\Blueprint\Examples and Samples' to 'C:\VSCode\AVDBlueprint_CustomizedFiles'
+  1. Edit the file **'run.config.json'**
+      1. Change the **'TenantID'** value to your [Azure Tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant)
+      1. Change the **'subscriptionID'** value to your [Azure Subscription ID](https://docs.microsoft.com/en-us/azure/media-services/latest/setup-azure-subscription-how-to?tabs=portal)
+      1. If desired, change the **'blueprintName'** value (you can use the sample name)
+      1. If desired, change the **'blueprintPath'** path value (you can use the sample directory names and structure)
+      1. If desired, change the **'assignmentFile'** path value (you can use the sample directory names and structure)
+  1. Edit the file **'import-bp.json'** to point to file '
+      1. If you are using the sample folder structure, this file does not need to be edited.
+      1. If you are using a folder structure with different paths and names, edit line
 
 ### Manage the Blueprint using Azure Cloud Shell
 
