@@ -108,15 +108,6 @@ $RemovalScope | ForEach-Object {
             $logdata.Results | Export-Csv -Path $ExportFile
         }
     }
-   
-    if ($PurgeKeyVault)
-    {
-        $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
-        Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
-        Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
-        Remove-AzKeyVault -InRemovedState -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
-    }
-
 
     if ($PurgeKeyVault) {
         $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
