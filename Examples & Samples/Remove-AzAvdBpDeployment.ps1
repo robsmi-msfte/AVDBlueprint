@@ -72,7 +72,6 @@ $RemovalScope | ForEach-Object {
         Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
         Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
         Remove-AzKeyVault -InRemovedState -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
-    
     }
 
     $hp = Get-AzWvdHostPool -ResourceGroupName $ThisRG.ResourceGroupName
