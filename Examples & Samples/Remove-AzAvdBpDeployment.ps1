@@ -51,11 +51,7 @@ Param(
     [string] $LogPath,
     #Switch to purge key vault, not just soft delete
     [Parameter()]
-<<<<<<< HEAD
     [Switch] $PurgeKeyVault
-=======
-    [switch] $PurgeKeyVault
->>>>>>> b60e84ccb2e440b6ba75030cd6f3ca84a2970115
 )
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
@@ -69,13 +65,6 @@ $RemovalScope | ForEach-Object {
         if ($PSCmdlet.ShouldProcess($_.Name, "Remove Lock")) {
             Remove-AzResourceLock -LockId $_.LockId -Force    
         }
-    }
-
-    if ($PurgeKeyVault) {
-        $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
-        Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
-        Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
-        Remove-AzKeyVault -InRemovedState -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
     }
 
     $hp = Get-AzWvdHostPool -ResourceGroupName $ThisRG.ResourceGroupName
@@ -122,6 +111,14 @@ $RemovalScope | ForEach-Object {
    
     if ($PurgeKeyVault)
     {
+        $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
+        Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
+        Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
+        Remove-AzKeyVault -InRemovedState -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
+    }
+
+
+    if ($PurgeKeyVault) {
         $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
         Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
         Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
