@@ -1,3 +1,5 @@
+# Script to create AVD users, AVD User AD group, then add the AVD users to the AVD user group
+
 param ($totalUsers, $prefix, $domainname, $keyvault, $forcePasswordChange, $adGroup, $avdAppGroup, $avdRolename, $appGroupRG)
 
 Write-host "Total Users: $totalUsers"
@@ -13,6 +15,8 @@ Write-host "AVD App Group RG: $appGroupRG"
 
     $groupName = $adGroup
     $mailNickname = $groupName -replace '[\W]',''    
+    Write-Host "`n"
+    Write-Host "_________ Now creating AVD Users Group in Azure AD _________"
     Write-Host "Testing for existence of Azure AD Group: '$groupname'"
     if (-Not (Get-AzADGroup -DisplayName "$groupName")) {
         Write-Output (Get-AzADGroup -DisplayName $groupName)
@@ -29,13 +33,12 @@ Write-host "AVD App Group RG: $appGroupRG"
 for ($i = 1 ; $i -le $totalUsers ; $i++) {
     $displayName = $prefix + $i
     $userPrincipalName = $displayName + '@' + $domainname
+    Write-Host "`n"
+    Write-Host "____ Now creating users and adding them to AVD AD group ____"
     Write-host "Creating $userPrincipalName"
     Write-Host "Adding UPN ($userPrincipalName) to group ($groupName)"
     
-    
-    if ($null -eq (Get-AzADUser -UserPrincipalName $userPrincipalName)) {
-        #.\addADuser.ps1 -displayName "$displayName" -userPrincipalName "$userPrincipalName" -keyVault $keyvault -forcePasswordChange $forcePasswordChange
-        # to address timing problems in one cloud, adding code here instead of calling an external script each time
+    if (-NOT (Get-AzADUser -UserPrincipalName $userPrincipalName)) {
         Write-host "DisplayName: $displayName"
         Write-host "User Principal: $userPrincipalName"
 
@@ -48,32 +51,22 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
             Password                     =  $pass
             MailNickname                 =  $mailNickname
             ForceChangePasswordNextLogin = [System.Convert]::ToBoolean($forcePasswordChange)
-
         }
-        if ($null -eq (Get-AzADUser -DisplayName $parameters.DisplayName)) {
-            $parameters.GetEnumerator() | ForEach-Object{
-                $message = '{0} is {1}.' -f $_.key, $_.value
-                Write-Output $message
+    if (-Not (Get-AzADUser -DisplayName $parameters.DisplayName)) {
+        $parameters.GetEnumerator() | ForEach-Object{
+             $message = '{0} is {1}.' -f $_.key, $_.value
+             Write-Output $message
             }
+            Start-Sleep -Seconds 2 
             New-AzADUser @parameters
         }
-    }
-    #endregion Create AVD users
-
-    #region Assign AD user
-    # Add the user just created to the AVD Azure AD group
-    # .\assignADGroup.ps1 -groupName "$adGroup" -userPrincipalName "$userPrincipalName"
-    # for timing reasons, adding code here instead of calling an external script
-    # Also, adding delays during user creation and group add, to accomodate for AD->AADDS sync
-
-    Start-Sleep -Seconds 4
     if (-Not (Get-AzADGroupMember -GroupDisplayName "$groupName" | Where-Object {$_.UserPrincipalName -eq $userPrincipalName})) {
-        $parameters = @{
-            TargetGroupDisplayName              =  "$groupName"
-            MemberUserPrincipalName             =  $userPrincipalName
+            $parameters = @{
+                TargetGroupDisplayName              =  "$groupName"
+                MemberUserPrincipalName             =  $userPrincipalName
+        }
+            Start-Sleep -Seconds 5
+            Add-AzADGroupMember @parameters
+        }
     }
-        Add-AzADGroupMember @parameters
-        Start-Sleep -Seconds 2
-    }
-    #endregion Assgning AD users
 }
