@@ -199,6 +199,10 @@ The example files in this repository use this path:
               1. **'avdHostPool_maxSessionLimit'**: The maximum number of users that can log in to a Windows EVD session host, in the host pool created by this Blueprint assignment.
               1. **'avdUsers_userCount'**: The number of test users created by this Blueprint assignment.
               1. **'vnet_enable-ddos-protection'**: Controls whether this Blueprint creates an [Azure DDoS plan](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview) or not.
+  1. Open a PowerShell prompt and connect to your Azure subscription, using **'Connect-AzAccount'**
+  1. **Change directory** to where you have your customized import and assignment files (import-bp.ps1 and assign-bp.ps1).
+  1. To import and publish the Blueprint to your subscription, run the PowerShell file **'import-bp.ps1'**.
+  1. To assign, and thus start the Blueprint deployment in your subscription, run the PowerShell file **'assign-bp.ps1'**
 
 ## Deconstruction
 
