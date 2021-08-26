@@ -39,6 +39,12 @@
       "_ScriptURI": {
         "type": "string"
       },
+      "AzureEnvironmentName": {
+        "type": "string"
+      },
+      "AzureStorageFQDN": {
+        "type": "string"
+      },
       "mgmtvmNameStatic": {
         "type": "string",
         "defaultValue": "-mgmtvm"
@@ -415,7 +421,7 @@
             "fileUris": [
               "[parameters('CreateConfigureFileShareAndGPScriptURI')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name ,' -ScriptURI ',parameters('_ScriptURI') ,' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('_ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
@@ -568,6 +574,12 @@
     },
     "_ScriptURI": {
       "value": "[parameters('_ScriptURI')]"
+    },
+    "AzureEnvironmentName": {
+      "value": "[parameters('AzureEnvironmentName')]"
+    },
+    "AzureStorageFQDN": {
+      "value": "[parameters('AzureStorageFQDN')]"
     },
     "vmSize": {
       "value": "Standard_D2s_v3"

@@ -22,12 +22,12 @@
 .EXAMPLE
     .\Remove-AzAvdBpDeployment.ps1 -Verbose -Prefix "ABC" -LogPath "C:\projects"
 
-    Exports logs of a AVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
+    Exports logs of an AVD Blueprint deployment that used the prefix "ABC" followed by a removal of that deployment
 
 .EXAMPLE
     .\Remove-AzAvdBpDeployment.ps1 -Verbose -Prefix "ABC" -DisableLogExport
 
-    Performs a removal of a AVD Blueprint deployment that used the prefix "ABC" without first exporting the deployment's logs
+    Performs a removal of an AVD Blueprint deployment that used the prefix "ABC" without first exporting the deployment's logs
 
 .INPUTS
     None. You cannot pipe objects into this script.
@@ -48,7 +48,10 @@ Param(
     [switch] $DisableLogExport,
     #Path to the folder where the target environment's logs should be copied
     [Parameter(Mandatory=$true, ParameterSetName="LogExport")]
-    [string] $LogPath
+    [string] $LogPath,
+    #Switch to purge key vault, not just soft delete
+    [Parameter()]
+    [Switch] $PurgeKeyVault
 )
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
@@ -105,7 +108,13 @@ $RemovalScope | ForEach-Object {
             $logdata.Results | Export-Csv -Path $ExportFile
         }
     }
-   
+
+    if ($PurgeKeyVault) {
+        $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
+        Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
+        Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
+        Remove-AzKeyVault -InRemovedState -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
+    }
 
     if($PSCmdlet.ShouldProcess($_.ResourceGroupName, "Remove ResourceGroup")){
         $_ | Remove-AzResourceGroup -Force -AsJob

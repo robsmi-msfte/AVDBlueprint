@@ -55,7 +55,7 @@
           "displayName": "User session limit per session host, in the host pool",
           "description": "The maximum number of user sessions per session host in the host pool"
           },
-          "defaultValue": 512
+          "defaultValue": 40
       },
       "adds_domainName": {
         "type": "string",
@@ -113,6 +113,94 @@
         },
         "defaultValue": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts"
       },
+      "AzureEnvironmentName": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Azure Environment Name",
+          "description": "URI where Powershell scripts executed by the blueprint are located."
+        },
+        "defaultValue": "AzureCloud",
+        "allowedValues": ["AzureCloud", "AzureUSGovernment"]
+      },
+      "AzureStorageFQDN": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Azure Files public endpoint",
+          "description": "URI where Powershell scripts executed by the blueprint are located."
+        },
+        "defaultValue": "file.core.windows.net",
+        "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"]
+      },
+      "CreateAvailabilitySet": {
+        "type": "bool",
+        "metadata": {
+          "displayName": "Create VM Availability Set",
+          "description": "Yes/No to create an availability set for the session host VMs"
+        },
+        "defaultValue": true,
+        "allowedValues": [
+          true,
+          false
+        ]
+      },
+      "availabilityOption": {
+        "type": "string",
+        "metadata": {
+            "description": "Select the availability options for the VMs."
+        },
+        "defaultValue": "AvailabilitySet",
+        "allowedValues": [
+            "None", "AvailabilitySet", "AvailabilityZone"
+        ]
+      },
+      "availabilitySetName": {
+        "type": "string",
+        "metadata": {
+            "description": "The name of availability set to be used when creating the VMs."
+        },
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-AvailabilitySet')]"
+      },
+      "availabilitySetUpdateDomainCount": {
+        "type": "int",
+        "metadata": {
+            "description": "The platform update domain count of availability set to be created."
+        },
+        "defaultValue": 5,
+        "allowedValues": [
+            1,
+            2,
+            3,
+            4,
+            5,
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12,
+            13,
+            14,
+            15,
+            16,
+            17,
+            18,
+            19,
+            20
+        ]
+      },
+      "availabilitySetFaultDomainCount": {
+        "type": "int",
+        "metadata": {
+            "description": "The platform fault domain count of availability set to be created."
+        },
+        "defaultValue": 2,
+        "allowedValues": [
+            1,
+            2,
+            3
+        ]
+    },
       "log-analytics_service-tier": {
         "type": "string",
         "metadata": {
@@ -148,12 +236,12 @@
         "allowedValues": []
       },
       "vnet_enable-ddos-protection": {
-        "type": "string",
+        "type": "Bool",
         "metadata": {
           "displayName": "Enable Virtual Network DDoS protection",
           "description": "Determines whether or not DDoS Protection is enabled in the Virtual Network."
         },
-        "defaultValue": "true"
+        "defaultValue": false
       },
       "vnet_sharedsvcs-subnet-address-prefix": {
         "type": "string",
@@ -243,15 +331,25 @@
       "avdHostPool_vmGalleryImageSKU": {
         "type": "string",
         "allowedValues": [
+          "19h2-evd-o365pp",
+          "19h2-evd-o365pp-g2",
           "20h1-evd-o365pp",
           "20h1-evd-o365pp-g2",
           "20h2-evd-o365pp",
           "20h2-evd-o365pp-g2",
           "21h1-evd-o365pp",
-          "21h1-evd-o365pp-g2"
+          "21h1-evd-o365pp-g2",
+          "19h2-evd",
+          "19h2-evd-g2",
+          "20h1-evd",
+          "20h1-evd-g2",
+          "20h2-evd",
+          "20h2-evd-g2",
+          "21h1-evd",
+          "21h1-evd-g2"
       ],
         "metadata": {
-          "displayName": "Gallery Image SKU",
+          "displayName": "Azure Gallery image SKU",
           "description": "20h1=2004, 20h2=2009, 21h1=21h1"
         },
         "defaultValue": "21h1-evd-o365pp"

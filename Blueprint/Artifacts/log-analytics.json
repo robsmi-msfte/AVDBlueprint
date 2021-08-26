@@ -81,10 +81,6 @@
             "galleryName": "KeyVaultAnalytics"
           },
           {
-            "name": "[concat('AzureSQLAnalytics', '(', variables('oms-workspace-name'), ')')]",
-            "galleryName": "AzureSQLAnalytics"
-          },
-          {
             "name": "[concat('ServiceMap', '(', variables('oms-workspace-name'), ')')]",
             "galleryName": "ServiceMap"
           }
@@ -93,7 +89,7 @@
       "resources": [
         {
           "type": "Microsoft.OperationalInsights/workspaces",
-          "apiVersion": "2020-03-01-preview",
+          "apiVersion": "2021-06-01",
           "location": "[parameters('location')]",
           "name": "[variables('oms-workspace-name')]",
           "properties": {
@@ -107,21 +103,7 @@
           },
           "resources": [
             {
-              "apiVersion": "2020-03-01-preview",
-              "name": "VMSSQueries",
-              "type": "savedSearches",
-              "dependsOn": [
-                "[concat('Microsoft.OperationalInsights/workspaces/', variables('oms-workspace-name'))]"
-              ],
-              "properties": {
-                "etag": "*",
-                "DisplayName": "VMSS Instance Count",
-                "Category": "VDC Saved Searches",
-                "Query": "Event | where Source == \"ServiceFabricNodeBootstrapAgent\" | summarize AggregatedValue = count() by Computer"
-              }
-            },
-            {
-              "apiVersion": "2020-03-01-preview",
+              "apiVersion": "2020-08-01",
               "name": "AzureFirewallThreatDeny",
               "type": "savedSearches",
               "dependsOn": [
@@ -135,7 +117,7 @@
               }
             },
             {
-              "apiVersion": "2020-03-01-preview",
+              "apiVersion": "2020-08-01",
               "type": "datasources",
               "kind": "AzureActivityLog",
               "name": "[subscription().subscriptionId]",
@@ -148,7 +130,7 @@
               }
             },
             {
-              "apiVersion": "2020-03-01-preview",
+              "apiVersion": "2020-08-01",
               "type": "datasources",
               "name": "applicationEvent",
               "dependsOn": [
@@ -171,7 +153,7 @@
               }
             },
             {
-              "apiVersion": "2020-03-01-preview",
+              "apiVersion": "2020-08-01",
               "type": "datasources",
               "name": "systemEvent",
               "dependsOn": [
@@ -191,47 +173,6 @@
                     "eventType": "Information"
                   }
                 ]
-              }
-            },
-            {
-              "apiVersion": "2020-03-01-preview",
-              "type": "datasources",
-              "name": "sampleSyslog1",
-              "dependsOn": [
-                "[concat('Microsoft.OperationalInsights/workspaces/', variables('oms-workspace-name'))]"
-              ],
-              "kind": "LinuxSyslog",
-              "properties": {
-                "syslogName": "kern",
-                "syslogSeverities": [
-                  {
-                    "severity": "emerg"
-                  },
-                  {
-                    "severity": "alert"
-                  },
-                  {
-                    "severity": "crit"
-                  },
-                  {
-                    "severity": "err"
-                  },
-                  {
-                    "severity": "warning"
-                  }
-                ]
-              }
-            },
-            {
-              "apiVersion": "2020-03-01-preview",
-              "type": "datasources",
-              "name": "sampleSyslogCollection1",
-              "dependsOn": [
-                "[concat('Microsoft.OperationalInsights/workspaces/', variables('oms-workspace-name'))]"
-              ],
-              "kind": "LinuxSyslogCollection",
-              "properties": {
-                "state": "Enabled"
               }
             }
           ]
@@ -275,7 +216,7 @@
           "comments": "----DIAGNOSTICS STORAGE ACCOUNT-----",
           "type": "Microsoft.Storage/storageAccounts",
           "name": "[variables('diagnostic-storageAccount-name')]",
-          "apiVersion": "2019-06-01",
+          "apiVersion": "2021-06-01",
           "location": "[resourceGroup().location]",
           "kind": "StorageV2",
           "sku": {
@@ -318,7 +259,7 @@
         {
           "name": "[concat(variables('oms-workspace-name'), '/', variables('diagnostic-storageAccount-name'))]",
           "type": "Microsoft.OperationalInsights/workspaces/storageinsightconfigs",
-          "apiVersion": "2015-11-01-preview",
+          "apiVersion": "2020-08-01",
           "dependsOn": [
             "[concat('Microsoft.Storage/storageAccounts/', variables('diagnostic-storageAccount-name'))]"
           ],
@@ -327,9 +268,8 @@
             "tables": [
               "WADWindowsEventLogsTable",
               "WADETWEventTable",
-              "WADServiceFabric*EventTable",
-              "LinuxsyslogVer2v0"
-            ],
+              "WADServiceFabric*EventTable"
+              ],
             "storageAccount": {
               "id": "[resourceid('Microsoft.Storage/storageAccounts/', variables('diagnostic-storageAccount-name'))]",
               "key": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', variables('diagnostic-storageAccount-name')), providers('Microsoft.Storage', 'storageAccounts').apiVersions[0]).keys[0].value]"

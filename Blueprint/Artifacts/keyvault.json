@@ -100,8 +100,6 @@
         "ad-domain-admin-user-password-secret-value": "[concat(toUpper(uniqueString(parameters('secret-unique-value4'))), uniqueString(parameters('secret-unique-value5')), toLower(uniqueString(parameters('secret-unique-value6'))), '!')]",
         "oms-workspace-resourceGroup": "[concat(variables('deployment-prefix'), '-rg')]",
         "oms-workspace-name": "[concat(variables('deployment-prefix'), '-log')]",
-        "enableSoftDelete": true,
-        "enablePurgeProtection": true,
         "uniqueString": "[uniqueString(subscription().id, concat(variables('deployment-prefix'), '-log'))]",
         "diagnostic-storageAccount-prefix": "[concat(replace(variables('deployment-prefix'), '-', ''), 'diag')]",
         "diagnostic-storageAccount-name": "[toLower(substring(replace(concat(variables('diagnostic-storageAccount-prefix'), variables('uniqueString'), variables('uniqueString')), '-', ''), 0, 23) )]",
@@ -157,7 +155,7 @@
         {
           "type": "Microsoft.KeyVault/vaults",
           "name": "[variables('key-vault-name')]",
-          "apiVersion": "2016-10-01",
+          "apiVersion": "2019-09-01",
           "location": "[resourceGroup().location]",
           "tags": {
             "displayName": "[variables('key-vault-name')]"
@@ -166,8 +164,6 @@
             "enabledForDeployment": "[variables('enable-vault-for-deployment')]",
             "enabledForTemplateDeployment": "[variables('enable-vault-for-templateDeployment')]",
             "enabledForDiskEncryption": "[variables('enable-vault-for-diskEncryption')]",
-            "enableSoftDelete": "[variables('enableSoftDelete')]",
-            "enablePurgeProtection": "[variables('enablePurgeProtection')]",
             "tenantId": "[subscription().tenantId]",
             "accessPolicies": "[variables('access-policies')]",
             "sku": {
@@ -188,7 +184,7 @@
             {
               "type": "Microsoft.KeyVault/vaults/providers/diagnosticsettings",
               "name": "[concat(variables('key-vault-name'), '/Microsoft.Insights/service')]",
-              "apiVersion": "2016-09-01",
+              "apiVersion": "2021-05-01-preview",
               "location": "[resourceGroup().location]",
               "dependsOn": [
                 "[concat('Microsoft.KeyVault/vaults/', variables('key-vault-name'))]"
@@ -222,7 +218,7 @@
         },
         {
           "type": "Microsoft.KeyVault/vaults/providers/locks",
-          "apiVersion": "2016-09-01",
+          "apiVersion": "2017-04-01",
           "name": "[concat(variables('key-vault-name'), '/Microsoft.Authorization/keyVaultDoNotDelete')]",
           "dependsOn": [
             "[concat('Microsoft.KeyVault/vaults/', variables('key-vault-name'))]"
