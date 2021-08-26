@@ -62,7 +62,7 @@ The management of Blueprint definitions and Blueprint assignments are two differ
 
     When correctly configured, the Role assignments for your Azure AD group, should look like this:  
 
-    ![Blueprint Group Access Control Depiction](https://github.com/Azure/AVDBlueprint/blob/main/images/BluePrint_GroupAccessControlDepiction.PNG)
+    ![Blueprint Group Access Control Depiction](./images//BluePrint_GroupAccessControlDepiction.PNG)
 
 * **Azure Blueprint resource provider registered to your subscription** through Azure PowerShell with this PowerShell command:  
 
@@ -200,9 +200,9 @@ The example files in this repository use this path:
               1. **'avdUsers_userCount'**: The number of test users created by this Blueprint assignment.
               1. **'vnet_enable-ddos-protection'**: Controls whether this Blueprint creates an [Azure DDoS plan](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview) or not.
 
-## Teardown
+## Deconstruction
 
-If an environment built by this blueprint is no longer needed, a script is provided in the Resources folder that will export logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  
+If an environment built by this blueprint is no longer needed, a script is provided in the **'Examples and Samples'** folder that can deconstruct a Blueprint assignment initiated by this Blueprint.  In addition, this script can export logs found in an AVD Blueprint deployment's Log Analytics Workspace to a csv file stored in the directory specified at runtime.  And a capability to purge a previous key vault has been added (**-PurgeKeyVault**), so that a previously deleted key vault won't conflict with an attempt to create a new key vault of the same name.
 
 The script finds and removes the following items that were previously deployed via AVD Blueprint:
 
@@ -210,6 +210,12 @@ The script finds and removes the following items that were previously deployed v
 * All users discovered in 'AVD Users' group
 * 'AVD Users' group itself
 * 'AAD DC Admins' group
+* All VMs created by the previous Blueprint assignment
+* All VM collateral including Availability Set
+* Previous instance of Azure AD DS
+* (optionally) delete AND purge the previous key vault. By default the key vault is "soft deleted", which is the behavior if running this script without the '-PurgeKeyVault' switch.
+* Everything else in the Resource Group
+* Finally, the resource group itself
 
 Use of `-verbose`, `-whatif` or `-confirm` ARE supported. Also, the script will create one Powershell Job for each Resource Group being removed. Teardowns typically take quite some time, so this will allow you to return to prompt and keep working while the job runs in the background.  
 
@@ -225,7 +231,31 @@ help .\Remove-AzAvdBpDeployment.ps1
 
 ## Tips
 
-### Preexisting Active Directory
+### **Deploying AVD Blueprint to Sovereign Clouds**
+
+If you are deploying to AzureUSGovernment, and using an assignment file, you can now change several values in the assignment file and then utilize this Blueprint without having to edit the Blueprint files or Blueprint scripts.
+
+1. Edit the file **'run.config.json'**, changing the **'SubscriptionID'** and **'TenantID'** to the new cloud being deployed to
+1. Edit the assignment file **"assign_default.json"**
+    1. Change **Location** values at the top and bottom of the assignment file to the new location being deployed to (ex. **'usgovarizona'**)
+    1. Change the parameter **'AzureEnvironmentName'** value to 'AzureUSGovernment'
+    1. Change the parameter **'AzureStorageFQDN'** value to 'file.core.usgovcloudapi.net'
+1. Open a PowerShell console:
+    1. Change directory to your customized files
+    1. Connect to your account using PowerShell **'Connect-AzAccount -Environment AzureUSGovernment'**
+1. If you have not yet imported the Blueprint to the new cloud, run the **'import-bp.ps1'** script
+1. Assign the Blueprint with your customized **"assign_default.json"**.
+
+> [!TIP]
+> If you plan to deploy in both Azure Commercial and AzureGov, it might be easier to create two folders for your customized files (import-bp.ps1, assign-bp.ps1, run.config.json, and assign_default.json).  Example:  
+>
+> * C:\VSCode\CustomizedFiles\AzCloud
+> * C:\VSCode\CustomizedFiles\AzGov  
+>
+> You change a few values in your "run.config.json" file (SubID, TenantID, path) and you can easily pivot from one cloud to the other.  
+> The path to the Blueprint files themselves can be the same in both sets of files, if you choose this method.
+
+### **Pre-existing Active Directory**
 
 If there is already an active Active Directory environment in the target environment, it is possible to have this blueprint integrate with that rather than deploy a new one. Two actions need to be taken to support this:
 
@@ -236,7 +266,7 @@ If there is already an active Active Directory environment in the target environ
     * DNSsharedSvcs.json
     * mgmtvm.json
 
-### Group Policy Settings
+### **Group Policy Settings**
 
 Regarding Group Policy settings that are applied to the AVD session host computers, during the Blueprint deployment. There are two
 sections of Group Policy settings applied to the AVD session hosts:  
@@ -263,38 +293,7 @@ This Blueprint adds as a default, one RDP redirection setting:
 
 There are several Windows policy settings that control certain aspects of the user experience while connected to a session host. The **"Remote Desktop Session Host redirection"** settings are set in the script,  **'CreateAADDSFileShare_ConfigureGP.ps1'**.  This script is run from the "management VM" in the "MGMTVM" artifact.  If you wish to add additional redirection settings, the best way may be through current or planned management methods such as Group Policy.
 
-There is one setting that is not available in that file, which is a Group Policy start script entry, for a script that is downloaded and run by each AVD session host, on their next Startup ***after they have received and applied their new group policy***.  Here is the workflow of the chain of events that lead up to the session hosts becoming fully functional.
-
-1. AVD session host VMs are created, and joined to the AAD DS domain.  This happens in the artifact **"AVDDeploy.json"**.
-2. Later the "management VM" is created, and joined to the domain.  This domain join triggers a reboot, and the JoinDomain extension waits for the machine to reboot and check in before the "MGMTVM" artifact continues.
-3. After the management VM reboots, the next section of "MGMTVM" artifact initiates running a custom script, which is downloaded from the ScriptURI parameter value, to the management VM.
-4. The Management VM runs the **'CreateAADDSFileShare_ConfigureGP.ps1'** script, which has two sections: 1) Create storage for FSLogix, 2) Run the domain management code
-5. The domain management code does the following for the session hosts:
-    1. Creates a new GPO called **"AVD Session Host policy"**
-    2. Creates a new OU called **"AVD Computers"**
-    3. Links the AVD GPO to the AVD OU
-    4. Restores a previous GP export (downloaded via ScriptURI parameter), which imports a policy Startup script to the new GPO Startup folder
-    5. Moves only the AVD session host computer objects to the new AVD OU
-    6. Invokes a command to each VM in the AVD OU, to immediately refresh Group Policy
-    7. Invokes a command to each VM in the AVD OU, to reboot with a 5 second delay
-    8. On restart, the AVD VMs will run the Virtual Desktop Optimization Tool available from Github.com.
-
-#### Session Host RDP lockdown settings  
-
-```powershell
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableAudioCapture" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCameraRedir" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCcm" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableCdm" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableClip" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisableLPT" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fDisablePNPRedir" -Value 1  
-Set-GPRegistryValue -Name "AVD Session Host Policy" -Key "HKLM\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services" -Type DWORD -ValueName "fEnableTimeZoneRedirection" -Value 1
-```
-
-The group policy settings come from Microsoft documentation: [Group Policy Settings Reference Spreadsheet for Windows 10 ...](https://www.microsoft.com/en-us/download/101451).
-
-### Development Tools
+### **Development Tools**
 
 [Visual Studio Code](https://code.visualstudio.com/) is a Microsoft provided suite available for editing, importing, and assigning the Blueprints. If using VS Code, the following extensions will greatly assist the efforts:|
 
@@ -304,116 +303,28 @@ The group policy settings come from Microsoft documentation: [Group Policy Setti
 
 There may be other extensions available that perform the same or similar functionality.
 
-### Accessing the Blueprint files and scripts
+### **Accessing the Blueprint files and scripts**
 
-To store scripts and any other objects needed during Blueprint assignment on Internet connected assignments, a public web location can be used to store scripts and other objects needed during Blueprint assignment.  
-[Azure Storage Blob](https://azure.microsoft.com/en-us/services/storage/blobs/) is one possible method to make the scripts and other objects available.  
-Whatever method chosen, the access method should be "public" and "anonymous" read-only access.  
-Another method that could be used to access scripts is a "fork" from the Azure AVD Blueprint repository.  You can fork to your Github repository, then edit the scripts or Blueprint files if needed, then change the parameter "_ScriptURI" to your location.  
-For example, I created a fork of the Azure AVD Blueprint repository to my personal repository at "https://github.com/robsmi-msfte/AVDBlueprint".  To get the value for "_ScriptURI", click the scripts folder, then click one of the scripts.  To the right, click the button called "Raw".  Then, copy the URL from your web browser, up to the word "scripts", but don't include the trailing slash.  For example, here would be my "_ScriptURI":
+In most cases you don't have to change anything to access the current Blueprint files, and scripts used during Blueprint runtime, so long as there is Internet connection available from your Azure subscription.  You can use the main public Github script URI for access to the Blueprint script files.  The reason for this is that the Blueprint core files (Blueprint.json and artifact files) are all uploaded to Azure by the import process, and are thus available within Azure throughout runtime.
 
-<https://raw.githubusercontent.com/robsmi-msfte/AVDBlueprint/main/scripts>
+The AVD Blueprint in its current form, has several external dependencies during runtime.
 
-You can then set this value in either your Blueprint file, but preferably in a Blueprint Assignment file.  An Assignment file is a JSON file that is used to set specific parameter values and pass those values to the Blueprint and the Blueprint artifacts.  Here is a small example of a Blueprint Assignment file:
+* PowerShell scripts to perform various tasks such as create users, add users to AD group, create an OU, create a GPO, and more
+* A GPO backup contained in a .zip file, which restores a startup script to the newly created GPO startup scripts.  This is the current method that the AVD session host computers are able to run the Virtual Desktop Optimization toolkit
+* The Virtual Desktop Optimization tool which is available publicly at <https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool>
 
-```JSON
-{  
-    "name": "AVD Blueprint - Default Configuration",  
-    "type": "Microsoft.Blueprint/blueprintAssignments",
-    "apiVersion": "2018-11-01-preview",
-    "location": "centralus",
-    "identity": {
-        "type": "UserAssigned",
-        "userAssignedIdentities": {
-            "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1" : {}
-        }
-    },
-    "properties": {
-      "displayName": "AVD Blueprint - Full Deployment (Default)",
-      "description": "Deploys a default Azure Virtual Desktop (AVD) deployment with all dependencies.",
-      "blueprintId": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/providers/Microsoft.Blueprint/blueprints/AVDBlueprint",
-      "scope": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
-      "parameters": {
-        "resourcePrefix": {
-            "value": "AVD001"
-        },
-        "_ScriptURI": {
-          "value": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
-          "description": "The URL to the script folder available during Blueprint assignment."
-}
-```
+### Deployment Considerations
 
-More information about using Blueprint Assignment files can be found at the following location:
+* **Resource Prefix naming considerations**  
+The value assigned for "Resource Prefix" will be used when naming many objects created by the blueprint.  Therefore, you may want to keep that prefix as short as possible.  Something like "AVD001" for example.
+One reason for this is in case you need to deconstruct one installation, then run another.  If a previously created key vault exists in any form (normal or "soft delete"), and has the same name as the new resource prefix, then the Blueprint will fail at that point, not being able to create a new key vault.
+To prevent this name collision with key vault, use the "PurgeKeyVault" switch with the "Teardown" script **"Remove-AzAvdBpDeployment.ps1"**.  In nearly all cases, this script will delete AND purge the previous key vault created by this Blueprint.
 
-<https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps>
-
-### Deployment Prefix Recommendations
-
-If you need to delete a deployment with the intent of starting over with a new deployment, you will need to change the "Deployment Prefix" value in the "assign_default.json" file.
-The "Deployment Prefix" parameter is used to prefix most of the Azure resources created during the deployment, including a [Key Vault](https://azure.microsoft.com/en-us/services/key-vault/) object.
-Azure Key Vault is used to store and retrieve cryptographic keys used by cloud apps and services, and as such is treated with great care in Azure.
-When an Azure Key Vault is deleted, it transitions to a "soft delete" state for a period of time, before actually being deleted.
-While an Azure Key Vault created by this Blueprint deployment is in soft delete state, that key vault cannot be purged. While a key vault exists in any state, another key vault cannot be created with the same name.  Therefore, if you do not change your Resource Prefix value for subsequent deployments, the subsequent deployments will fail with an error referencing Key Vault name.
-  
-* Create a Resource Group for your Blueprint resources
+* **Create a separate Resource Group for your permanent Blueprint resources**
 During the Blueprint deployment process, you will be creating some resources that you may want to retain after the blueprint has been deployed.
 Depending on various factors, you may create a managed identity, a storage blob, etc. To that end, you could create a resource group, and in that resource group you only create items that are related to your Blueprint work. Another reason for this is that you can build and deconstruct a Blueprint, over and over, yet retain some of the core objects necessary, which will save time and effort.  
 
     Example: AVDBlueprint-RG
-
-* Development and/or Production environments can be used to work with the Blueprint code
-Development environments are well suited to streamlining workflows such as [“import”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/import-export-ps) and [“assign”](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps) the Blueprints.
-PowerShell or CloudShell can be utilized for various tasks. If using PowerShell, you may need to import the [Az.Blueprint module](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/manage-assignments-ps#add-the-azblueprint-module) for PowerShell.
-
-### Sovereign Clouds
-
-If you are using an assignment file, you can change several values and utilize in Sovereign clouds without having to edit the Blueprint files or scripts.
-
-1. Edit the "assign_default.json"
-1. Change **Location** field at top and bottom of file to the new location being deployed to.
-1. Change the parameter **'AzureEnvironmentName'** value to **AzureUSGovernment**
-1. Change the parameter **'AzureStorageFQDN'** value to **file.core.usgovcloudapi.net**
-1. Assign the Blueprint with your customized "assign_default.json".  You can utilize the Azure Blueprint files URI, use your fork URI, Azure Storage, or other Internet accessible location where a copy of all the Blueprint script files can be accessed.
-
-#### Edits to CreateAADDSFileshare_ConfigureGP.ps1
-
-##### Connect-AzAccount
-
-Amend all references to `Connect-AzAccount` in CreateAADDSFileshare_ConfigureGP.ps1 with the appropriate `-EnvironmentName` argument. A complete list of environments may be obtained using the [`Get-AzEnvironment`](https://docs.microsoft.com/en-us/powershell/module/az.accounts/get-azenvironment?view=azps-6.2.1) cmdlet in Powershell.
-
-For example, to use the Azure US Government sovereign cloud, the `Connect-AzAccount` cmdlet would look like:
-
-```powershell
-Connect-AzAccount -Identity -Environment 'AzureUSGovernment'
-```
-
-##### $StorageFQDN
-
-The storage fully qualified domain name (FQDN) in Azure Commercial is "file.core.windows.net".  In Azure Gov, that FQDN is "file.core.usgovcloudapi.net".  There are two places in the script the FQDN is referenced.  The easiest method is find and replace "file.core.windows.net" with "file.core.usgovcloudapi.net".
-
-#### Location Fields In The Assignment File
-
-The location field for the assignment file itself should reflect a region in the sovereign cloud relevant to the deployment...
-
-```json
-{
-    "name": "AVD Blueprint - Default Configuration",
-    "type": "Microsoft.Blueprint/blueprintAssignments",
-    "apiVersion": "2018-11-01-preview",
-    "location": "**regionname**",
-    "identity": {
-        "type": "UserAssigned",
-```
-
-...as well as the ResourceGroup location defined further down in the assignment file:
-
-```json
-      "resourceGroups": {
-        "ResourceGroup": {
-          "location": "**regionname**"
-        }
-      }
-```
 
 ## Recommended Reading
 
@@ -425,7 +336,7 @@ The location field for the assignment file itself should reflect a region in the
 
 ## Change List
 
-* Added examples and samples. Recent updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can use an "Assignment" file, which is JSON language, and a sample is now included in the "Examples and Samples" folder
+* Added a folder called **'Examples and Samples'**. Recent updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can customize the included sample file **'run.config.json'**.
 
 * Edited the two sample PowerShell scripts that perform the Import, Publish, and Assignment tasks.  The script named "assign-bp.ps1" performs the import and publish functions.  The file "assign-bp.ps1" performs the Blueprint assignment.  Of the remaining two files; "run.config.json" and "assign_default.json" samples, the "run.config.json" would most likely only be edited once, to include your unique values of TenantID, SubscriptionID, BlueprintPath, etc.  The remaining file "assign_default.json" is the only file you need edit afterward to customize the Blueprint experience.  There is a new section in the section of this Readme called **Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)**.
 
@@ -439,7 +350,9 @@ The location field for the assignment file itself should reflect a region in the
 
 * 08/24/2021: Changed Blueprint settings for Key Vault creation. Previously the settings were "Soft Delete" "true", and "Purge Protection" "enabled.  The change was to remove both of those settings, resulting in the current defaults being applied.  Purge protection can be enabled after the fact if desired.  But with purge protection enabled, and no way to change it, a soft deleted key vault name could collide with a new key vault name.
 
-* 08/25/2021: Changed the script called for AVD test user creation, and also the related code that adds those users to the "AVD Users" Azure AD security group. Some timing issues were encountered, which could be slight delays in replication between Azure AD and Azure AD DS.  The change was to give a little more time for that replication to complete for a new user, before attempting to add that user to the "AVD Users" group.
+* 08/25/2021: Changed the script that creates AVD test users and assigns them to an 'AVD Users' AD group.
+
+* 08/25/2021: Changed the method used to assign users to the AVD Application Group created by this Blueprint.  The new method is to assign the 'AVD Users' AD group to the AVD Application Group.
 
 ## Blueprint objects, purpose, and parameter documentation
 
