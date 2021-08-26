@@ -427,7 +427,7 @@ The location field for the assignment file itself should reflect a region in the
 
 * Added examples and samples. Recent updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can use an "Assignment" file, which is JSON language, and a sample is now included in the "Examples and Samples" folder
 
-* Edited the two sample PowerShell scripts that perform the Import, Publish, and Assignment tasks.  The script named "assign-bp.ps1" performs the import and publish functions.  The file "assign-bp.ps1" performs the Blueprint assignment.  These two example files can be used as-is, without modification.  Of the remaining two files; "run.config.json" and "assign_default.json" samples, the "run.config.json" would most likely only be edited once, to include your unique values of TenantID and SubscriptionID.  The remaining file "assign_default.json" is the only file you need edit afterward to customize the Blueprint experience.  There is a new section in the section of this Readme called **Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)**.
+* Edited the two sample PowerShell scripts that perform the Import, Publish, and Assignment tasks.  The script named "assign-bp.ps1" performs the import and publish functions.  The file "assign-bp.ps1" performs the Blueprint assignment.  Of the remaining two files; "run.config.json" and "assign_default.json" samples, the "run.config.json" would most likely only be edited once, to include your unique values of TenantID, SubscriptionID, BlueprintPath, etc.  The remaining file "assign_default.json" is the only file you need edit afterward to customize the Blueprint experience.  There is a new section in the section of this Readme called **Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)**.
 
 * 08/10/2021: Streamlined Log Analytics by removing log collection for components not in use by this Blueprint.  Also, updated the API version for several resources with the Log Analytics artifact, for compatibility across several clouds.
 
@@ -436,6 +436,10 @@ The location field for the assignment file itself should reflect a region in the
 * 08/10/2021: Edited Blueprint parameter "AzureEnvironmentName" to included allowed values for AzureCloud and AzureUSGovernment.  The default value is AzureCloud.  You can override that value with an Assignment file.
 
 * 08/10/2021: Edited Blueprint parameter "AzureStorageFQDN" to include the storage endpoints for both Azure Commercial and Azure Government.  The default value is Azure Commercial (file.core.windows.net)
+
+* 08/24/2021: Changed Blueprint settings for Key Vault creation. Previously the settings were "Soft Delete" "true", and "Purge Protection" "enabled.  The change was to remove both of those settings, resulting in the current defaults being applied.  Purge protection can be enabled after the fact if desired.  But with purge protection enabled, and no way to change it, a soft deleted key vault name could collide with a new key vault name.
+
+* 08/25/2021: Changed the script called for AVD test user creation, and also the related code that adds those users to the "AVD Users" Azure AD security group. Some timing issues were encountered, which could be slight delays in replication between Azure AD and Azure AD DS.  The change was to give a little more time for that replication to complete for a new user, before attempting to add that user to the "AVD Users" group.
 
 ## Blueprint objects, purpose, and parameter documentation
 
