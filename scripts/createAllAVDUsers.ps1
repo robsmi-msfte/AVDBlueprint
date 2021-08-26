@@ -30,18 +30,12 @@ Write-host "AVD App Group RG: $appGroupRG"
 #endregion
 
 #region Create AVD users, named "user prefix" + number, starting at 1, and going to '$totalusers'
+Write-Host "`n______ Now creating AVD test users ______"
 for ($i = 1 ; $i -le $totalUsers ; $i++) {
     $displayName = $prefix + $i
     $userPrincipalName = $displayName + '@' + $domainname
-    Write-Host "`n"
-    Write-Host "____ Now creating users and adding them to AVD AD group ____"
-    Write-host "Creating $userPrincipalName"
-    Write-Host "Adding UPN ($userPrincipalName) to group ($groupName)"
-    
+            
     if (-NOT (Get-AzADUser -UserPrincipalName $userPrincipalName)) {
-        Write-host "DisplayName: $displayName"
-        Write-host "User Principal: $userPrincipalName"
-
         $mailNickname = $userPrincipalName -replace '[\W]',''
         $pass = (Get-AzKeyVaultSecret -VaultName $keyvault -name $displayName).SecretValue
 
@@ -54,10 +48,10 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
         }
         if (-Not (Get-AzADUser -DisplayName $parameters.DisplayName)) {
             $parameters.GetEnumerator() | ForEach-Object{
-            $message = '{0} is {1}.' -f $_.key, $_.value
+            $message = '{0} is {1}.' -f $_.key, $_.value,"foo"
             Write-Output $message
             }
-            Write-Host "_______ Now creating user '$userPrincipalName' _______"
+            Write-Host "`n_______ Now creating user '$userPrincipalName' _______"
             Write-Output (New-AzADUser @parameters)
         }
     }
