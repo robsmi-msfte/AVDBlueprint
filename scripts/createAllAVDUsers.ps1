@@ -60,14 +60,14 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
             Write-Host "_______ Now creating user '$userPrincipalName' _______"
             Write-Output (New-AzADUser @parameters)
         }
-        if ($null -eq (Get-AzADGroupMember -GroupDisplayName "$groupName" | Where-Object {$_.UserPrincipalName -eq $userPrincipalName})) {
+        if (-Not (Get-AzADGroupMember -GroupDisplayName "$groupName" | Where-Object {$_.UserPrincipalName -eq $userPrincipalName})) {
             $parameters = @{
                 TargetGroupDisplayName              =  "$groupName"
                 MemberUserPrincipalName             =  $userPrincipalName
             }
             Write-Host "____ Now adding user '$userPrincipalName' to group '$groupName' ____"
-            Add-AzADGroupMember @parameters
-            }
+            Write-Output (Add-AzADGroupMember @parameters)
         }
+    }
 }
 #endregion Create AVD users
