@@ -52,21 +52,22 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
             MailNickname                 =  $mailNickname
             ForceChangePasswordNextLogin = [System.Convert]::ToBoolean($forcePasswordChange)
         }
-    if (-Not (Get-AzADUser -DisplayName $parameters.DisplayName)) {
-        $parameters.GetEnumerator() | ForEach-Object{
-             $message = '{0} is {1}.' -f $_.key, $_.value
-             Write-Output $message
+        if (-Not (Get-AzADUser -DisplayName $parameters.DisplayName)) {
+            $parameters.GetEnumerator() | ForEach-Object{
+            $message = '{0} is {1}.' -f $_.key, $_.value
+            Write-Output $message
             }
+            Write-Host "_______ Now creating user '$userPrincipalName' _______"
             Write-Output (New-AzADUser @parameters)
-
+        }
+        if ($null -eq (Get-AzADGroupMember -GroupDisplayName "$groupName" | Where-Object {$_.UserPrincipalName -eq $userPrincipalName})) {
             $parameters = @{
                 TargetGroupDisplayName              =  "$groupName"
                 MemberUserPrincipalName             =  $userPrincipalName
             }
-            Write-Host "Adding AVD user '$userPrincipalName' to '$groupName'"
-            Start-Sleep -Seconds 3
-            Write-Output (Add-AzADGroupMember @parameters)
+            Write-Host "____ Now adding user '$userPrincipalName' to group '$groupName' ____"
+            Add-AzADGroupMember @parameters
+            }
         }
-    }
 }
 #endregion Create AVD users
