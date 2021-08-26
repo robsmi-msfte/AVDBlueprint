@@ -11,7 +11,7 @@ Write-host "AVD App Group $avdAppGroup"
 Write-host "AVD Role: $avdRolename"
 Write-host "AVD App Group RG: $appGroupRG"
 
-#region Creating AD group, and adding a pause to accomodate delays in creation and reporting success
+#region Creating Azure AD group
 
     $groupName = $adGroup
     $mailNickname = $groupName -replace '[\W]',''    
@@ -29,7 +29,7 @@ Write-host "AVD App Group RG: $appGroupRG"
          
 #endregion
 
-#region Create AVD users, named "user prefix" + number, starting at 1
+#region Create AVD users, named "user prefix" + number, starting at 1, and going to '$totalusers'
 for ($i = 1 ; $i -le $totalUsers ; $i++) {
     $displayName = $prefix + $i
     $userPrincipalName = $displayName + '@' + $domainname
