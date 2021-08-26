@@ -16,7 +16,8 @@
       "scope": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
       "parameters": {
         "resourcePrefix": {
-            "value": "AVD001"
+            "value": "AVD001",
+            "description": "The prefix, utilized by this Blueprint, that is used in naming of those objects. This value should be kept as short as possible"
         },
         "_ScriptURI": {
           "value": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
@@ -48,30 +49,38 @@
           "description": "The Azure VM size of the session hosts being created by this Blueprint. To select a different size, find the VM size and change the value of this parameter to match"
         },
         "avdHostPool_vmNumberOfInstances": {
-          "value": 2
+          "value": 2,
+          "description": "The number of Azure AVD VMs to be created"
         },
         "avdHostPool_maxSessionLimit": {
-          "value": 16
+          "value": 16,
+          "description": "The number of users allowed per session host in the AVD host pool to be created"
         },
         "avdUsers_userCount": {
-          "value": 40
+          "value": 40,
+          "description": "The number of AVD test users to be created"
         },
         "vnet_enable-ddos-protection": {
-          "value": false
+          "value": false,
+          "description": "Whether or not the Azure DDoS plan will be created by this Blueprint"
         },
         "ADDS_domainName": {
-          "value": "corp.contoso.com"
+          "value": "corp.contoso.com",
+          "description": "The domain name of your AAD DS managed domain to be created"
         },
         "AzureEnvironmentName": {
           "value": "AzureCloud",
-          "allowedValues": ["AzureCloud", "AzureUSGovernment"]
+          "allowedValues": ["AzureCloud", "AzureUSGovernment"],
+          "description": "Which cloud this Blueprint will be deployed in."
         },
         "AzureStorageFQDN": {
           "value": "file.core.windows.net",
-          "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"]
+          "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"],
+          "description": "Fully qualified domain name of the Azure Files storage share. Default is Azure Commercial, alternate choice is AzGov"
         },
         "ADDS_emailNotifications": {
-          "value": "admin@contoso.com" 
+          "value": "admin@contoso.com",
+          "description": "Optional and not implemented at this time"
         },
         "script_executionUserResourceID": {
           "value": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1",
