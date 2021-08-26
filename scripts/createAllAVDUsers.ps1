@@ -70,3 +70,4 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
         }
     }
 }
+#endregion Create AVD users
