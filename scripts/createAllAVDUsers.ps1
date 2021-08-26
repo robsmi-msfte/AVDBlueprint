@@ -57,15 +57,15 @@ for ($i = 1 ; $i -le $totalUsers ; $i++) {
              $message = '{0} is {1}.' -f $_.key, $_.value
              Write-Output $message
             }
-            New-AzADUser @parameters
-        }
-    if (-Not (Get-AzADGroupMember -GroupDisplayName "$groupName" | Where-Object {$_.UserPrincipalName -eq $userPrincipalName})) {
+            Write-Output (New-AzADUser @parameters)
+
             $parameters = @{
                 TargetGroupDisplayName              =  "$groupName"
                 MemberUserPrincipalName             =  $userPrincipalName
-        }
-            Start-Sleep -Seconds 10
-            Add-AzADGroupMember @parameters
+            }
+            Write-Host "Adding AVD user '$userPrincipalName' to '$groupName'"
+            Start-Sleep -Seconds 3
+            Write-Output (Add-AzADGroupMember @parameters)
         }
     }
 }
