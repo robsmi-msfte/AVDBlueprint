@@ -241,7 +241,7 @@
           "displayName": "Enable Virtual Network DDoS protection",
           "description": "Determines whether or not DDoS Protection is enabled in the Virtual Network."
         },
-        "defaultValue": true
+        "defaultValue": false
       },
       "vnet_sharedsvcs-subnet-address-prefix": {
         "type": "string",
