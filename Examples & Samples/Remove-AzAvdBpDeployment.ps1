@@ -51,7 +51,7 @@ Param(
     [string] $LogPath,
     #Switch to purge key vault, not just soft delete
     [Parameter()]
-    [Switch] $PurgeKeyVault
+    [switch] $PurgeKeyVault
 )
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
@@ -108,7 +108,8 @@ $RemovalScope | ForEach-Object {
             $logdata.Results | Export-Csv -Path $ExportFile
         }
     }
-
+   
+    Write-Verbose "Now purging key vault"
     if ($PurgeKeyVault) {
         $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
         Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
