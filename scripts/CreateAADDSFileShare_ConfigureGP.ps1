@@ -178,10 +178,11 @@ Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $Pos
 
 # Acquire FSLogix software for the group policy files only
 # since the FSLogix session host software is now included in OS
-$FSLogixZip = 'C:\Temp\FSLogixSW.zip'
-$FSLogixSW = 'C:\Temp\Software\FSLogix'
+$FSLogixZip = "$CTempPath\FSLogixGPTzip"
+$FSLogixSW = "$CTempPath\Software\FSLogix"
 $SoftwareShare = "$CTempPath\Software"
-Invoke-WebRequest -Uri 'https://aka.ms/fslogix_download' -OutFile $FSLogixZip
+$FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
+Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
 Expand-Archive -Path $FSLogixZip -DestinationPath $FSLogixSW
 
 # Set up a file share for the session hosts
@@ -253,7 +254,6 @@ $AADAVDUsersGroupId = (Get-AzADGroup -DisplayName 'AVD Users').Id
 $AVDDAG = (Get-AzWvdApplicationGroup).Name
 
 New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop Virtualization User" -ResourceName $AVDDAG -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups'
-=======
 
 #Force a GPUpdate now, then reboot so they can take effect, and so the Startup script can run to install FSLogix
 Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
