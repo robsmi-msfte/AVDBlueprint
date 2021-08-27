@@ -156,21 +156,13 @@ $VDOTZIP = "$CTempPath\VDOT.zip"
 
 #Test if VDOT has run before and if it has not, run it
 If(-not(Test-Path "$env:SystemRoot\System32\Winevt\Logs\Virtual Desktop Optimization.evtx")){
-    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope LocalMachine -Force
+    Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope Process -Force
     New-Item -ItemType Directory -Path $CTempPath -ErrorAction SilentlyContinue
     Copy-Item "$SoftwareShare\VDOT.zip" $CTempPath
     Expand-Archive -Path $VDOTZIP -DestinationPath $CTempPath
     Get-ChildItem -Path C:\Temp\Virtual* -Recurse -Force | Unblock-File
     $VDOTString = "$CTempPath\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -AcceptEula -Verbose"
     Invoke-Expression $VDOTString
-    Set-ExecutionPolicy -ExecutionPolicy Undefined -Scope LocalMachine -Force
-    
-    #Reset the PowerShell Execution Policy back to default globally
-    $PSExecutionPolicy = Get-ExecutionPolicy
-    If ($PSExecutionPolicy -ne "Undefined"){
-    Set-ExecutionPolicy -ExecutionPolicy Undefined -Force
-    }
-        
     Invoke-Command -ScriptBlock {Shutdown -r -f -t 00}
 }
 '@
@@ -178,7 +170,7 @@ Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $Pos
 
 # Acquire FSLogix software for the group policy files only
 # since the FSLogix session host software is now included in OS
-$FSLogixZip = "$CTempPath\FSLogixGPTzip"
+$FSLogixZip = "$CTempPath\FSLogixGPT.zip"
 $FSLogixSW = "$CTempPath\Software\FSLogix"
 $SoftwareShare = "$CTempPath\Software"
 $FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
@@ -220,7 +212,7 @@ Copy-Item $FSLogixSW\fslogix.adml "$PolicyDefinitions\en-US" -Force
 }
 
 # Acquire Virtual Desktop Optimization Tool software
-$VDOTURI = 'https://github.com/The-Virtual-Desktop-Team/Virtual-Desktop-Optimization-Tool/archive/refs/heads/main.zip'
+$VDOTURI = "$ScriptURI/VDOT.zip"
 $VDOTZip = "$CTempPath\Software\VDOT.zip"
 Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
 
