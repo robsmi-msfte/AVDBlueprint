@@ -28,12 +28,14 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 ## Prerequisites
 
 * **An [Azure tenant](https://docs.microsoft.com/en-us/microsoft-365/education/deploy/intro-azure-active-directory#what-is-an-azure-ad-tenant)**. Though you can create a long tenant domain name prefix, you cannot in AAD DS.  Therefore it is recommended to have your domain name prefix 15 characters or less.  
+If you don't already have a tenant for this deployment, here are some instructions on [setting up an Azure tenant](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-create-new-tenant).
 
 > [!IMPORTANT]
 > It is not currently possible to create a managed domain name with a prefix that exceeds 15 characters.  More information can be found on this topic, in this article:  
 <https://docs.microsoft.com/en-us/azure/active-directory-domain-services/tutorial-create-instance>
 
-* **An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels**
+* **An [Azure subscription](https://azure.microsoft.com/en-us/free/) with sufficient credits to deploy the environment, and keep it running at the desired levels**  
+If you do not already have an Azure subscription, or wish to create a new Azure subscription, here is documentation on [creating an additional Azure subscription](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription).
 
 * **An [Azure Global Administrator](https://docs.microsoft.com/en-us/azure/active-directory/roles/permissions-reference) account**  
   * An Azure account with Azure Active Directory Global administrator role assigned.
@@ -41,6 +43,9 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
 * **An [Azure Managed Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview)**  
 The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment.  This AVD Blueprint utilizes type 'User Assigned Managed Identity'.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**
+
+> [!TIP]
+> The managed identity is something that you can use for any number of Blueprint assignments. When you create the managed identity, you will have to specify a resource group. (Ex. '**AVD Global RG**'). This resource group can and should persist as long as you are performing Blueprint assignments.  That way you don't have to go through the process of creating a managed identity each time...just reuse the existing managed identity.
 
 > [!NOTE]
 > In the case of deploying to an otherwise empty subscription, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.
