@@ -247,9 +247,9 @@ $AVDDAG = (Get-AzWvdApplicationGroup).Name
 
 New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop Virtualization User" -ResourceName $AVDDAG -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups'
 
-#Force a GPUpdate now, then reboot so they can take effect, and so the Startup script can run to install FSLogix
+#Force a GPUpdate now, then reboot so the session host VMs can run the VDOT tool on next startup
 Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
-Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 05}}
+Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 00}}
 
 ############ END GROUP POLICY SECTION
     #>
