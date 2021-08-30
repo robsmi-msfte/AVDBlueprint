@@ -20,7 +20,6 @@ Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
 Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
 Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
-$ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
