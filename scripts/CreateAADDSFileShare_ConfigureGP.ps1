@@ -15,11 +15,9 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $AzureStorageFQDN
 )
-#Install RSAT-AD Tools, GP Tools, Az PS, and download components
+#Install RSAT-AD Tools & GP Tools
 Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
-Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
-Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
@@ -133,9 +131,29 @@ $Scriptblock = {
     
 Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
-# Set up a log to measure GP settings time to complete
 $CTempPath = 'C:\Temp'
 New-Item -ItemType Directory -Path $CTempPath
+
+#region Acquire and install PSH 'Az' components
+$AzNugetZipURI = "$ScriptURI/AzOffline.zip"
+$AzNugetZip = "$CTempPath\AzOffline.zip"
+Invoke-WebRequest -Uri $AzNugetZipURI -OutFile "$AzNugetZip"
+Expand-Archive -LiteralPath $AzNugetZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
+
+$NuGetProviderAssembliesName = "$CTempPath\Microsoft.PackageManagement.NuGetProvider.dll"
+$NuGetProviderAssembliesPath = "C:\Program Files\PackageManagement\ProviderAssemblies\nuget\2.8.5.208"
+
+If (-not(Test-Path $NuGetProviderAssembliesPath)){
+New-Item -ItemType Directory -Path $NuGetProviderAssembliesPath -ErrorAction SilentlyContinue
+Copy-Item "$NuGetProviderAssembliesName" "$NuGetProviderAssembliesPath" -ErrorAction SilentlyContinue
+}
+
+Register-PackageSource -Name "MyNuGet" -Location "$CTempPath\NugetOffline" -ProviderName "NuGet"
+Install-Package "$CTempPath\NugetOffline\Az.1.10.0.nupkg"
+
+Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ErrorAction SilentlyContinue
+Import-Module Az -Force -Global
+#endregion Acquire and install PSH 'Az' components
 
 # Download AVD post-install group policy settings zip file, and expand it
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
