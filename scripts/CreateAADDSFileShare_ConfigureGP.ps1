@@ -162,11 +162,13 @@ $Scriptblock = {
 Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
 # Download AVD post-install group policy settings zip file, and expand it
+
+$CTempPath = 'C:\Temp'
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
 If (Test-Path $AVDPostInstallGPSettingsZip){
-Expand-Archive -LiteralPath $AVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
+Expand-Archive -LiteralPath "$AVDPostInstallGPSettingsZip" -DestinationPath "$CTempPath" -ErrorAction SilentlyContinue
 }
 
 # Create a startup script for the session hosts, to run the Virtual Desktop Optimization Tool
