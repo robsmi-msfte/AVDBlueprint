@@ -27,6 +27,28 @@ If (-not(Test-Path "$CTempPath\Software")) {
     New-Item -ItemType Directory -Path "$CTempPath\Software"
 }
 
+#region Install PSH 'Az' components
+$AzNugetZipURI = "$ScriptURI/AzOffline.zip"
+$AzNugetZip = "$CTempPath\AzOffline.zip"
+Invoke-WebRequest -Uri $AzNugetZipURI -OutFile "$AzNugetZip"
+
+Expand-Archive -LiteralPath "$AzNugetZip" -DestinationPath "$CTempPath" -ErrorAction SilentlyContinue
+
+$NuGetProviderAssembliesName = "$CTempPath\Microsoft.PackageManagement.NuGetProvider.dll"
+$NuGetProviderAssembliesPath = "C:\Program Files\PackageManagement\ProviderAssemblies\nuget\2.8.5.208"
+
+If (-not(Test-Path $NuGetProviderAssembliesPath)){
+New-Item -ItemType Directory -Path $NuGetProviderAssembliesPath -ErrorAction SilentlyContinue
+Copy-Item "$NuGetProviderAssembliesName" "$NuGetProviderAssembliesPath" -ErrorAction SilentlyContinue
+}
+
+Register-PackageSource -Name "MyNuGet" -Location "$CTempPath\NugetOffline" -ProviderName "NuGet"
+Install-Package "$CTempPath\NugetOffline\Az.1.10.0.nupkg"
+
+Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ErrorAction SilentlyContinue
+Import-Module Az -Force -Global
+#endregion Acquire and install PSH 'Az' components
+
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
     Param(
@@ -142,27 +164,6 @@ Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 # Download AVD post-install group policy settings zip file, and expand it
 $CTempPath = 'C:\Temp'
 
-$AzNugetZipURI = "$ScriptURI/AzOffline.zip"
-$AzNugetZip = "$CTempPath\AzOffline.zip"
-Invoke-WebRequest -Uri $AzNugetZipURI -OutFile "$AzNugetZip"
-
-#region Install PSH 'Az' components
-Expand-Archive -LiteralPath $AzNugetZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
-
-$NuGetProviderAssembliesName = "$CTempPath\Microsoft.PackageManagement.NuGetProvider.dll"
-$NuGetProviderAssembliesPath = "C:\Program Files\PackageManagement\ProviderAssemblies\nuget\2.8.5.208"
-
-If (-not(Test-Path $NuGetProviderAssembliesPath)){
-New-Item -ItemType Directory -Path $NuGetProviderAssembliesPath -ErrorAction SilentlyContinue
-Copy-Item "$NuGetProviderAssembliesName" "$NuGetProviderAssembliesPath" -ErrorAction SilentlyContinue
-}
-
-Register-PackageSource -Name "MyNuGet" -Location "$CTempPath\NugetOffline" -ProviderName "NuGet"
-Install-Package "$CTempPath\NugetOffline\Az.1.10.0.nupkg"
-
-Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ErrorAction SilentlyContinue
-Import-Module Az -Force -Global
-#endregion Acquire and install PSH 'Az' components
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
