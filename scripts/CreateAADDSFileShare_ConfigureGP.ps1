@@ -15,12 +15,17 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $AzureStorageFQDN
 )
-#Install RSAT-AD Tools, GP Tools, and acquire 'Scripts' collateral
+#Install RSAT-AD Tools, GP Tools, setup working folders, and acquire 'Scripts' collateral
 Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
 
 $CTempPath = 'C:\Temp'
-New-Item -ItemType Directory -Path $CTempPath
+If (-not(Test-Path "$CTempPath")) {
+    New-Item -ItemType Directory -Path $CTempPath
+}    
+If (-not(Test-Path "$CTempPath\Software")) {
+    New-Item -ItemType Directory -Path "$CTempPath\Software"
+}
 
 $AzNugetZipURI = "$ScriptURI/AzOffline.zip"
 $AzNugetZip = "$CTempPath\AzOffline.zip"
@@ -52,13 +57,6 @@ Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
 $VDOTURI = "$ScriptURI/VDOT.zip"
 $VDOTZip = "$CTempPath\Software\VDOT.zip"
 Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
-
-# Acquire FSLogix software group policy files
-$FSLogixZip = "$CTempPath\FSLogixGPT.zip"
-$FSLogixSW = "$CTempPath\Software\FSLogix"
-$SoftwareShare = "$CTempPath\Software"
-$FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
-Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
@@ -198,7 +196,12 @@ If(-not(Test-Path "$env:SystemRoot\System32\Winevt\Logs\Virtual Desktop Optimiza
 '@
 Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $PostInstallAVDConfig
 
-
+# Acquire FSLogix software group policy files
+$FSLogixZip = "$CTempPath\FSLogixGPT.zip"
+$FSLogixSW = "$CTempPath\Software\FSLogix"
+$SoftwareShare = "$CTempPath\Software"
+$FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
+Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
 Expand-Archive -Path $FSLogixZip -DestinationPath $FSLogixSW
 
 # Set up a file share for the session hosts
