@@ -275,21 +275,16 @@ New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop 
 # Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
 # Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 05}}
 
-for ($i = 0 ; $i -le $VMsToRestart ; $i++) {
-    $vmName = $evdvm_name_prefix + $i
-    $VMComputerName = (Get-ADObject -Credential $DACredential -Identity $W.DistinguishedName -SearchBase $AVDComputersOU.DistinguishedName -Server $PDC -Filter 'Name -like $vmName').name
-    {Invoke-Command -ComputerName $VMComputerName -ScriptBlock {gpupdate /force}}
-}
-
-for ($i = 0 ; $i -le $VMsToRestart ; $i++) {
-    $vmName = $evdvm_name_prefix + $i
-    $VMComputerName = (Get-ADObject -Credential $DACredential -Identity $W.DistinguishedName -SearchBase $AVDComputersOU.DistinguishedName -Server $PDC -Filter 'Name -like $vmName').name
-    {Invoke-Command -ComputerName $VMComputerName -ScriptBlock {shutdown /r /f /t 00}}
+for ($i = 0 ; $i -le $vmNumberOfInstances ; $i++) {
+    $VMComputerName = $evdvm_name_prefix + $i
+    $s = New-PSSession -ComputerName $VMComputerName
+    {Invoke-Command -Session $s -ScriptBlock {gpupdate /force}}
+    {Invoke-Command -Session $s -ScriptBlock {shutdown /r /f /t 05}}
 }
 
 # Cleanup resources
-Remove-SmbShare -Name "Software"
-Remove-Item -LiteralPath 'C:\Temp' -Recurse -Force -ErrorAction SilentlyContinue
+# Remove-SmbShare -Name "Software"
+# Remove-Item -LiteralPath 'C:\Temp' -Recurse -Force -ErrorAction SilentlyContinue
 
 ############ END GROUP POLICY SECTION
     #>
