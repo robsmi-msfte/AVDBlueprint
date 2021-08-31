@@ -39,10 +39,16 @@
       "_ScriptURI": {
         "type": "string"
       },
+      "avdHostpool_vmNamePrefix": {
+        "type": "string"
+      },
       "AzureEnvironmentName": {
         "type": "string"
       },
       "AzureStorageFQDN": {
+        "type": "string"
+      },
+      "avdHostPool_vmNumberOfInstances": {
         "type": "string"
       },
       "mgmtvmNameStatic": {
@@ -421,7 +427,7 @@
             "fileUris": [
               "[parameters('CreateConfigureFileShareAndGPScriptURI')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('_ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('_ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
@@ -575,11 +581,17 @@
     "_ScriptURI": {
       "value": "[parameters('_ScriptURI')]"
     },
+    "avdHostPool_vmNamePrefix": {
+      "value": "[parameters('avdHostPool_vmNamePrefix')]"
+    },
     "AzureEnvironmentName": {
       "value": "[parameters('AzureEnvironmentName')]"
     },
     "AzureStorageFQDN": {
       "value": "[parameters('AzureStorageFQDN')]"
+    },
+    "avdHostPool_vmNumberOfInstances": {
+      "value": "[parameters('avdHostPool_vmNumberOfInstances')]"
     },
     "vmSize": {
       "value": "Standard_D2s_v3"

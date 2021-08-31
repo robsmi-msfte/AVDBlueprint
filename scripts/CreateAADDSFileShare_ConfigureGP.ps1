@@ -13,7 +13,14 @@ Param(
     [string] $AzureEnvironmentName,
 
     [Parameter(Mandatory=$true)]
-    [string] $AzureStorageFQDN
+    [string] $AzureStorageFQDN,
+
+    [Parameter(Mandatory=$true)]
+    [string] $evdvm_name_prefix,
+
+    [Parameter(Mandatory=$true)]
+    [string] $vmNumberOfInstances
+    
 )
 #region Install RSAT-AD Tools, GP Tools, setup working folders, and install 'Az' PowerShell modules
 Install-WindowsFeature -name GPMC
@@ -49,7 +56,14 @@ $Scriptblock = {
     [string] $AzureEnvironmentName,
 
     [Parameter(Mandatory=$true,Position=4)]
-    [string] $AzureStorageFQDN
+    [string] $AzureStorageFQDN,
+
+    [Parameter(Mandatory=$true,Position=5)]
+    [string] $evdvm_name_prefix,
+
+    [Parameter(Mandatory=$true,Position=6)]
+    [string] $vmNumberOfInstances
+
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
@@ -258,8 +272,24 @@ $AVDDAG = (Get-AzWvdApplicationGroup).Name
 New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop Virtualization User" -ResourceName $AVDDAG -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups'
 
 #Force a GPUpdate now, then reboot so the session host VMs can run the VDOT tool on next startup
-Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
-Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 00}}
+# Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
+# Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 05}}
+
+for ($i = 0 ; $i -le $VMsToRestart ; $i++) {
+    $vmName = $evdvm_name_prefix + $i
+    $VMComputerName = (Get-ADObject -Credential $DACredential -Identity $W.DistinguishedName -SearchBase $AVDComputersOU.DistinguishedName -Server $PDC -Filter 'Name -like $vmName').name
+    {Invoke-Command -ComputerName $VMComputerName -ScriptBlock {gpupdate /force}}
+}
+
+for ($i = 0 ; $i -le $VMsToRestart ; $i++) {
+    $vmName = $evdvm_name_prefix + $i
+    $VMComputerName = (Get-ADObject -Credential $DACredential -Identity $W.DistinguishedName -SearchBase $AVDComputersOU.DistinguishedName -Server $PDC -Filter 'Name -like $vmName').name
+    {Invoke-Command -ComputerName $VMComputerName -ScriptBlock {shutdown /r /f /t 00}}
+}
+
+# Cleanup resources
+Remove-SmbShare -Name "Software"
+Remove-Item -LiteralPath 'C:\Temp' -Recurse -Force -ErrorAction SilentlyContinue
 
 ############ END GROUP POLICY SECTION
     #>
@@ -293,7 +323,7 @@ Get-AzContext | Out-File -append c:\windows\temp\outercontext.txt
 klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 
 #Run the $scriptblock in the DAuser context
-Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI,$AzureEnvironmentName,$AzureStorageFQDN
+Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI,$AzureEnvironmentName,$AzureStorageFQDN,$evdvm_name_prefix,$vmNumberOfInstances
 
 #Clean up DAuser context
 Unregister-PSSessionConfiguration -Name DASessionConf -Force
