@@ -15,9 +15,50 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $AzureStorageFQDN
 )
-#Install RSAT-AD Tools & GP Tools
+#Install RSAT-AD Tools, GP Tools, and acquire 'Scripts' collateral
 Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
+
+$CTempPath = 'C:\Temp'
+New-Item -ItemType Directory -Path $CTempPath
+
+$AzNugetZipURI = "$ScriptURI/AzOffline.zip"
+$AzNugetZip = "$CTempPath\AzOffline.zip"
+Invoke-WebRequest -Uri $AzNugetZipURI -OutFile "$AzNugetZip"
+
+#region Install PSH 'Az' components
+Expand-Archive -LiteralPath $AzNugetZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
+
+$NuGetProviderAssembliesName = "$CTempPath\Microsoft.PackageManagement.NuGetProvider.dll"
+$NuGetProviderAssembliesPath = "C:\Program Files\PackageManagement\ProviderAssemblies\nuget\2.8.5.208"
+
+If (-not(Test-Path $NuGetProviderAssembliesPath)){
+New-Item -ItemType Directory -Path $NuGetProviderAssembliesPath -ErrorAction SilentlyContinue
+Copy-Item "$NuGetProviderAssembliesName" "$NuGetProviderAssembliesPath" -ErrorAction SilentlyContinue
+}
+
+Register-PackageSource -Name "MyNuGet" -Location "$CTempPath\NugetOffline" -ProviderName "NuGet"
+Install-Package "$CTempPath\NugetOffline\Az.1.10.0.nupkg"
+
+Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ErrorAction SilentlyContinue
+Import-Module Az -Force -Global
+#endregion Acquire and install PSH 'Az' components
+
+$AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
+$ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
+Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
+
+# Acquire Virtual Desktop Optimization Tool software
+$VDOTURI = "$ScriptURI/VDOT.zip"
+$VDOTZip = "$CTempPath\Software\VDOT.zip"
+Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
+
+# Acquire FSLogix software group policy files
+$FSLogixZip = "$CTempPath\FSLogixGPT.zip"
+$FSLogixSW = "$CTempPath\Software\FSLogix"
+$SoftwareShare = "$CTempPath\Software"
+$FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
+Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
@@ -131,35 +172,7 @@ $Scriptblock = {
     
 Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
-$CTempPath = 'C:\Temp'
-New-Item -ItemType Directory -Path $CTempPath
-
-#region Acquire and install PSH 'Az' components
-$AzNugetZipURI = "$ScriptURI/AzOffline.zip"
-$AzNugetZip = "$CTempPath\AzOffline.zip"
-Invoke-WebRequest -Uri $AzNugetZipURI -OutFile "$AzNugetZip"
-Expand-Archive -LiteralPath $AzNugetZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
-
-$NuGetProviderAssembliesName = "$CTempPath\Microsoft.PackageManagement.NuGetProvider.dll"
-$NuGetProviderAssembliesPath = "C:\Program Files\PackageManagement\ProviderAssemblies\nuget\2.8.5.208"
-
-If (-not(Test-Path $NuGetProviderAssembliesPath)){
-New-Item -ItemType Directory -Path $NuGetProviderAssembliesPath -ErrorAction SilentlyContinue
-Copy-Item "$NuGetProviderAssembliesName" "$NuGetProviderAssembliesPath" -ErrorAction SilentlyContinue
-}
-
-Register-PackageSource -Name "MyNuGet" -Location "$CTempPath\NugetOffline" -ProviderName "NuGet"
-Install-Package "$CTempPath\NugetOffline\Az.1.10.0.nupkg"
-
-Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ErrorAction SilentlyContinue
-Import-Module Az -Force -Global
-#endregion Acquire and install PSH 'Az' components
-
 # Download AVD post-install group policy settings zip file, and expand it
-$AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
-$ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
-
-Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
 If (Test-Path $AVDPostInstallGPSettingsZip){
 Expand-Archive -LiteralPath $AVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
 }
@@ -185,13 +198,7 @@ If(-not(Test-Path "$env:SystemRoot\System32\Winevt\Logs\Virtual Desktop Optimiza
 '@
 Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $PostInstallAVDConfig
 
-# Acquire FSLogix software for the group policy files only
-# since the FSLogix session host software is now included in OS
-$FSLogixZip = "$CTempPath\FSLogixGPT.zip"
-$FSLogixSW = "$CTempPath\Software\FSLogix"
-$SoftwareShare = "$CTempPath\Software"
-$FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
-Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
+
 Expand-Archive -Path $FSLogixZip -DestinationPath $FSLogixSW
 
 # Set up a file share for the session hosts
@@ -227,11 +234,6 @@ If (Test-Path $FSLogixSW){
 Copy-Item $FSLogixSW\fslogix.admx $PolicyDefinitions -Force
 Copy-Item $FSLogixSW\fslogix.adml "$PolicyDefinitions\en-US" -Force
 }
-
-# Acquire Virtual Desktop Optimization Tool software
-$VDOTURI = "$ScriptURI/VDOT.zip"
-$VDOTZip = "$CTempPath\Software\VDOT.zip"
-Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
 
 # Determine profile share name and set a variable
 $DeploymentPrefixSS = ($DeploymentPrefix +,'sharedsvcs*')
