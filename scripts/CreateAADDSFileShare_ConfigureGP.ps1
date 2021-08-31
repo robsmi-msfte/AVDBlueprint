@@ -49,15 +49,6 @@ Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowe
 Import-Module Az -Force -Global
 #endregion Acquire and install PSH 'Az' components
 
-$AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
-$ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
-Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
-
-# Acquire Virtual Desktop Optimization Tool software
-$VDOTURI = "$ScriptURI/VDOT.zip"
-$VDOTZip = "$CTempPath\Software\VDOT.zip"
-Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
-
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
     Param(
@@ -171,6 +162,9 @@ $Scriptblock = {
 Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
 # Download AVD post-install group policy settings zip file, and expand it
+$AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
+$ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
+Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
 If (Test-Path $AVDPostInstallGPSettingsZip){
 Expand-Archive -LiteralPath $AVDPostInstallGPSettingsZip -DestinationPath $CTempPath -ErrorAction SilentlyContinue
 }
@@ -196,12 +190,20 @@ If(-not(Test-Path "$env:SystemRoot\System32\Winevt\Logs\Virtual Desktop Optimiza
 '@
 Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $PostInstallAVDConfig
 
+# Acquire Virtual Desktop Optimization Tool software
+$VDOTURI = "$ScriptURI/VDOT.zip"
+$VDOTZip = "$CTempPath\Software\VDOT.zip"
+Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
+
 # Acquire FSLogix software group policy files
 $FSLogixZip = "$CTempPath\FSLogixGPT.zip"
 $FSLogixSW = "$CTempPath\Software\FSLogix"
 $SoftwareShare = "$CTempPath\Software"
 $FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
 Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
+If (-not(Test-Path "$FSLogixSW")) {
+    New-Item -ItemType Directory -Path "$FSLogixSW"
+} 
 Expand-Archive -Path $FSLogixZip -DestinationPath $FSLogixSW
 
 # Set up a file share for the session hosts
