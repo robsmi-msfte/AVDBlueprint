@@ -15,7 +15,7 @@ Param(
     [Parameter(Mandatory=$true)]
     [string] $AzureStorageFQDN
 )
-#Install RSAT-AD Tools, GP Tools, setup working folders, and acquire 'Scripts' collateral
+#region Install RSAT-AD Tools, GP Tools, setup working folders, and install 'Az' PowerShell modules
 Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
 
@@ -27,27 +27,11 @@ If (-not(Test-Path "$CTempPath\Software")) {
     New-Item -ItemType Directory -Path "$CTempPath\Software"
 }
 
-#region Install PSH 'Az' components
-$AzNugetZipURI = "$ScriptURI/AzOffline.zip"
-$AzNugetZip = "$CTempPath\AzOffline.zip"
-Invoke-WebRequest -Uri $AzNugetZipURI -OutFile "$AzNugetZip"
-
-Expand-Archive -LiteralPath "$AzNugetZip" -DestinationPath "$CTempPath" -ErrorAction SilentlyContinue
-
-$NuGetProviderAssembliesName = "$CTempPath\Microsoft.PackageManagement.NuGetProvider.dll"
-$NuGetProviderAssembliesPath = "C:\Program Files\PackageManagement\ProviderAssemblies\nuget\2.8.5.208"
-
-If (-not(Test-Path $NuGetProviderAssembliesPath)){
-New-Item -ItemType Directory -Path $NuGetProviderAssembliesPath -ErrorAction SilentlyContinue
-Copy-Item "$NuGetProviderAssembliesName" "$NuGetProviderAssembliesPath" -ErrorAction SilentlyContinue
-}
-
-Register-PackageSource -Name "MyNuGet" -Location "$CTempPath\NugetOffline" -ProviderName "NuGet"
-Install-Package "$CTempPath\NugetOffline\Az.1.10.0.nupkg"
-
-Copy-Item -Path "C:\Temp\AzOffline\*" -Destination 'C:\Program Files\WindowsPowerShell\Modules' -Recurse -ErrorAction SilentlyContinue
-Import-Module Az -Force -Global
-#endregion Acquire and install PSH 'Az' components
+$AzOfflineURI = "$ScriptURI/AzOffline.zip"
+$AzOfflineZip = "$CTempPath\AzOffline.zip"
+Invoke-WebRequest -Uri $AzOfflineURI -OutFile $AzOfflineZip
+Expand-Archive -LiteralPath "$AzOfflineZip" -DestinationPath "$env:ProgramFiles\WindowsPowerShell\Modules" -ErrorAction SilentlyContinue
+#endregion Install RSAT-AD Tools, GP Tools, setup working folders, and install 'Az' PowerShell modules
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
 $Scriptblock = {
