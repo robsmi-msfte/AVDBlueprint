@@ -271,15 +271,17 @@ $AVDDAG = (Get-AzWvdApplicationGroup).Name
 
 New-AzRoleAssignment -ObjectId $AADAVDUsersGroupId -RoleDefinitionName "Desktop Virtualization User" -ResourceName $AVDDAG -ResourceGroupName $ResourceGroupName -ResourceType 'Microsoft.DesktopVirtualization/applicationGroups'
 
-#Force a GPUpdate now, then reboot so the session host VMs can run the VDOT tool on next startup
-# Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {gpupdate /force}}
-# Foreach ($V in $VMsToManage) {Invoke-Command -Computer $V -ScriptBlock {shutdown /r /f /t 05}}
+# Force a GPUpdate and a restart to make those settings apply, on each session host
 
-for ($i = 0 ; $i -le $vmNumberOfInstances ; $i++) {
-    $VMComputerName = $evdvm_name_prefix + $i
+for ($i = 1; $i -le $vmNumberOfInstances ; $i++) {
+    $NumPrefix = $i - 1   
+    $VMComputerName = $evdvm_name_prefix + $NumPrefix
     $s = New-PSSession -ComputerName $VMComputerName
-    {Invoke-Command -Session $s -ScriptBlock {gpupdate /force}}
-    {Invoke-Command -Session $s -ScriptBlock {shutdown /r /f /t 05}}
+    Invoke-Command -Session $s -ScriptBlock {
+            gpupdate /force
+            shutdown /r /f /t 05
+        }
+    Remove-PSSession -Session $s
 }
 
 # Cleanup resources
