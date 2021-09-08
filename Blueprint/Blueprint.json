@@ -131,6 +131,15 @@
         "defaultValue": "file.core.windows.net",
         "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"]
       },
+      "managementVMOSSku": {
+        "type": "string",
+        "metadata": {
+          "displayName": "Management VM OS version",
+          "description": "The Windows version of the VM used to manage AAD DS"
+        },
+        "defaultValue": "2019-Datacenter",
+        "allowedValues": ["2019-Datacenter", "2016-Datacenter"]
+      },
       "CreateAvailabilitySet": {
         "type": "bool",
         "metadata": {

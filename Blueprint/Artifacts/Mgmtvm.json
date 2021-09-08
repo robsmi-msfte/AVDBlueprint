@@ -43,7 +43,7 @@
         "type": "string"
       },
       "AzureEnvironmentName": {
-        "type": "string"
+        "type": "string"      
       },
       "AzureStorageFQDN": {
         "type": "string"
@@ -54,6 +54,9 @@
       "mgmtvmNameStatic": {
         "type": "string",
         "defaultValue": "-mgmtvm"
+      },
+      "managementVMOSSku": {
+        "type": "string"
       },
       "dnsLabelPrefix": {
         "type": "string",
@@ -190,7 +193,7 @@
       "managedDomaintoJoin": "[parameters('adds_domainName')]",
       "imagePublisher": "MicrosoftWindowsServer",
       "imageOffer": "WindowsServer",
-      "windowsOSVersion": "2019-Datacenter",
+      "windowsOSVersion": "[parameters('managementVMOSSku')]",
       "resourceGroup": "[resourceGroup().name]",
       "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]",
       "publicIPName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-pip'))]",
@@ -589,6 +592,9 @@
     },
     "AzureStorageFQDN": {
       "value": "[parameters('AzureStorageFQDN')]"
+    },
+    "managementVMOSSku": {
+      "value": "[parameters('managementVMOSSku')]"
     },
     "avdHostPool_vmNumberOfInstances": {
       "value": "[parameters('avdHostPool_vmNumberOfInstances')]"
