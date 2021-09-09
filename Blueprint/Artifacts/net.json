@@ -49,14 +49,7 @@
           }
         },
         "logs-retention-in-days": {
-          "type": "int",
-          "defaultValue": 365,
-          "minValue": 0,
-          "maxValue": 365,
-          "metadata": {
-            "displayName": "Log retention in days",
-            "description": "Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely"
-          }
+          "type": "int"
         }
       },
       "variables": {
@@ -206,7 +199,7 @@
         "value": "[parameters('vnet_adds-subnet-address-prefix')]"
       },
       "logs-retention-in-days": {
-        "value": "[parameters('vnet_logs-retention-in-days')]"
+        "value": "[parameters('logs-retention-in-days')]"
       }
     }
   }

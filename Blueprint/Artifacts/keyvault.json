@@ -32,14 +32,7 @@
             "description": "Managed Identity object ID for executing PoSH."          }
         },
         "logs-retention-in-days": {
-          "type": "int",
-          "defaultValue": 365,
-          "minValue": 0,
-          "maxValue": 365,
-          "metadata": {
-            "displayName": "Log retention in days",
-            "description": "Specifies the number of days that logs will be kept for; a value of 0 will retain data indefinitely"
-          }
+          "type": "int"
         },
         "secret-unique-value1": {
           "type": "string",
@@ -243,7 +236,7 @@
         "value": "[parameters('script_executionUserObjectID')]"
       },
       "logs-retention-in-days": {
-        "value": "[parameters('keyvault_logs-retention-in-days')]"
+        "value": "[parameters('logs-retention-in-days')]"
       }
     }
   }

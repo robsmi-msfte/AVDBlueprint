@@ -19,10 +19,7 @@
           }
         },
         "emailNotifications": { 
-          "type": "string",
-          "metadata": {
-            "displayName": "Notification email addresses"
-          }
+          "type": "string"
         },
         "sku": {
           "type": "string"

@@ -56,6 +56,21 @@
           "value": 16,
           "description": "The number of users allowed per session host in the AVD host pool to be created"
         },
+        "avdHostPool_loadBalancerType": {
+          "value": "BreadthFirst",
+          "allowedValues": [
+            "BreadthFirst",
+            "DepthFirst",
+            "Persistent"
+          ]
+        },
+        "avdHostPool_HostPoolType": {
+          "value": "Pooled",
+          "allowedValues": [
+            "Personal",
+            "Pooled"
+          ]
+        },
         "avdUsers_userCount": {
           "value": 40,
           "description": "The number of AVD test users to be created"
@@ -92,6 +107,9 @@
             "2016-Datacenter",
             "2016-datacenter-gensecond"
             ]
+        },
+        "logs-retention-in-days": {
+          "value": 365
         },
         "script_executionUserResourceID": {
           "value": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1",

@@ -106,7 +106,7 @@
                   },
                   "defaultValue": ""
               },
-              "createAvailabilitySet": {
+              "avdHostPool_CreateAvailabilitySet": {
                   "type": "bool",
                   "metadata": {
                       "description": "Whether to create a new availability set for the VMs"
@@ -350,15 +350,8 @@
                   },
                   "defaultValue": []
               },
-              "hostpoolType": {
-                  "type": "string",
-                  "allowedValues": [
-                      "Personal",
-                      "Pooled"
-                  ],
-                  "metadata": {
-                      "description": "Set this parameter to Personal if you would like to enable Persistent Desktop experience. Defaults to false."
-                  }
+              "avdHostPool_HostPoolType": {
+                  "type": "string"
               },
               "personalDesktopAssignmentType": {
                   "type": "string",
@@ -553,7 +546,7 @@
                   "properties": {
                       "friendlyName": "[parameters('hostpoolFriendlyName')]",
                       "description": "[parameters('hostpoolDescription')]",
-                      "hostpoolType": "[parameters('hostpoolType')]",
+                      "hostpoolType": "[parameters('avdHostPool_HostPoolType')]",
                       "customRdpProperty": "[parameters('customRdpProperty')]",
                       "personalDesktopAssignmentType": "[parameters('personalDesktopAssignmentType')]",
                       "maxSessionLimit": "[parameters('avdHostPool_maxSessionLimit')]",
@@ -618,7 +611,7 @@
                   "name": "[concat('AVSet-linkedTemplate-', parameters('deploymentId'))]",
                   "type": "Microsoft.Resources/deployments",
                   "resourceGroup": "[parameters('vmResourceGroup')]",
-                  "condition": "[parameters('createAvailabilitySet')]",
+                  "condition": "[parameters('avdHostPool_CreateAvailabilitySet')]",
                   "properties": {
                       "mode": "Incremental",
                       "template": {
@@ -800,8 +793,8 @@
           "addToWorkspace": {
               "value": true
           },
-          "hostpoolType": {
-              "value": "Pooled"
+          "avdHostPool_HostPoolType": {
+              "value": "[parameters('avdHostPool_HostPoolType')]"
           },
           "avdHostPool_loadBalancerType": {
               "value": "[parameters('avdHostPool_loadBalancerType')]"
@@ -815,8 +808,8 @@
           "administratorAccountUsername": {
               "value": "[parameters('daUser_AdminUser')]"
           },
-          "createAvailabilitySet": {
-              "value": "[parameters('CreateAvailabilitySet')]"
+          "avdHostPool_CreateAvailabilitySet": {
+              "value": "[parameters('avdHostPool_CreateAvailabilitySet')]"
           },
           "availabilitySetName": {
             "value": "[parameters('availabilitySetName')]"

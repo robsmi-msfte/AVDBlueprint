@@ -32,13 +32,7 @@
         },
         "data-retention": {
           "type": "int",
-          "defaultValue": 365,
-          "minValue": 0,
-          "maxValue": 365,
-          "metadata": {
-            "displayName": "Log retention in days",
-            "description": "Number of days data will be retained for"
-          }
+          "defaultValue": "[parameters('log_analytics_data-retention')]"
         },
         "location": {
           "type": "string",
