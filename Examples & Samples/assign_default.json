@@ -82,6 +82,17 @@
           "value": "admin@contoso.com",
           "description": "Optional and not implemented at this time"
         },
+        "managementVMOSSku": {
+          "value": "2019-Datacenter",
+          "allowedValues": [
+            "2022-datacenter",
+            "2022-datacenter-g2",
+            "2019-Datacenter",
+            "2019-datacenter-gensecond",
+            "2016-Datacenter",
+            "2016-datacenter-gensecond"
+            ]
+        },
         "script_executionUserResourceID": {
           "value": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1",
           "description": "ARM path to the managed identity by name. The name at the end of the string is the name used when creating the managed identity and is arbitrary."
