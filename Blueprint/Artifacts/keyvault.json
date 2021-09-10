@@ -25,7 +25,7 @@
             "description": "AAD object ID of the user that requires access to Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID"
           }
         },
-        "script_executionUserObjectID": {
+        "scriptExecutionUserObjectID": {
           "type": "string",
           "metadata": {
             "displayName": "PoSH Managed Identity Object ID",
@@ -118,7 +118,7 @@
           },
           {
             "tenantId": "[subscription().tenantId]",
-            "objectId": "[parameters('script_executionUserObjectID')]",
+            "objectId": "[parameters('scriptExecutionUserObjectID')]",
             "permissions": {
               "certificates": [
                 "All"
@@ -232,8 +232,8 @@
       "keyvault_ownerUserObjectID": {
         "value": "[parameters('keyvault_ownerUserObjectID')]"
       },
-      "script_executionUserObjectID": {
-        "value": "[parameters('script_executionUserObjectID')]"
+      "scriptExecutionUserObjectID": {
+        "value": "[parameters('scriptExecutionUserObjectID')]"
       },
       "logsRetentionInDays": {
         "value": "[parameters('logsRetentionInDays')]"

@@ -97,7 +97,7 @@
           "description": "Resource ID for the Managed Identity that will execute embedded deployment scripts."
         }
       },
-      "script_executionUserObjectID": {
+      "scriptExecutionUserObjectID": {
         "type": "string",
         "metadata": {
           "displayName": "Deployment Script Managed Identity Object ID",
