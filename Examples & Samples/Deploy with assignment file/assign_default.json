@@ -1,0 +1,133 @@
+{
+    "name": "AVD Blueprint - Default Configuration",
+    "type": "Microsoft.Blueprint/blueprintAssignments",
+    "apiVersion": "2018-11-01-preview",
+    "location": "centralus",
+    "identity": {
+        "type": "UserAssigned",
+        "userAssignedIdentities": {
+            "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1" : {}
+        }
+    },
+    "properties": {
+      "displayName": "AVD Blueprint - Full Deployment (Default)",
+      "description": "Deploys a default Azure Virtual Desktop (AVD) deployment with all dependencies.",
+      "blueprintId": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/providers/Microsoft.Blueprint/blueprints/AVDBlueprint",
+      "scope": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05",
+      "parameters": {
+        "resourcePrefix": {
+            "value": "AVD001",
+            "description": "The prefix, utilized by this Blueprint, that is used in naming of those objects. This value should be kept as short as possible"
+        },
+        "scriptURI": {
+          "value": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
+          "description": "The URL to the script folder available during Blueprint assignment."
+        },
+        "avdHostPool_vmGalleryImageSKU": {
+          "value": "21h1-evd-o365pp",
+          "allowedValues": [
+            "19h2-evd-o365pp",
+            "19h2-evd-o365pp-g2",
+            "20h1-evd-o365pp",
+            "20h1-evd-o365pp-g2",
+            "20h2-evd-o365pp",
+            "20h2-evd-o365pp-g2",
+            "21h1-evd-o365pp",
+            "21h1-evd-o365pp-g2",
+            "19h2-evd",
+            "19h2-evd-g2",
+            "20h1-evd",
+            "20h1-evd-g2",
+            "20h2-evd",
+            "20h2-evd-g2",
+            "21h1-evd",
+            "21h1-evd-g2"
+          ]
+        },
+        "avdHostPool_vmSize": {
+          "value": "Standard_B12ms",
+          "description": "The Azure VM size of the session hosts being created by this Blueprint. To select a different size, find the VM size and change the value of this parameter to match"
+        },
+        "avdHostPool_vmNumberOfInstances": {
+          "value": 2,
+          "description": "The number of Azure AVD VMs to be created"
+        },
+        "avdHostPool_maxSessionLimit": {
+          "value": 16,
+          "description": "The number of users allowed per session host in the AVD host pool to be created"
+        },
+        "avdHostPool_loadBalancerType": {
+          "value": "BreadthFirst",
+          "allowedValues": [
+            "BreadthFirst",
+            "DepthFirst",
+            "Persistent"
+          ]
+        },
+        "avdHostPool_HostPoolType": {
+          "value": "Pooled",
+          "allowedValues": [
+            "Personal",
+            "Pooled"
+          ]
+        },
+        "avdUsers_userCount": {
+          "value": 40,
+          "description": "The number of AVD test users to be created"
+        },
+        "vnetEnableDdosProtection": {
+          "value": false,
+          "description": "Whether or not the Azure DDoS plan will be created by this Blueprint"
+        },
+        "ADDS_domainName": {
+          "value": "corp.contoso.com",
+          "description": "The domain name of your AAD DS managed domain to be created"
+        },
+        "AzureEnvironmentName": {
+          "value": "AzureCloud",
+          "allowedValues": ["AzureCloud", "AzureUSGovernment"],
+          "description": "Which cloud this Blueprint will be deployed in."
+        },
+        "AzureStorageFQDN": {
+          "value": "file.core.windows.net",
+          "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"],
+          "description": "Fully qualified domain name of the Azure Files storage share. Default is Azure Commercial, alternate choice is AzGov"
+        },
+        "ADDS_emailNotifications": {
+          "value": "admin@contoso.com",
+          "description": "Optional and not implemented at this time"
+        },
+        "managementVMOSSku": {
+          "value": "2019-Datacenter",
+          "allowedValues": [
+            "2022-datacenter",
+            "2022-datacenter-g2",
+            "2019-Datacenter",
+            "2019-datacenter-gensecond",
+            "2016-Datacenter",
+            "2016-datacenter-gensecond"
+            ]
+        },
+        "logsRetentionInDays": {
+          "value": 365
+        },
+        "script_executionUserResourceID": {
+          "value": "/subscriptions/291bba3f-e0a5-47bc-a099-3bdcb2a50a05/resourcegroups/AVD-Blueprint-RG/providers/Microsoft.ManagedIdentity/userAssignedIdentities/UAI1",
+          "description": "ARM path to the managed identity by name. The name at the end of the string is the name used when creating the managed identity and is arbitrary."
+        },
+        "script_executionUserObjectID": {
+          "value": "11111111-1111-1111-1111-111111111111",
+          "description": "The object ID of the Azure global administrator account used to initiate the Blueprint assignment"
+        },
+        "keyvault_ownerUserObjectID": {
+          "value": "22222222-2222-2222-2222-222222222222",
+          "description": "The Object ID of the managed identity"
+        }
+      },
+      "resourceGroups": {
+        "ResourceGroup": {
+          "location": "centralus"
+        }
+      }
+    }
+  }
