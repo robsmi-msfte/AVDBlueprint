@@ -45,29 +45,18 @@ If you do not already have an Azure subscription, or wish to create a new Azure 
 The Azure Managed Identity exists within Azure and can securely store and retrieve credentials from Azure Key Vault during the deployment.  This AVD Blueprint utilizes type 'User Assigned Managed Identity'.  The instructions for creating a managed identity are here: **[Create a user-assigned managed identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/how-to-manage-ua-identity-portal#create-a-user-assigned-managed-identity)**
 
 > [!TIP]
-> The managed identity is something that you can use for any number of Blueprint assignments. When you create the managed identity, you will have to specify a resource group. (Ex. '**AVD Global RG**'). This resource group can and should persist as long as you are performing Blueprint assignments.  That way you don't have to go through the process of creating a managed identity each time...just reuse the existing managed identity.
+> The managed identity is something that you can use for any number of Blueprint assignments. When you create the managed identity, you will have to specify a resource group. (Ex. '**AVD_Blueprint_Global_RG**'). This resource group can persist as long as you are performing Blueprint assignments.  That way you don't have to go through the process of creating a managed identity each time...just reuse the existing managed identity.
 
 > [!NOTE]
-> In the case of deploying to an otherwise empty subscription, the level of assignment will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.
+> In the case of deploying to an otherwise empty subscription, the level of assignment for the managed identity will need to be the Azure subscription.  The AVD Blueprint, by default, creates objects at the subscription level during the blueprint deployment such as Azure AD DS.
 
-* **Security configuration in the environment for a Blueprint Operator**  
-The management of Blueprint definitions and Blueprint assignments are two different roles, thus the need for two different identities (Azure administrator and managed identity). The security group being granted the **Blueprint Operator** role needs to also be granted the **Managed Identity Operator** role. Without this permission, blueprint assignments fail because of lack of permissions.  One method is to add the two identities to the one security group (example *Blueprint Operators*), and then you only need add the required roles to the security group.
+* **Managed identity assigned the Owner role at the subscription level**  
+The reason is that the managed identity needs full access during the deployment, for example to initiate the creation of an instance of Azure AD DS.  
 
-    The steps to create a security group and assign the roles are as follows (documentation [here](https://docs.microsoft.com/en-us/azure/governance/blueprints/how-to/configure-for-blueprint-operator)):  
+    **MORE INFO:** [Add or change Azure subscription administrators](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator)
 
-  * [Create an Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal) (example: **Blueprint Operators**)  
-  * At the subscription level, assign roles to the group previously created, by going to the following location in the Azure Portal  
-  > **Azure Portal** -> **Home** -> **Subscriptions** -> (***your subscription***) -> **Access Control (IAM)**  
-  * [Add the managed identity created earlier in this section, and the Global Administrator accounts to the Azure security group](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-groups-create-azure-portal#create-a-basic-group-and-add-members)  
-  * Assign permissions to the group , to allow members to create objects at the subscription level:
-
-    * [Blueprint Contributor](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#blueprint-contributor)
-    * [Blueprint Operator](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#blueprint-operator)
-    * [Managed Identity Operator](https://docs.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#managed-identity-operator)  
-
-    When correctly configured, the Role assignments for your Azure AD group, should look like this:  
-
-    ![Blueprint Group Access Control Depiction](./images//BluePrint_GroupAccessControlDepiction.PNG)
+* **Managed identity assigned the "Global Administrator" role in Azure Active Director**  
+The managed identity account will be creating objects in Azure Active Directory during the Blueprint assignment, as well as domain join operations during the deployment.  Instructions on how to add a role to a user (including user assigned managed identities) can be found [here](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-users-assign-role-azure-portal).
 
 * **Azure Blueprint resource provider registered to your subscription** through Azure PowerShell with this PowerShell command:  
 
@@ -112,16 +101,8 @@ Check the current provider registration status in your subscription:
     ```PowerShell
     New-AzureADServicePrincipal -AppId "2565bd9d-da50-47d4-8b85-4c97f669dc36"
     ```  
-
-* **Managed identity assigned the Owner role at the subscription level**  
-The reason is that the managed identity needs full access during the deployment, for example to initiate the creation of an instance of Azure AD DS.  
-
-    **MORE INFO:** [Add or change Azure subscription administrators](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator)  
-
-* **The account used to assign the Blueprint, granted "User Access Administrator" at the subscription level**  
-The account used to manage the subscription and later assign the Blueprint, should be assigned the "User Access Administrator". During Blueprint assignment users are going to be created and assigned to a AVD group. The "User Access Administrator" permission ensures the requisite permission in Azure AD to perform this function.  
-
-    **MORE INFO:** [Assign a user as an administrator of an Azure subscription](https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal-subscription-admin)  
+> [!NOTE]
+> Any roles assigned to the user assigned managed identity can safely be removed after the blueprint assignment has completed.  The only downside is that if subsequent blueprint assignments are needed, those roles would need to be granted to the user assigned managed identity again.
 
 * **The Blueprint main file (Blueprint.json), and related artifact objects**  
 These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment.
@@ -195,7 +176,7 @@ The example files in this repository use this path:
               1. **'script_executionUserObjectID'**: The GUID/object ID of the Azure global administrator account used to initiate the Blueprint assignment.  You can get this in Azure AD, Users, username, then **'Object ID'** (under Identities)
               1. **'keyvault_ownerUserObjectID'**: The GUID/object ID of the managed identity used during the Blueprint assignment.  You can get this in Azure Portal, Managed Identities, click identity name, the copy the 'Object ID' in the 'Essentials' section.
           1. The following parameter values are not required, though you may want to edit some of the default values to your environment and/or requirements.
-              1. **'_ScriptURI'**: You can leave this to the current default, or if you fork the main repository to a new repository and wish to use that URI, you can.
+              1. **'scriptURI'**: You can leave this to the current default, or if you fork the main repository to a new repository and wish to use that URI, you can.
               1. **'AzureEnvironmentName'**: The current default is 'Azure Cloud' (Azure Commercial).  You can change this value in case you are deploying to *Azure Gov*.
               1. **'AzureStorageFQDN'**: The current default is 'Azure Cloud' (Azure Commercial).  You can change this value in case you are deploying to *Azure Gov*.
               1. **'avdHostPool_vmGalleryImageSKU'**: The version of Windows 10 EVD being deployed.  The 'Allowed Values' list are other available Windows versions from the Azure Gallery.
@@ -203,7 +184,7 @@ The example files in this repository use this path:
               1. **'avdHostPool_vmNumberOfInstances'**: The number of EVD VMs that this Blueprint assignment will create.
               1. **'avdHostPool_maxSessionLimit'**: The maximum number of users that can log in to a Windows EVD session host, in the host pool created by this Blueprint assignment.
               1. **'avdUsers_userCount'**: The number of test users created by this Blueprint assignment.
-              1. **'vnet_enable-ddos-protection'**: Controls whether this Blueprint creates an [Azure DDoS plan](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview) or not.
+              1. **'vvnetEnableDdosProtection'**: Controls whether this Blueprint creates an [Azure DDoS plan](https://docs.microsoft.com/en-us/azure/ddos-protection/ddos-protection-overview) or not.
   1. Open a PowerShell prompt and connect to your Azure subscription, using **'Connect-AzAccount'**
   1. **Change directory** to where you have your customized import and assignment files (import-bp.ps1 and assign-bp.ps1).
   1. To import and publish the Blueprint to your subscription, run the PowerShell file **'import-bp.ps1'**.
@@ -405,16 +386,13 @@ These optional parameters either have default values or, by default, do not have
 |-|-|-|
 |**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
 |**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
-|**_ScriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
+|**scriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|
-|**nsg_logs-retention-in-days**|365|Number of days nsg logs will be retained.|
 |**vnet_vnet-address-prefix**|10.0.0.0/16|Address prefix of the vNet created by the AVD Blueprint.|
-|**vnet_enable-ddos-protection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
+|**vnetEnableDdosProtection**|true|Determines whether or not DDoS Protection is enabled in the Virtual Network.|
 |**vnet_sharedsvcs-subnet-address-prefix**|10.0.0.0/24|Shared services subnet address prefix.|
 |**vnet_adds-subnet-address-prefix**|10.0.6.0/24|Subnet for Azure ADDS.|
-|**vnet_logs-retention-in-days**|365|Number of days vnet logs will be retained.|
-|**keyvault_logs-retention-in-days**|365|Number of days keyvault logs will be retained.|
 |**daUser_AdminUser**|domainadmin@{adds_domainName}|This account will be a member of AAD DC Administrators and local admin on deployed VMs.|
 |**avdHostpool_hostpoolname**|{resourcePrefix}-avd-hp||
 |**avdHostpool_workspaceName**|{resourcePrefix}-avd-ws||
