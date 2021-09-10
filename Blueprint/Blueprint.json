@@ -118,7 +118,7 @@
         },
         "defaultValue": "AVD"
       },
-      "_ScriptURI": {
+      "scriptURI": {
         "type": "string",
         "metadata": {
           "displayName": "Script URI",
@@ -248,7 +248,7 @@
         "defaultValue": 365,
         "allowedValues": []
       },
-      "logs-retention-in-days": {
+      "logsRetentionInDays": {
         "type": "int",
         "defaultValue": 365,
         "minValue": 0,
@@ -266,7 +266,7 @@
         "defaultValue": "10.0.0.0/16",
         "allowedValues": []
       },
-      "vnet_enable-ddos-protection": {
+      "vnetEnableDdosProtection": {
         "type": "Bool",
         "metadata": {
           "displayName": "Enable Virtual Network DDoS protection",
