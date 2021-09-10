@@ -101,6 +101,7 @@ Check the current provider registration status in your subscription:
     ```PowerShell
     New-AzureADServicePrincipal -AppId "2565bd9d-da50-47d4-8b85-4c97f669dc36"
     ```  
+
 > [!NOTE]
 > Any roles assigned to the user assigned managed identity can safely be removed after the blueprint assignment has completed.  The only downside is that if subsequent blueprint assignments are needed, those roles would need to be granted to the user assigned managed identity again.
 
@@ -173,7 +174,7 @@ The example files in this repository use this path:
               1. **'ADDS_domainName'**: The name of the Azure Active Directory Directory Services instance that will be created and synced to your Azure AD tenant.
               1. **'ADDS_emailNotifications'**: Not currently implemented, but should be changed to a local admin e-mail account.
               1. **'script_executionUserResourceID'**: ARM path to the managed identity by name.  Get this in the Azure portal, Managed Identities, Identity, Properties, **'Resource ID'**.
-              1. **'script_executionUserObjectID'**: The GUID/object ID of the Azure global administrator account used to initiate the Blueprint assignment.  You can get this in Azure AD, Users, username, then **'Object ID'** (under Identities)
+              1. **'scriptExecutionUserObjectID'**: The GUID/object ID of the Azure global administrator account used to initiate the Blueprint assignment.  You can get this in Azure AD, Users, username, then **'Object ID'** (under Identities)
               1. **'keyvault_ownerUserObjectID'**: The GUID/object ID of the managed identity used during the Blueprint assignment.  You can get this in Azure Portal, Managed Identities, click identity name, the copy the 'Object ID' in the 'Essentials' section.
           1. The following parameter values are not required, though you may want to edit some of the default values to your environment and/or requirements.
               1. **'scriptURI'**: You can leave this to the current default, or if you fork the main repository to a new repository and wish to use that URI, you can.
@@ -375,7 +376,7 @@ The blueprint includes the following required parameters.
 |-|-|-|  
 |**adds_domainName**|avdbp.contoso.com|The domain name for the Azure ADDS domain that will be created|
 |**script_executionUserResourceID**|Resource ID Path|Resource ID for the Managed Identity that will execute embedded deployment scripts.|
-|**script_executionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
+|**scriptExecutionUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID for the Managed Identity that will execute embedded deployment scripts.|
 |**keyvault_ownerUserObjectID**|xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx|Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID.|
 
 ### Optional Parameters  
