@@ -36,7 +36,7 @@
       "CreateConfigureFileShareAndGPScriptURI": {
         "type": "string"
       },
-      "_ScriptURI": {
+      "ScriptURI": {
         "type": "string"
       },
       "avdHostpool_vmNamePrefix": {
@@ -430,7 +430,7 @@
             "fileUris": [
               "[parameters('CreateConfigureFileShareAndGPScriptURI')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('_ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
@@ -579,10 +579,10 @@
       "value": false
     },
     "CreateConfigureFileShareAndGPScriptURI": {
-      "value": "[concat(parameters('_ScriptURI'),'/CreateAADDSFileShare_ConfigureGP.ps1')]"
+      "value": "[concat(parameters('ScriptURI'),'/CreateAADDSFileShare_ConfigureGP.ps1')]"
     },
-    "_ScriptURI": {
-      "value": "[parameters('_ScriptURI')]"
+    "ScriptURI": {
+      "value": "[parameters('ScriptURI')]"
     },
     "avdHostPool_vmNamePrefix": {
       "value": "[parameters('avdHostPool_vmNamePrefix')]"

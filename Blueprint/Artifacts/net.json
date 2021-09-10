@@ -48,7 +48,7 @@
             "description": "Determines whether or not DDoS Protection is enabled in the Virtual Network"
           }
         },
-        "logs-retention-in-days": {
+        "logsRetentionInDays": {
           "type": "int"
         }
       },
@@ -172,7 +172,7 @@
                 "enabled": true,
                 "retentionPolicy": {
                   "enabled": false,
-                  "days": "[parameters('logs-retention-in-days')]"
+                  "days": "[parameters('logsRetentionInDays')]"
                 }
               }
             ]
@@ -190,7 +190,7 @@
         "value": "[parameters('vnet_vnet-address-prefix')]"
       },
       "enable-ddos-protection": {
-        "value": "[parameters('vnet_enable-ddos-protection')]"
+        "value": "[parameters('vnetEnableDdosProtection')]"
       },
       "sharedsvcs-subnet-address-prefix": {
         "value": "[parameters('vnet_sharedsvcs-subnet-address-prefix')]"
@@ -198,8 +198,8 @@
       "vnet_adds-subnet-address-prefix": {
         "value": "[parameters('vnet_adds-subnet-address-prefix')]"
       },
-      "logs-retention-in-days": {
-        "value": "[parameters('logs-retention-in-days')]"
+      "logsRetentionInDays": {
+        "value": "[parameters('logsRetentionInDays')]"
       }
     }
   }

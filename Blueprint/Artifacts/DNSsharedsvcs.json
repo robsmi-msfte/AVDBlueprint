@@ -68,7 +68,7 @@
       "resourceGroup": "ResourceGroup",
       "parameters": {
         "dnsScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/setDNS.ps1')]"
+          "value": "[concat(parameters('ScriptURI'),'/setDNS.ps1')]"
         },
         "script_executionUserResourceID": {
           "value": "[parameters('script_executionUserResourceID')]"

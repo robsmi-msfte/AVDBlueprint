@@ -171,13 +171,13 @@
           "value": "AVD Users"
         },
         "createAVDUserScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/createAllAVDUsers.ps1')]"
+          "value": "[concat(parameters('ScriptURI'),'/createAllAVDUsers.ps1')]"
         },
         "addADUserScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/addADuser.ps1')]"
+          "value": "[concat(parameters('ScriptURI'),'/addADuser.ps1')]"
         },
         "assignADGroupScriptURI": {
-          "value": "[concat(parameters('_ScriptURI'),'/assignADGroup.ps1')]"
+          "value": "[concat(parameters('ScriptURI'),'/assignADGroup.ps1')]"
         },
         "script_executionUserResourceID": {
           "value": "[parameters('script_executionUserResourceID')]"

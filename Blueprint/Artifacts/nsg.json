@@ -18,7 +18,7 @@
             "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
           }
         },
-        "logs-retention-in-days": {
+        "logsRetentionInDays": {
           "type": "int"
         }
       },
@@ -756,7 +756,7 @@
                 "enabled": true,
                 "retentionPolicy": {
                   "enabled": true,
-                  "days": "[parameters('logs-retention-in-days')]"
+                  "days": "[parameters('logsRetentionInDays')]"
                 }
               },
               {
@@ -764,7 +764,7 @@
                 "enabled": true,
                 "retentionPolicy": {
                   "enabled": true,
-                  "days": "[parameters('logs-retention-in-days')]"
+                  "days": "[parameters('logsRetentionInDays')]"
                 }
               }
             ]
@@ -778,8 +778,8 @@
       "resourcePrefix": {
         "value": "[parameters('resourcePrefix')]"
       },
-      "logs-retention-in-days": {
-        "value": "[parameters('logs-retention-in-days')]"
+      "logsRetentionInDays": {
+        "value": "[parameters('logsRetentionInDays')]"
       }
     }
   }

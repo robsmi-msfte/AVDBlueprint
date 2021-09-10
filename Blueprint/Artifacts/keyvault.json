@@ -31,7 +31,7 @@
             "displayName": "PoSH Managed Identity Object ID",
             "description": "Managed Identity object ID for executing PoSH."          }
         },
-        "logs-retention-in-days": {
+        "logsRetentionInDays": {
           "type": "int"
         },
         "secret-unique-value1": {
@@ -191,7 +191,7 @@
                     "enabled": true,
                     "retentionPolicy": {
                       "enabled": true,
-                      "days": "[parameters('logs-retention-in-days')]"
+                      "days": "[parameters('logsRetentionInDays')]"
                     }
                   }
                 ],
@@ -201,7 +201,7 @@
                     "enabled": true,
                     "retentionPolicy": {
                       "enabled": true,
-                      "days": "[parameters('logs-retention-in-days')]"
+                      "days": "[parameters('logsRetentionInDays')]"
                     }
                   }
                 ]
@@ -235,8 +235,8 @@
       "script_executionUserObjectID": {
         "value": "[parameters('script_executionUserObjectID')]"
       },
-      "logs-retention-in-days": {
-        "value": "[parameters('logs-retention-in-days')]"
+      "logsRetentionInDays": {
+        "value": "[parameters('logsRetentionInDays')]"
       }
     }
   }
