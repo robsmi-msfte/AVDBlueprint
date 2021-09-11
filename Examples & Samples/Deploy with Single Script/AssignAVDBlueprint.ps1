@@ -71,7 +71,25 @@ $BPScriptParams
 
 - USAGE           'AssignAVDBlueprint.ps1 -file .\AVDBPParameters.json
 
-- USAGE EXAMPLE   'AssignAVDBlueprint.ps1 -AzureLocation 'centralus'
+- CUSTOMIZATION   1. The customization to your environment is accomplished with any text editor to the file "AVDBPParameters.json".
+                     Visual Studio Code is a good option because it's free, and the extension "Azure Resource Manager (ARM) Tools" offers basic syntax
+                     checking of the file. In Windows, you can use the built-in PowerShell ISE.  There are lots of options.
+                     JSON FORMAT
+                     a) String values are contained in quotation marks
+                     b) Integer values are not contained in quotation marks
+                     c) Boolean (true/false) values are not contained in quotation marks
+
+                     The included sample file "AVDBPParameters.json" only needs a few edits to get started:
+
+                     I) "AADDSDomainName": "",
+                     II) "adds_emailNotifications": "",
+                     III) "AzureLocation": "",
+
+                     The remaining sample values can be used "as is", or can be changed to suit your environment
+
+                     NOTE: 1 value, "avdHostPool_vmImageType", should not be changed at this time.  The current value is 'Gallery',
+                     meaning the VM will be deployed from an image in the Azure Marketplace. In the near future we will be adding
+                     the capability to deploy using your custom image.
 
 - LINK            
 ######################################################################################################################################>
@@ -278,16 +296,18 @@ if (-not (Get-AzureADServicePrincipal | Where-Object AppID -like "2565bd9d-da50-
 }
 #endregion
 
-# Import Blueprint section
+#region Import Blueprint section
 Write-Host "    Now importing Blueprint to subscription.`n    If prompted to overwrite a previous Blueprint, press 'Y' and then press 'Enter'" -ForegroundColor Cyan
 Import-AzBlueprintWithArtifact -Name $BlueprintName -InputPath $BlueprintPath -SubscriptionId $AzureSubscriptionID
+#endregion
 
-# Publish Blueprint section
+#region Publish Blueprint section
 $BlueprintDefinition = Get-AzBlueprint -SubscriptionId $AzureSubscriptionID -Name $BlueprintName
 $BlueprintVersion = (Get-Date -Format "yyyyMMddHHmmss").ToString()
 Publish-AzBlueprint -Blueprint $BlueprintDefinition -Version $BlueprintVersion
+#endregion
 
-# Create the hash table for Parameters
+#region Create the hash table for Parameters
 $bpParameters = @{
     adds_domainName                     =   $AADDSDomainName
     adds_emailNotifications             =   $adds_emailNotifications
@@ -309,9 +329,9 @@ $bpParameters = @{
     avdUsers_userCount                  =   $avdUsers_userCount
     logsRetentionInDays                 =   $logsRetentionInDays
  }
+#endregion
 
-# Create the hash table for ResourceGroupParameters
-# Hash table for "-ResourceGroupParameter" values
+#region finish setting up assignment parameters, and assign blueprint
 $bpRGParameters = @{ResourceGroup=@{location=$AzureLocation}}
 
 $version =(Get-Date -Format "yyyyMMddHHmmss").ToString()
@@ -330,3 +350,4 @@ $BlueprintParams = @{
 $BlueprintAssignment = New-AzBlueprintAssignment @BlueprintParams
 
 Write-Output $BlueprintAssignment
+#endregion
