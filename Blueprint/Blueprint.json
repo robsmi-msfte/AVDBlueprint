@@ -82,7 +82,7 @@
         "defaultValue": "[concat(parameters('resourcePrefix'), '-sharedsvcs-vnet')]",
         "allowedValues": []
       },
-      "adds_emailNotifications": {
+      "aadds_emailNotifications": {
         "type": "string",
         "metadata": {
           "displayName": "Notification email addresses"

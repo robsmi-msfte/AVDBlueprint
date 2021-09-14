@@ -73,7 +73,7 @@
         "value": "[parameters('resourcePrefix')]"
       },
       "emailNotifications": {
-        "value": "[parameters('adds_emailNotifications')]"
+        "value": "[parameters('aadds_emailNotifications')]"
       },
       "sku": {
         "value": "Enterprise"
@@ -92,7 +92,7 @@
           "notifyGlobalAdmins": "Enabled",
           "notifyDcAdmins": "Enabled",
           "additionalRecipients": [
-            "[parameters('adds_emailNotifications')]"
+            "[parameters('aadds_emailNotifications')]"
           ]
         }
       },

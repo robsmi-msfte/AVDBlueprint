@@ -172,7 +172,7 @@ The example files in this repository use this path:
       1. The following parameter values are in the  **'Parameters'** section of the **'assign_default.json'**
           1. The following parameter values are ***required*** to be changed, to your Azure environment values.
               1. **'ADDS_domainName'**: The name of the Azure Active Directory Directory Services instance that will be created and synced to your Azure AD tenant.
-              1. **'ADDS_emailNotifications'**: Not currently implemented, but should be changed to a local admin e-mail account.
+              1. **'aadds_emailNotifications'**: Not currently implemented, but should be changed to a local admin e-mail account.
               1. **'script_executionUserResourceID'**: ARM path to the managed identity by name.  Get this in the Azure portal, Managed Identities, Identity, Properties, **'Resource ID'**.
               1. **'scriptExecutionUserObjectID'**: The GUID/object ID of the Azure global administrator account used to initiate the Blueprint assignment.  You can get this in Azure AD, Users, username, then **'Object ID'** (under Identities)
               1. **'keyvault_ownerUserObjectID'**: The GUID/object ID of the managed identity used during the Blueprint assignment.  You can get this in Azure Portal, Managed Identities, click identity name, the copy the 'Object ID' in the 'Essentials' section.
@@ -386,7 +386,7 @@ These optional parameters either have default values or, by default, do not have
 | Parameter | Default Value | Purpose |
 |-|-|-|
 |**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
-|**adds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
+|**aadds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
 |**scriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|

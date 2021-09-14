@@ -1,7 +1,6 @@
 ﻿{
     "AADDSDomainName": "",
-    "adds_emailNotifications": "",
-    "AzureLocation": "",
+    "aadds_emailNotifications": "",
 
     "BlueprintName": "AVDBlueprint",
     "BlueprintPath": "C:\\AVDBlueprint\\Blueprint",

@@ -82,7 +82,7 @@ $BPScriptParams
                      The included sample file "AVDBPParameters.json" only needs a few edits to get started:
 
                      I) "AADDSDomainName": "",
-                     II) "adds_emailNotifications": "",
+                     II) "aadds_emailNotifications": "",
                      III) "AzureLocation": "",
 
                      The remaining sample values can be used "as is", or can be changed to suit your environment
@@ -96,14 +96,6 @@ $BPScriptParams
 
 
  #region Checking for the first two required parameters, and if not set, exit script
-if (-not($AzureLocation)) {
-    Write-Host "`n    Azure location is null
-    Azure Location must be specified in the file 'AVDBPParameters.json'
-    for a list of Azure locations available in your subscription run 'Get-AzLocation | Select-Object Location'
-    This script will now exit." -ForegroundColor Cyan
-    Return
-}
-
 if (-not($AADDSDomainName)) {
     Write-Host "`n    Azure Active Directory Domain Services name is null
     AAD DS name must be specified in the parameter file 'AVDBPParameters.json'
@@ -111,9 +103,68 @@ if (-not($AADDSDomainName)) {
     This script will now exit." -ForegroundColor Cyan
     Return
 }
+
 #endregion
 
 #region Checking for and setting up environment
+# Checking if the required Az modules are installed and install if necessary
+# Including the "import-module" line in case the modules were installed by xcopy method, but not yet imported
+# Also including a test for the PSGallery
+
+# This script requires Az modules:
+    #  - Az.Blueprint
+    #  - Az.ManagedServiceIdentity
+    #  - Az.Resources
+    #  - AzureAD
+    #  - Az account
+
+    $AzModuleGalleryMessage = "You may be prompted to install from the PowerShell Gallery`n
+    If the Az PowerShell modules were not previously installed you may be prompted to install 'Nuget'.`n
+    If your policies allow those items to be installed, press 'Y' when prompted."
+            
+    if (-not(Get-PSRepository -Name 'PSGallery')) {
+        Write-Host "        PowerShell Gallery 'PSGallery' not available.  Now resetting local repository to default,`n
+        to allow access to the PSGallery (PowerShell Gallery),`n
+        so subsequent Az modules needed for this script can be installed."
+        Register-PSRepository -Default
+    }
+    
+    Import-Module -Name Az.ManagedServiceIdentity
+    if (-not(Get-Module Az.ManagedServiceIdentity)) {
+        Write-Host "PowerShell module 'Az.ManagedServiceIdentity' not found. Now installing...`n"
+        Write-Host $AzModuleGalleryMessage
+        Install-Module Az.ManagedServiceIdentity
+    }
+
+    Import-Module -Name Az.Resources
+    if (-not(Get-Module Az.Resources)) {
+        Write-Host "PowerShell module 'Az.Resources' not found. Now installing...`n"
+        Write-Host $AzModuleGalleryMessage
+        Install-Module Az.Resources
+    }
+
+    Import-Module -Name Az.Blueprint
+    if (-not(Get-Module Az.Blueprint)) {
+        Write-Host "PowerShell module 'Az.Blueprint' not found. Now installing...`n"
+        Write-Host $AzModuleGalleryMessage
+        Install-Module Az.Blueprint
+    }
+
+    Import-Module -Name AzureAD
+    if (-not(Get-InstalledModule | Where-Object Name -EQ 'AzureAD')) {
+        Write-Host "PowerShell module 'AzureAD' not found. Now installing...`n"
+        Write-Host $AzModuleGalleryMessage
+        Install-Module AzureAD -Scope CurrentUser
+    }
+
+    # Test to see if Azure CLI is installed. Need it to get current logged on user info
+    if(-not(Test-Path -Path 'C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin')) {
+        Write-Host "The Azure CLI does not appear to be installed on this device."
+        Write-Host "Now installing the Azure CLI..."
+        $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; rm .\AzureCLI.msi
+    }
+#endregion
+
 Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue"
 Connect-AzAccount
@@ -130,60 +181,24 @@ Read-Host -Prompt "Press any key to continue"
 Connect-AzureAD -TenantId $AzureTenantID
 
 # Parameters set at script run-time, based on current context
+
 [String]$ScriptExecutionUserObjectID = az ad signed-in-user show --query objectId
-# Had to remove the quotation marks from the previous output
+# This removes the quotation marks from the previous output
 $ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
 
-#endregion
-
-#region Make sure required Az modules are installed
-# Including the "import-module" line in case the modules were installed by xcopy method, but not yet imported
-# Also including a test for the PSGallery
-
-# This script requires Az modules:
-    #  - Az.Blueprint
-    #  - Az.ManagedServiceIdentity
-    #  - Az.Resources
-    #  - AzureAD
-
-    $AzModuleGalleryMessage = "You may be prompted to install from the PowerShell Gallery`n
-    If the Az PowerShell modules were not previously installed you may be prompted to install 'Nuget'.`n
-    If your policies allow those items to be installed, press 'Y' when prompted."
-            
-    if (-not(Get-PSRepository -Name 'PSGallery')) {
-    Write-Host "    PowerShell Gallery 'PSGallery' not available.  Now resetting local repository to default,`n
-    to allow access to the PSGallery (PowerShell Gallery),`n
-    so subsequent Az modules needed for this script can be installed."
-    Register-PSRepository -Default
+# Get a list of locations in the current environment and prompt user to choose one
+# The selected location is then stored in '$AzureChosenLocation' and used the rest of the script
+Clear-Host
+$AzureLocation = Get-AzLocation
+$menu = @{}
+for ($i=1;$i -le $AzureLocation.count; $i++) {
+    Write-Host "$i. $($AzureLocation[$i-1].DisplayName)"
+    $menu.Add($i, ($AzureLocation[$i - 1]).Location)
     }
-    
-    Import-Module -Name Az.ManagedServiceIdentity
-    if (-not(Get-Module Az.ManagedServiceIdentity)) {
-    Write-Host "PowerShell module 'Az.ManagedServiceIdentity' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
-    Install-Module Az.ManagedServiceIdentity
-    }
+[int]$ans = Read-Host 'Enter the number of the Azure Region you want to deploy to'
+$AzureChosenLocation = $menu.Item($ans)
+Write-Host   "You selected the '$AzureChosenLocation' region`n"
 
-    Import-Module -Name Az.Resources
-    if (-not(Get-Module Az.Resources)) {
-    Write-Host "PowerShell module 'Az.Resources' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
-    Install-Module Az.Resources
-    }
-
-    Import-Module -Name Az.Blueprint
-    if (-not(Get-Module Az.Blueprint)) {
-    Write-Host "PowerShell module 'Az.Blueprint' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
-    Install-Module Az.Blueprint
-    }
-
-    Import-Module -Name AzureAD
-    if (-not(Get-InstalledModule | Where-Object Name -EQ 'AzureAD')) {
-    Write-Host "PowerShell module 'AzureAD' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
-    Install-Module AzureAD -Scope CurrentUser
-    }
 #endregion
 
 #region Create a "global" resource group for AVD resources...
@@ -192,9 +207,10 @@ $ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
     Write-Host "Creating AVD resource group for persistent objects such as user-assigned identity"
     If (-not(Get-AzResourceGroup -Name $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
         Write-Host "Resource Group $BlueprintGlobalResourceGroupName does not currently exist. Now creating Resource Group"
-        New-AzResourceGroup -ResourceGroupName $BlueprintGlobalResourceGroupName -Location $AzureLocation
+        New-AzResourceGroup -ResourceGroupName $BlueprintGlobalResourceGroupName -Location $AzureChosenLocation
         } else {
         Write-Output "Resource Group '$BlueprintGlobalResourceGroupName' already exists."
+        Get-AzResourceGroup -Name $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue
     }
 #endregion
 
@@ -203,7 +219,7 @@ $ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
     If (-not(Get-AzUserAssignedIdentity -Name $UserAssignedIdentityName -ResourceGroupName $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
         Write-Host "        Managed identity '$UserAssignedIdentityName' does not currently exist.`n
         Now creating '$UserAssignedIdentityName' in resource group '$BlueprintGlobalResourceGroupName'"
-        $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $AzureLocation
+        $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $AzureChosenLocation
         } else {
         Write-Output "User Assigned Identity '$UserAssignedIdentityName' already exists"
         $UserAssignedIdentity = Get-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName
@@ -224,16 +240,6 @@ if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupNa
 }
 #endregion
 
-#region Assign the required 'Global Administrator' Azure AD role assignment to the user-assigned managed identity
-Write-Host "Now assigning 'Owner' role to managed identity, at the subscription level"
-if (-not(Get-AzRoleAssignment -ObjectId $UserAssignedObjectID)){
-    Write-Host "'Owner subscription role not currently assigned to managed identity. Now assigning..." 
-    New-AzRoleAssignment -ObjectId $UserAssignedIdentity.PrincipalId -RoleDefinitionName "Owner" -Scope "/subscriptions/$AzureSubscriptionID" -ErrorAction SilentlyContinue
-} else {
-    Write-Host "'Owner' subscription role already assigned to managed identity."
-    Get-AzRoleAssignment -ObjectId $UserAssignedObjectID
-}
-#endregion
 
 #region Assign Azure AD role 'Global Administrator' to the managed identity, to allow creation of AD objects during assignment, if not already assigned
 $AADGlobalAdminRoleInfo = Get-AzureADMSRoleDefinition -Filter "displayName eq 'Global Administrator'"
@@ -275,14 +281,14 @@ if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNames
 #endregion
 
 #region Register the Azure Active Directory enterprise application to the subscription if not already registered
-Write-Host "Now checking registration for the AAD DS enterprise application, and registering if needed"
-if (-not (Get-AzureADServicePrincipal | Where-Object AppID -like "6ba9a5d4-8456-4118-b521-9c5ca10cdf84")) {
-    Write-Host "The AAD DS enterprise application is not currently registered. Now registering"
-    New-AzureADServicePrincipal -AppId "6ba9a5d4-8456-4118-b521-9c5ca10cdf84"
-} else {
-    Write-Host "The AAD DS enterprise application is already registered"
-    Get-AzureADServicePrincipal | Where-Object AppID -like "6ba9a5d4-8456-4118-b521-9c5ca10cdf84"
-}
+#Write-Host "Now checking registration for the AAD DS enterprise application, and registering if needed"
+#if (-not (Get-AzureADServicePrincipal | Where-Object AppID -like "6ba9a5d4-8456-4118-b521-9c5ca10cdf84")) {
+#    Write-Host "The AAD DS enterprise application is not currently registered. Now registering"
+#    New-AzureADServicePrincipal -AppId "6ba9a5d4-8456-4118-b521-9c5ca10cdf84"
+#} else {
+#    Write-Host "The AAD DS enterprise application is already registered"
+#    Get-AzureADServicePrincipal | Where-Object AppID -like "6ba9a5d4-8456-4118-b521-9c5ca10cdf84"
+#}
 #endregion
 
 #region Register the Domain Controller Services service principal to the subscription if not already registered
@@ -310,7 +316,7 @@ Publish-AzBlueprint -Blueprint $BlueprintDefinition -Version $BlueprintVersion
 #region Create the hash table for Parameters
 $bpParameters = @{
     adds_domainName                     =   $AADDSDomainName
-    adds_emailNotifications             =   $adds_emailNotifications
+    aadds_emailNotifications            =   $aadds_emailNotifications
     script_executionUserResourceID      =   $UserAssignedIdentityId
     scriptExecutionUserObjectID         =   $ScriptExecutionUserObjectID2
     keyvault_ownerUserObjectID          =   $UserAssignedObjectID
@@ -342,7 +348,7 @@ $BlueprintParams = @{
     Name                        = $BlueprintAssignmentName
     Blueprint                   = $BlueprintDefinition
     SubscriptionId              = $AzureSubscriptionID
-    Location                    = $AzureLocation
+    Location                    = $AzureChosenLocation
     UserAssignedIdentity        = $UserAssignedIdentityId
     Parameter                   = $bpParameters
     ResourceGroupParameter      = $bpRGParameters
