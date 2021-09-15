@@ -12,18 +12,69 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 
 The AVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, AVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
 
-## High Level steps to get started
+## Getting Started with the AVD Blueprint
 
-* **Configure pre-requisites** in your Azure subscription.
-* **Download all Blueprint files locally** to a folder on your device, such as example: **'C:\VSCode'**.
-* **Edit the included sample files** to customize to your environment.
-* **Import the Blueprint to your Azure subscription.** The easiest and fastest way to add this Blueprint definition is by using the sample file **import-bp.ps1**.
-* **Publish the Blueprint** (This can be done automatically with the included sample file **import-bp.ps1**).
+* **Download Blueprint files locally** to a folder on your device.  
+* **Extract the downloaded .zip file** to any folder on your device (Example. 'C:\AVDBlueprint')  
 
 > [!NOTE]
-> The included sample file **import-bp.ps1** accomplishes the import and publishing steps in one script.
+> If you extract the files to a folder other than **'C:\AVDBlueprint'**, edit the file **'\Examples and Samples\AVDBPParameters.json'** to be equal to the path where the files are extracted to.  Example:  
+`"BlueprintPath": "D:\\Downloads\\AVDBlueprint\\Blueprint",`
 
-* **Assign the Blueprint**, which is the process of "assigning" a published Blueprint definition version to your subscription, and which initiates the Blueprint deployment.
+* **Edit the included sample file 'AVDBPParameters.json** to customize to your environment. There are several required values that need to be edited:
+
+    `"AzureSubscriptionID": "",`  
+    `"AzureTenantID": "",`  
+    `"AzureCloudInstance": "",`  
+    `"AADDSDomainName": "",`  
+    `"aadds_emailNotifications": "",`  
+
+    **Example:**  
+
+    `"AzureSubscriptionID": "00000000-0000-0000-0000-000000000000",`  
+    `"AzureTenantID": "00000000-0000-0000-0000-000000000000",`  
+    `"AzureCloudInstance": "AzureCloud",`  
+    `"AADDSDomainName": "avd.contoso.com",`  
+    `"aadds_emailNotifications": "avdadmin@contoso.com",`  
+
+    The remaining parameter values can be used as they are, or you can customize to suit your environment.  The values most likely to be modified first, are in the second "paragraph" of the file 'AVDBPParameters.json'.  In this section you can change the OS version to be deployed, you can change the AVD Azure VM size, number of VMs to create, and more.  Please note that as this file is in JSON format, some formatting rules must be followed:  
+
+      - String values (text) must be surrounded by quotation marks
+      - Integer values (numbers) must NOT be surrounded by quotation marks
+      - Boolean values (True/False) must NOT be surrounded by quotation marks
+
+* **Once parameters file editing is complete, save and close the file 'AVDBPParameters.json'**.
+
+* **Start your preferred PowerShell tool (PowerShell, PowerShell ISE, etc) *elevated (Run As Administrator)***
+
+* **Set the PowerShell 'Execution Policy', temporarily, to "Remote Signed" for scope "current user"**  by running the following command:
+
+    `Set-ExecutionPolicy -ExecutionPolicy Remote-Signed -Scope CurrentUser
+
+* **When ready, open and run, or just run the PowerShell script 'AssignAVDBlueprint.json** If you are running on a device that does not have some of the required PowerShell modules, such as AzureAD, Identity, etc., you may be prompted to install those from the [PowerShell Gallery](https://docs.microsoft.com/en-us/powershell/scripting/gallery/overview?view=powershell-7.1).  The PowerShell Gallery a community effort, hosting content from Microsoft, as well as the PowerShell community.
+
+### More information about required and optional parameters
+
+Azure Virtual Desktop can be customized in a wide variety of ways. The purpose of this Blueprint is to provide a framework for repeatable and consistent AVD deployments.  The following table lists some of choices for customization available.  If a parameter is listed below as "not required (No), then that value has a default in the Blueprint itself, or has a value defined in the included parameter file.
+
+| Parameter | Type | Value | Required |
+|-|-|-|-|  
+|AzureSubscriptionID|string|The 'Subscription ID' obtained from Azure Portal or other tools for the destination deployment|Yes|
+|AzureTenantID|string|The 'Tenant ID' obtained from Azure Portal or other tools for the destination deployment|Yes|
+|AzureCloudInstance|string|'AzureCloud'<br/>'AzureUSGovernment'|Yes|
+|AADDSDomainName|string|the name of the AAD DS domain to be created|Yes|
+|aadds_emailNotifications|string|e-mail address to send messages regarding AAD DS issues|Yes|
+|avdHostPool_vmGalleryImageSKU|string|'19h2-evd-o365pp'<br/>'19h2-evd-o365pp-g2''<br/>'20h1-evd-o365pp'<br/>'20h1-evd-o365pp-g2'<br/>''20h2-evd-o365pp'<br/>'20h2-evd-o365pp-g2'<br/>**'21h1-evd-o365pp'**<br/>'21h1-evd-o365pp-g2'<br/>'19h2-evd'<br/>'19h2-evd-g2'<br/>'20h1-evd'<br/>'20h1-evd-g2'<br/>'20h2-evd'<br/>'20h2-evd-g2'<br/>'21h1-evd'<br/>'21h1-evd-g2'|No (default currently 21H1 with M365)
+|avdHostPool_vmSize|string|[Azure virtual machine size of your choice](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes?WT.mc_id=Portal-fx)|No (default is 'Standard_B4ms')
+|avdHostPool_vmNumberOfInstances|integer|number of AVD VMs to be created by this blueprint|No|
+|avdHostPool_maxSessionLimit|integer|The maximum number of simultaneous sessions allowed per session host in a host pool|No|
+|avdUsers_userCount|integer|number of test users to be created in AAD DS by this blueprint|No|
+|BlueprintResourcePrefix|string|The prefix that most objects created by this blueprint will be given|No|
+|BlueprintGlobalResourceGroupName|string|the resource group that contains the user-assigned managed identity and is most often not the same as the deployment resource group|No|
+|UserAssignedIdentityName|string|the name of the user-assigned managed identity utilized by this blueprint|No|
+|BlueprintName|string|the name of this blueprint, as it appears in the Azure portal|No|
+|BlueprintPath|string|the local folder where 'Blueprint.json' can be found|No|
+|BlueprintParameterFilePath|string|the name of the parameter file 'AVDBPParameters.json'|No|
 
 ## Prerequisites
 

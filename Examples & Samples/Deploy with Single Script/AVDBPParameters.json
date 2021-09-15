@@ -1,29 +1,31 @@
 ﻿{
+    "AzureSubscriptionID": "",
+    "AzureTenantID": "",
+    "AzureCloudInstance": "AzureCloud",
     "AADDSDomainName": "",
     "aadds_emailNotifications": "",
 
-    "BlueprintName": "AVDBlueprint",
-    "BlueprintPath": "C:\\AVDBlueprint\\Blueprint",
-    "BlueprintResourcePrefix": "AVDBP01",
-    "BlueprintGlobalResourceGroupName": "AVD_Blueprint_Global_RG",
-    "UserAssignedIdentityName": "UAI1",
-    "ScriptURI": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
-
     "avdHostPool_vmGalleryImageSKU": "21h1-evd-o365pp",
-    "avdHostPool_vmGalleryImageOffer": "office-365",
     "avdHostPool_vmSize": "Standard_B4ms",
     "avdHostPool_vmNumberOfInstances": 2,
     "avdHostPool_maxSessionLimit": 16,
+    "avdUsers_userCount": 30,
+    "BlueprintResourcePrefix": "AVDBP01",
+    "BlueprintGlobalResourceGroupName": "AVD_Blueprint_Global_RG",
+    "UserAssignedIdentityName": "UAI1",
+    "BlueprintName": "AVDBlueprint",
+    "BlueprintPath": "C:\\AVDBlueprint\\Blueprint",
+    "BlueprintParameterFilePath": "C:\\AVDBlueprint\\Examples & Samples\\Deploy with Single Script",
+    
+    "ScriptURI": "https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts",
+    
     "avdHostPool_loadBalancerType": "BreadthFirst",
     "avdHostPool_CreateAvailabilitySet": true,
-    "avdHostPool_vmImageType": "Gallery",
     "avdHostPool_HostPoolType": "Pooled",
     "avdHostPool_vmNamePrefix": "[concat(parameters('resourcePrefix'), 'VM')]",
     "avdHostPool_hostpoolname": "[concat(parameters('resourcePrefix'), '-avd-hp')]",
     "avdHostPool_workspaceName": "[concat(parameters('resourcePrefix'), '-avd-ws')]",
     
-    "avdUsers_userCount": 30,
-        
     "vnetEnableDdosProtection": false,
     "managementVMOSSku": "2019-Datacenter",
     "logsRetentionInDays": 365
