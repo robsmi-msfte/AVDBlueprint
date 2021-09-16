@@ -111,6 +111,9 @@ $RemovalScope | ForEach-Object {
    
     Write-Verbose "Now purging key vault"
     if ($PurgeKeyVault) {
+        if (-not(Get-Module -Name Az.Keyvault)) {
+            Install-Module 'Az.Keyvault' -Force
+        }
         $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
         Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
         Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
