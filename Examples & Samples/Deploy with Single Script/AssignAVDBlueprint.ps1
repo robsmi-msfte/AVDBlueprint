@@ -4,13 +4,10 @@ param(
     [string]$AVDBPParamFile = ".\AVDBPParameters.json"
 )
 
-Write-Host "Setting current location to the location of the file 'AVDBPParameters.json" -ForegroundColor Cyan
-Set-Location "$BlueprintParameterFilePath"
-
 If ($AVDBPParamFile -ne '.\AVDBPParameters.json') {
-    Write-Host "The current value of parameter AVDBPParamFile is '$AVDBPParamFile'"
-    Write-Host "The parameter 'AVDBPParamFile' is not set correctly"
-    Write-Host "Please check the path and try again"
+    Write-Host "The current value of parameter AVDBPParamFile is '$AVDBPParamFile'" -ForegroundColor Red
+    Write-Host "The parameter 'AVDBPParamFile' is not set correctly" -ForegroundColor Red
+    Write-Host "Please check the path and try again" -ForegroundColor Red
     Return
 }
 
@@ -131,10 +128,10 @@ if (-not($AADDSDomainName)) {
     Return
 }
 
-if (-not($AADDSDomainName)) {
-    Write-Host "`n    Azure Active Directory Domain Services name is null
-    AAD DS name must be specified in the parameter file 'AVDBPParameters.json'
-    Your AAD DS prefix name must be 15 characters or less in the format 'domain.contoso.com'
+if (-not($aadds_emailNotifications)) {
+    Write-Host "`n    Azure Active Directory Domain Services e-mail notification name is null
+    AAD DS e-mail name must be specified in the parameter file 'AVDBPParameters.json'
+    This parameter is a notification channel for problems with AAD DS.
     This script will now exit." -ForegroundColor Cyan
     Return
 }
@@ -159,35 +156,35 @@ if (-not($AADDSDomainName)) {
     if (-not(Get-PSRepository -Name 'PSGallery')) {
     Write-Host "    PowerShell Gallery 'PSGallery' not available.  Now resetting local repository to default,`n
     to allow access to the PSGallery (PowerShell Gallery),`n
-    so subsequent Az modules needed for this script can be installed."
+    so subsequent Az modules needed for this script can be installed." -ForegroundColor Cyan
     Register-PSRepository -Default
     }
     
     Import-Module -Name Az.ManagedServiceIdentity -ErrorAction SilentlyContinue
     if (-not(Get-Module Az.ManagedServiceIdentity)) {
-    Write-Host "PowerShell module 'Az.ManagedServiceIdentity' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
+    Write-Host "PowerShell module 'Az.ManagedServiceIdentity' not found. Now installing..." -ForegroundColor Cyan
+    Write-Host $AzModuleGalleryMessage -ForegroundColor Cyan
     Install-Module Az.ManagedServiceIdentity
     }
 
     Import-Module -Name Az.Resources -ErrorAction SilentlyContinue
     if (-not(Get-Module Az.Resources)) {
-    Write-Host "PowerShell module 'Az.Resources' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
+    Write-Host "PowerShell module 'Az.Resources' not found. Now installing..." -ForegroundColor Cyan
+    Write-Host $AzModuleGalleryMessage -ForegroundColor Cyan
     Install-Module Az.Resources
     }
 
     Import-Module -Name Az.Blueprint -ErrorAction SilentlyContinue
     if (-not(Get-Module Az.Blueprint)) {
-    Write-Host "PowerShell module 'Az.Blueprint' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
+    Write-Host "PowerShell module 'Az.Blueprint' not found. Now installing..." -ForegroundColor Cyan
+    Write-Host $AzModuleGalleryMessage -ForegroundColor Cyan
     Install-Module Az.Blueprint
     }
 
     Import-Module -Name AzureAD -ErrorAction SilentlyContinue
     if (-not(Get-InstalledModule | Where-Object Name -EQ 'AzureAD')) {
-    Write-Host "PowerShell module 'AzureAD' not found. Now installing..."
-    Write-Host $AzModuleGalleryMessage
+    Write-Host "PowerShell module 'AzureAD' not found. Now installing..." -ForegroundColor Cyan
+    Write-Host $AzModuleGalleryMessage -ForegroundColor Cyan
     Install-Module AzureAD -Scope CurrentUser
     }
 #endregion
@@ -199,7 +196,7 @@ Write-Host "The next action will prompt you to login to your Azure portal using 
 If your Azure account is set for 2FA, you may see an error about the tenant ID.`nPlease diregard that message.`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue"
 
-Connect-AzAccount -Environment $AzureCloudInstance
+Connect-AzAccount -Environment $AzureCloudInstance -Tenant $AzureTenantID
 $CurrentAzureEnvironment = $null
 $CurrentAzureEnvironment = Get-AzContext
 $AzureEnvironmentName = $CurrentAzureEnvironment.Environment.Name
@@ -223,7 +220,6 @@ if (-not(Test-Path -Path 'HKLM:\SOFTWARE\Classes\Installer\Features\A8FE6F5AF36D
     $env:Path = "C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;" + $env:Path
 }
 
-az login
 [String]$ScriptExecutionUserObjectID = az ad signed-in-user show --query objectId
 # This removes the quotation marks from the previous output
 $ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
@@ -248,21 +244,21 @@ Write-Host   "You selected the '$ChosenLocation' Azure region"
 
     Write-Host "`nCreating AVD resource group for persistent objects such as user-assigned identity" -ForegroundColor Cyan
     If (-not(Get-AzResourceGroup -Name $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
-        Write-Host "`nResource Group $BlueprintGlobalResourceGroupName does not currently exist. Now creating Resource Group" -ForegroundColor Cyan
+        Write-Host "`Resource Group $BlueprintGlobalResourceGroupName does not currently exist. Now creating Resource Group" -ForegroundColor Cyan
         New-AzResourceGroup -ResourceGroupName $BlueprintGlobalResourceGroupName -Location $ChosenLocation
         } else {
-        Write-Host "`nResource Group '$BlueprintGlobalResourceGroupName' already exists." -ForegroundColor Cyan
+        Write-Host "`Resource Group '$BlueprintGlobalResourceGroupName' already exists." -ForegroundColor Cyan
     }
 #endregion
 
 #region Check to see if there is a user assigned managed identity with name 'UAI1', and if not, create one
     Write-Host "`nCreating user-assigned managed identity account, that will be the context of the AVD assignment" -ForegroundColor Cyan
     If (-not(Get-AzUserAssignedIdentity -Name $UserAssignedIdentityName -ResourceGroupName $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
-        Write-Host "`n        Managed identity '$UserAssignedIdentityName' does not currently exist.`n
+        Write-Host "`        Managed identity '$UserAssignedIdentityName' does not currently exist.`n
         Now creating '$UserAssignedIdentityName' in resource group '$BlueprintGlobalResourceGroupName'" -ForegroundColor Cyan
         $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $ChosenLocation
         } else {
-        Write-Host "`nUser Assigned Identity '$UserAssignedIdentityName' already exists" -ForegroundColor Cyan
+        Write-Host "`nUser Assigned Identity '$UserAssignedIdentityName' already exists`n" -ForegroundColor Cyan
         $UserAssignedIdentity = Get-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName
     }
     $UserAssignedIdentityId = $UserAssignedIdentity.Id
@@ -273,10 +269,10 @@ Write-Host   "You selected the '$ChosenLocation' Azure region"
 Write-Host "`nNow checking if user assigned identity '$UserAssignedIdentityName' has 'Owner' subscription level role assignment" -ForegroundColor Cyan
 if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedObjectID)) {
     Write-Host "`nUser assigned identity '$UserAssignedIdentityName' does not currently have 'Owner' subscription level role assignment" -ForegroundColor Cyan
-    Write-Host "Now assigning 'Owner' role to '$UserAssignedIdentityName'" -ForegroundColor Cyan
+    Write-Host "Now assigning 'Owner' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
     New-AzRoleAssignment -ObjectId $UserAssignedIdentity.PrincipalId -RoleDefinitionName "Owner" -Scope "/subscriptions/$AzureSubscriptionID"
 } else {
-    Write-Host "User assigned identity '$UserAssignedIdentityName' already has 'Owner' role assigned at the subscription level" -ForegroundColor Cyan
+    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' already has 'Owner' role assigned at the subscription level`n" -ForegroundColor Cyan
     Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedObjectID
 }
 #endregion
