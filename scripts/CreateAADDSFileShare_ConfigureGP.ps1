@@ -25,19 +25,8 @@ Param(
 #region Install RSAT-AD Tools, GP Tools, setup working folders, and install 'Az' PowerShell modules
 Install-WindowsFeature -name GPMC
 Install-WindowsFeature -name RSAT-AD-Tools
-
-$CTempPath = 'C:\Temp'
-If (-not(Test-Path "$CTempPath")) {
-    New-Item -ItemType Directory -Path $CTempPath
-}    
-If (-not(Test-Path "$CTempPath\Software")) {
-    New-Item -ItemType Directory -Path "$CTempPath\Software"
-}
-
-$AzOfflineURI = "$ScriptURI/AzOffline.zip"
-$AzOfflineZip = "$CTempPath\AzOffline.zip"
-Invoke-WebRequest -Uri $AzOfflineURI -OutFile $AzOfflineZip
-Expand-Archive -LiteralPath "$AzOfflineZip" -DestinationPath "$env:ProgramFiles\WindowsPowerShell\Modules" -ErrorAction SilentlyContinue
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Install-Module -Name Az -AllowClobber -Scope AllUsers -Force
 #endregion Install RSAT-AD Tools, GP Tools, setup working folders, and install 'Az' PowerShell modules
 
 #Run most of the following as domainadmin user via invoke-command scriptblock
