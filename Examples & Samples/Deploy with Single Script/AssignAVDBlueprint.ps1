@@ -191,12 +191,12 @@ if (-not($aadds_emailNotifications)) {
 
 #region Checking for and setting up environment
 Disconnect-AzAccount -ErrorAction SilentlyContinue
+Disconnect-AzureAD -ErrorAction SilentlyContinue
 
-Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account
-If your Azure account is set for 2FA, you may see an error about the tenant ID.`nPlease diregard that message.`n" -ForegroundColor Cyan
+Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue"
+Connect-AzAccount -Environment $AzureCloudInstance -Tenant $AzureTenantID -Subscription $AzureSubscriptionID
 
-Connect-AzAccount -Environment $AzureCloudInstance -Tenant $AzureTenantID
 $CurrentAzureEnvironment = $null
 $CurrentAzureEnvironment = Get-AzContext
 $AzureEnvironmentName = $CurrentAzureEnvironment.Environment.Name
@@ -206,25 +206,27 @@ $AzureStorageFileEnv = 'file.' + $AzureStorageEnvironment
 Write-Host "The next action will prompt you to login to connect to Azure AD`n" -ForegroundColor Cyan
 Write-Host "If the prompt does not appear in the foreground, try minimizing your current app`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue"
-Connect-AzureAD -TenantId $AzureTenantID
+Connect-AzureAD -AzureEnvironmentName $AzureCloudInstance -TenantId $AzureTenantID
 
 # Parameters set at script run-time, based on current context
 # Now run a CLI command to get current user 'ObjectID'.
 # First have to check if the Azure CLI is installed and if not, install it
 
-if (-not(Test-Path -Path 'HKLM:\SOFTWARE\Classes\Installer\Features\A8FE6F5AF36D1DB41B242F04125D09D6' -ErrorAction SilentlyContinue)) {
-    Write-Host "`n    The product 'Microsoft Azure CLI' does not appear to be installed on this device
-    Now installing product 'Microsoft Azure CLI'...`n" -ForegroundColor Cyan
-    $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; Remove-Item .\AzureCLI.msi
-    # temporarily update path so that the CLI can be used in the next section
-    $env:Path = "C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;" + $env:Path
-}
+#if (-not(Test-Path -Path 'HKLM:\SOFTWARE\Classes\Installer\Features\A8FE6F5AF36D1DB41B242F04125D09D6' -ErrorAction SilentlyContinue)) {
+#    Write-Host "`n    The product 'Microsoft Azure CLI' does not appear to be installed on this device
+#    Now installing product 'Microsoft Azure CLI'...`n" -ForegroundColor Cyan
+#    $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; Remove-Item .\AzureCLI.msi
+#    # temporarily update path so that the CLI can be used in the next section
+#    $env:Path = "C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;" + $env:Path
+#}
 
-[String]$ScriptExecutionUserObjectID = az ad signed-in-user show --query objectId
+#az login
+#[String]$ScriptExecutionUserObjectID = az ad signed-in-user show --query objectId
 # This removes the quotation marks from the previous output
-$ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
+#$ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
 
 # Get a list of locations in the current environment and prompt user to choose one
+
 Write-Host "`n    Enumerating list of locations in your Azure environment..." -ForegroundColor Cyan
 $AzureLocations = (Get-AzLocation).Location
 
@@ -282,11 +284,11 @@ if ($null -eq $listBox.SelectedItem)
 {
     if ($AzureEnvironmentName -eq 'AzureCloud')
     {
-    $ChoseAzureLocation = 'centralus'
+    $ChosenAzureLocation = 'centralus'
     }
     if ($AzureEnvironmentName -eq 'AzureUSGovernment')
     {
-    $ChoseAzureLocation = 'usgovarizona'
+    $ChosenAzureLocation = 'usgovarizona'
     }
     Write-Host "    An Azure Location was not selected.
     The Azure Location '$ChoseAzureLocation' is being set as the default.
@@ -295,8 +297,8 @@ if ($null -eq $listBox.SelectedItem)
     }
 if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 {
-    $ChoseAzureLocation = $listBox.SelectedItem
-    Write-Host "Your chosen Azure location is '$ChoseAzureLocation'"
+    $ChosenAzureLocation = $listBox.SelectedItem
+    Write-Host "Your chosen Azure location is '$ChosenAzureLocation'"
 }
 
 
@@ -330,13 +332,25 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
 
 #region Grant the 'Owner' subscription level role to the managed identity
 Write-Host "`nNow checking if user assigned identity '$UserAssignedIdentityName' has 'Owner' subscription level role assignment" -ForegroundColor Cyan
-if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedObjectID)) {
+if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity.PrincipalId) -RoleDefinitionName 'Owner')) {
     Write-Host "`nUser assigned identity '$UserAssignedIdentityName' does not currently have 'Owner' subscription level role assignment" -ForegroundColor Cyan
     Write-Host "Now assigning 'Owner' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
-    New-AzRoleAssignment -ObjectId $UserAssignedIdentity.PrincipalId -RoleDefinitionName "Owner" -Scope "/subscriptions/$AzureSubscriptionID"
+    New-AzRoleAssignment -ObjectId ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Owner' -Scope "/subscriptions/$AzureSubscriptionID"
 } else {
     Write-Host "`nUser assigned identity '$UserAssignedIdentityName' already has 'Owner' role assigned at the subscription level`n" -ForegroundColor Cyan
-    Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedObjectID
+    Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity.PrincipalId) -RoleDefinitionName 'Owner'
+}
+#endregion
+
+#region Grant the 'Blueprint Operator' subscription level role to the managed identity
+Write-Host "`nNow checking if user assigned identity '$UserAssignedIdentityName' has 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
+if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator')) {
+    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' does not currently have 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
+    Write-Host "Now assigning 'Blueprint Operator' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
+    New-AzRoleAssignment -ObjectId ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator' -Scope "/subscriptions/$AzureSubscriptionID"
+} else {
+    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' already has 'Blueprint Operator' role assigned at the subscription level`n" -ForegroundColor Cyan
+    Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator' -ErrorAction SilentlyContinue
 }
 #endregion
 
@@ -417,7 +431,7 @@ $bpParameters = @{
     adds_domainName                     =   $AADDSDomainName
     aadds_emailNotifications            =   $aadds_emailNotifications
     script_executionUserResourceID      =   $UserAssignedIdentityId
-    scriptExecutionUserObjectID         =   $ScriptExecutionUserObjectID2
+    scriptExecutionUserObjectID         =   $ScriptExecutionUserObjectID
     keyvault_ownerUserObjectID          =   $UserAssignedObjectID
     AzureEnvironmentName                =   $AzureEnvironmentName
     AzureStorageFQDN                    =   $AzureStorageFileEnv
@@ -439,7 +453,7 @@ $bpParameters = @{
 #endregion
 
 #region finish setting up assignment parameters, and assign blueprint
-$bpRGParameters = @{ResourceGroup=@{location=$ChosenLocation}}
+$bpRGParameters = @{ResourceGroup=@{location=$ChosenAzureLocation}}
 
 $version =(Get-Date -Format "yyyyMMddHHmmss").ToString()
 $BlueprintAssignmentName = $BlueprintName + '_' + $version
@@ -449,7 +463,7 @@ $BlueprintParams = @{
     Name                        = $BlueprintAssignmentName
     Blueprint                   = $BlueprintDefinition
     SubscriptionId              = $AzureSubscriptionID
-    Location                    = $ChosenLocation
+    Location                    = $ChoseAzureLocation
     UserAssignedIdentity        = $UserAssignedIdentityId
     Parameter                   = $bpParameters
     ResourceGroupParameter      = $bpRGParameters
