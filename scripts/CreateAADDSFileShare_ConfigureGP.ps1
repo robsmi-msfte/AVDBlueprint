@@ -150,7 +150,7 @@ Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
 # Download AVD post-install group policy settings zip file, and expand it
 $CTempPath = 'C:\Temp'
-
+New-Item -ItemType Directory -Path $CTempPath -ErrorAction SilentlyContinue
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
