@@ -72,9 +72,6 @@
       "resourcePrefix": {
         "value": "[parameters('resourcePrefix')]"
       },
-      "emailNotifications": {
-        "value": "[parameters('aadds_emailNotifications')]"
-      },
       "sku": {
         "value": "Enterprise"
       },

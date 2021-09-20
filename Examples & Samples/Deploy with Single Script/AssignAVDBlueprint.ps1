@@ -90,7 +90,8 @@ $BPScriptParams
                          The included sample file "AVDBPParameters.json" only needs a few edits to get started:
 
                          I) "AADDSDomainName": "",
-                         II) "aadds_emailNotifications": "",
+                         II) "Azure Tenant ID"
+                         III) "Azure Subscription ID"
                      
                      The remaining sample values can be used "as is", or can be changed to suit your environment
 
@@ -420,7 +421,6 @@ Publish-AzBlueprint -Blueprint $BlueprintDefinition -Version $BlueprintVersion
 #region Create the hash table for Parameters
 $bpParameters = @{
     adds_domainName                     =   $AADDSDomainName
-    aadds_emailNotifications            =   $aadds_emailNotifications
     script_executionUserResourceID      =   $UserAssignedIdentityId
     scriptExecutionUserObjectID         =   $ScriptExecutionUserObjectID
     keyvault_ownerUserObjectID          =   $UserAssignedObjectID

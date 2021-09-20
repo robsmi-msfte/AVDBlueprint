@@ -25,17 +25,14 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
     `"AzureSubscriptionID": "",`  
     `"AzureTenantID": "",`  
-    `"AzureCloudInstance": "",`  
     `"AADDSDomainName": "",`  
-    `"aadds_emailNotifications": "",`  
 
     **Example:**  
 
     `"AzureSubscriptionID": "00000000-0000-0000-0000-000000000000",`  
     `"AzureTenantID": "00000000-0000-0000-0000-000000000000",`  
-    `"AzureCloudInstance": "AzureCloud",`  
     `"AADDSDomainName": "avd.contoso.com",`  
-    `"aadds_emailNotifications": "avdadmin@contoso.com",`  
+
 
     The remaining parameter values can be used as they are, or you can customize to suit your environment.  The values most likely to be modified first, are in the second "paragraph" of the file 'AVDBPParameters.json'.  In this section you can change the OS version to be deployed, you can change the AVD Azure VM size, number of VMs to create, and more.  Please note that as this file is in JSON format, some formatting rules must be followed:  
 
@@ -63,7 +60,6 @@ Azure Virtual Desktop can be customized in a wide variety of ways. The purpose o
 |AzureTenantID|string|The 'Tenant ID' obtained from Azure Portal or other tools for the destination deployment|Yes|
 |AzureCloudInstance|string|'AzureCloud'<br/>'AzureUSGovernment'|Yes|
 |AADDSDomainName|string|the name of the AAD DS domain to be created|Yes|
-|aadds_emailNotifications|string|e-mail address to send messages regarding AAD DS issues|Yes|
 |avdHostPool_vmGalleryImageSKU|string|'19h2-evd-o365pp'<br/>'19h2-evd-o365pp-g2''<br/>'20h1-evd-o365pp'<br/>'20h1-evd-o365pp-g2'<br/>''20h2-evd-o365pp'<br/>'20h2-evd-o365pp-g2'<br/>**'21h1-evd-o365pp'**<br/>'21h1-evd-o365pp-g2'<br/>'19h2-evd'<br/>'19h2-evd-g2'<br/>'20h1-evd'<br/>'20h1-evd-g2'<br/>'20h2-evd'<br/>'20h2-evd-g2'<br/>'21h1-evd'<br/>'21h1-evd-g2'|No (default currently 21H1 with M365)
 |avdHostPool_vmSize|string|[Azure virtual machine size of your choice](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes?WT.mc_id=Portal-fx)|No (default is 'Standard_B4ms')
 |avdHostPool_vmNumberOfInstances|integer|number of AVD VMs to be created by this blueprint|No|
@@ -223,7 +219,6 @@ The example files in this repository use this path:
       1. The following parameter values are in the  **'Parameters'** section of the **'assign_default.json'**
           1. The following parameter values are ***required*** to be changed, to your Azure environment values.
               1. **'ADDS_domainName'**: The name of the Azure Active Directory Directory Services instance that will be created and synced to your Azure AD tenant.
-              1. **'aadds_emailNotifications'**: Not currently implemented, but should be changed to a local admin e-mail account.
               1. **'script_executionUserResourceID'**: ARM path to the managed identity by name.  Get this in the Azure portal, Managed Identities, Identity, Properties, **'Resource ID'**.
               1. **'scriptExecutionUserObjectID'**: The GUID/object ID of the Azure global administrator account used to initiate the Blueprint assignment.  You can get this in Azure AD, Users, username, then **'Object ID'** (under Identities)
               1. **'keyvault_ownerUserObjectID'**: The GUID/object ID of the managed identity used during the Blueprint assignment.  You can get this in Azure Portal, Managed Identities, click identity name, the copy the 'Object ID' in the 'Essentials' section.
@@ -437,7 +432,6 @@ These optional parameters either have default values or, by default, do not have
 | Parameter | Default Value | Purpose |
 |-|-|-|
 |**resourcePrefix**|AVD|A text string prefixed to the beginning of each resource name.|
-|**aadds_emailNotifications**|avdbpadmin@contoso.com|An email account that will receive ADDS notifications|
 |**scriptURI**|<https://raw.githubusercontent.com/Azure/AVDBlueprint/main/scripts>|URI where Powershell scripts executed by the blueprint are located.|
 |**log-analytics_service-tier**|PerNode|Log Analytics Service tier: Free, Standalone, PerNode or PerGB2018.|
 |**log-analytics_data-retention**|365|Number of days data will be retained.|

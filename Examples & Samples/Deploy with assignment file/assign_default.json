@@ -93,10 +93,6 @@
           "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"],
           "description": "Fully qualified domain name of the Azure Files storage share. Default is Azure Commercial, alternate choice is AzGov"
         },
-        "aadds_emailNotifications": {
-          "value": "admin@contoso.com",
-          "description": "Optional and not implemented at this time"
-        },
         "managementVMOSSku": {
           "value": "2019-Datacenter",
           "allowedValues": [
