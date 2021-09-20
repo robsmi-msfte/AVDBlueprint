@@ -16,15 +16,9 @@ $BPScriptParams.PSObject.Properties | ForEach-Object {
      New-Variable -Name $_.Name -Value $_.Value -Force -ErrorAction SilentlyContinue
     }
 
-# Set the correct value for 'avdHostPool_vmGalleryImageOffer' based on the VM type being installed'
-if ($avdHostPool_vmGalleryImageSKU -like '*o365pp*')
-{
-    $avdHostPool_vmGalleryImageOffer = "office-365"
-} else {
-    $avdHostPool_vmGalleryImageOffer = "windows-10"
-}
-
 $BPScriptParams
+
+[Net.ServicePointManager]::SecurityProtocol = [Net.ServicePointManager]::SecurityProtocol -bor [Net.SecurityProtocolType]::Tls12
 
 <#####################################################################################################################################
     This Sample Code is provided for the purpose of illustration only and is not intended to be used in a production environment.  
@@ -53,8 +47,8 @@ $BPScriptParams
 - TITLE:          AVD Blueprint Configuration and Deployment script
 - AUTHORED BY:    Robert M. Smith
 - AUTHORED DATE:  01 September 2021
-- CONTRIBUTORS:   Tim Muessig
-- LAST UPDATED:   10 September 2021
+- CONTRIBUTORS:   Tim Muessig, Jason Masten
+- LAST UPDATED:   20 September 2021
 - PURPOSE:        A single PowerShell script to perform everything necessary to deploy Azure Virtual Desktop (AVD)
                   into an Azure Subscription
 
@@ -128,10 +122,16 @@ if (-not($AADDSDomainName)) {
     Return
 }
 
-if (-not($aadds_emailNotifications)) {
-    Write-Host "`n    Azure Active Directory Domain Services e-mail notification name is null
-    AAD DS e-mail name must be specified in the parameter file 'AVDBPParameters.json'
-    This parameter is a notification channel for problems with AAD DS.
+if (-not($AzureTenantID)) {
+    Write-Host "`n    Azure Tenant ID is missing.
+    The destination Azure Tenant ID must be present in the  file'AVDBPParameters.json'.
+    This script will now exit." -ForegroundColor Cyan
+    Return
+}
+
+if (-not($AzureSubscriptionID)) {
+    Write-Host "`n    Azure Subscription ID is missing.
+    The destination Azure Subscription ID must be present in the  file'AVDBPParameters.json'.
     This script will now exit." -ForegroundColor Cyan
     Return
 }
@@ -147,7 +147,6 @@ if (-not($aadds_emailNotifications)) {
     #  - Az.ManagedServiceIdentity
     #  - Az.Resources
     #  - AzureAD
-    #  - Azure CLI
 
     $AzModuleGalleryMessage = "You may be prompted to install from the PowerShell Gallery`n
     If the Az PowerShell modules were not previously installed you may be prompted to install 'Nuget'.`n
@@ -193,43 +192,30 @@ if (-not($aadds_emailNotifications)) {
 Disconnect-AzAccount -ErrorAction SilentlyContinue
 Disconnect-AzureAD -ErrorAction SilentlyContinue
 
-Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n" -ForegroundColor Cyan
-Read-Host -Prompt "Press any key to continue"
-Connect-AzAccount -Environment $AzureCloudInstance -Tenant $AzureTenantID -Subscription $AzureSubscriptionID
+Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n
+NOTEL This command utilizes the Azure CLI.  If you don't have it, it will be installed automatically" -ForegroundColor Cyan
+Read-Host -Prompt "Press any key to continue or 'CTRL+C' to end script"
 
-$CurrentAzureEnvironment = $null
-$CurrentAzureEnvironment = Get-AzContext
-$AzureEnvironmentName = $CurrentAzureEnvironment.Environment.Name
-$AzureStorageEnvironment = $CurrentAzureEnvironment.Environment.StorageEndpointSuffix
+Connect-AzAccount -Tenant $AzureTenantID -Subscription $AzureSubscriptionID
+
+$AzureEnvironment = $null
+$AzureEnvironment = Get-AzContext
+$AzureEnvironmentName = ($AzureEnvironment).Environment.Name
+$AzureStorageEnvironment = ($AzureEnvironment).Environment.StorageEndpointSuffix
 $AzureStorageFileEnv = 'file.' + $AzureStorageEnvironment
 
-Write-Host "The next action will prompt you to login to connect to Azure AD`n" -ForegroundColor Cyan
-Write-Host "If the prompt does not appear in the foreground, try minimizing your current app`n" -ForegroundColor Cyan
-Read-Host -Prompt "Press any key to continue"
-Connect-AzureAD -AzureEnvironmentName $AzureCloudInstance -TenantId $AzureTenantID
-
-# Parameters set at script run-time, based on current context
-# Now run a CLI command to get current user 'ObjectID'.
-# First have to check if the Azure CLI is installed and if not, install it
-
-#if (-not(Test-Path -Path 'HKLM:\SOFTWARE\Classes\Installer\Features\A8FE6F5AF36D1DB41B242F04125D09D6' -ErrorAction SilentlyContinue)) {
-#    Write-Host "`n    The product 'Microsoft Azure CLI' does not appear to be installed on this device
-#    Now installing product 'Microsoft Azure CLI'...`n" -ForegroundColor Cyan
-#    $ProgressPreference = 'SilentlyContinue'; Invoke-WebRequest -Uri https://aka.ms/installazurecliwindows -OutFile .\AzureCLI.msi; Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'; Remove-Item .\AzureCLI.msi
-#    # temporarily update path so that the CLI can be used in the next section
-#    $env:Path = "C:\Program Files (x86)\Microsoft SDKs\Azure\CLI2\wbin;" + $env:Path
-#}
-
-#az login
-#[String]$ScriptExecutionUserObjectID = az ad signed-in-user show --query objectId
-# This removes the quotation marks from the previous output
-#$ScriptExecutionUserObjectID2 = $ScriptExecutionUserObjectID -Replace '"', ""
-
-# Get a list of locations in the current environment and prompt user to choose one
+# Set the correct value for 'avdHostPool_vmGalleryImageOffer' based on the VM type being installed'
+if ($avdHostPool_vmGalleryImageSKU -like '*o365pp*')
+{
+    $avdHostPool_vmGalleryImageOffer = "office-365"
+} else {
+    $avdHostPool_vmGalleryImageOffer = "windows-10"
+}
 
 Write-Host "`n    Enumerating list of locations in your Azure environment..." -ForegroundColor Cyan
-$AzureLocations = (Get-AzLocation).Location
+$AzureLocations = (Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.DesktopVirtualization" -and $_.RegistrationState -EQ "Registered")}).Locations.ToLower() -replace '\s',''
 
+# Present a pop-up form to select region to deploy to
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
@@ -276,31 +262,36 @@ $form.Topmost = $true
 $result = $form.ShowDialog()
 
 if ($result -eq [System.Windows.Forms.DialogResult]::CANCEL)
-{
+ {
     Write-Host "The 'Cancel' button was pressed. The script will now exit." -ForegroundColor Red
     Return
-}
+ }
 if ($null -eq $listBox.SelectedItem)
-{
-    if ($AzureEnvironmentName -eq 'AzureCloud')
-    {
-    $ChosenAzureLocation = 'centralus'
-    }
-    if ($AzureEnvironmentName -eq 'AzureUSGovernment')
-    {
-    $ChosenAzureLocation = 'usgovarizona'
-    }
+ {
     Write-Host "    An Azure Location was not selected.
-    The Azure Location '$ChoseAzureLocation' is being set as the default.
-    If you prefer to reset the Azure Location value, you can break out of this script next by pressing 'CTRL+C'." -ForegroundColor Red
-    Read-Host -Prompt "Press any key to continue, or 'CTRL+C' to end script"
-    }
+    Please re-run this script and select an Azure location in the pop-up pick-list" -ForegroundColor Red
+    Return
+ }
 if ($result -eq [System.Windows.Forms.DialogResult]::OK)
-{
+ {
     $ChosenAzureLocation = $listBox.SelectedItem
     Write-Host "Your chosen Azure location is '$ChosenAzureLocation'"
-}
+ }
 
+Write-Host "`nThe following parameters will be used, based on the login information provided:
+
+Azure Tenant ID:                  $AzureTenantID
+Azure Subscription ID:            $AzureSubscriptionID
+Azure Cloud Instance:             $AzureEnvironmentName
+Azure Location:                   $ChosenAzureLocation
+Script execution user object ID:  $ScriptExecutionUserObjectID`n" -ForegroundColor Cyan
+
+Read-Host -Prompt "If the listed parameters are correct, press any key to continue or 'CTRL+C' to end script"
+
+Write-Host "The next action will prompt you to login to your Azure Active Directory`n" -ForegroundColor Cyan
+Write-Host "If the prompt does not appear in the foreground, try minimizing your current app`n" -ForegroundColor Cyan
+Read-Host -Prompt "Press any key to continue or 'CTRL + C' to end script"
+Connect-AzureAD -AzureEnvironmentName $AzureEnvironmentName -TenantId $AzureTenantID
 
 #endregion
 
@@ -416,7 +407,7 @@ if (-not (Get-AzureADServicePrincipal -SearchString "Domain Controller Services"
 #endregion
 
 #region Import Blueprint section
-Write-Host "    Now importing Blueprint to subscription.`n    If prompted to overwrite a previous Blueprint, press 'Y' and then press 'Enter'" -ForegroundColor Cyan
+Write-Host "    Now importing Blueprint to subscription.`n    If prompted to overwrite a previous Blueprint, click or press 'Y'" -ForegroundColor Cyan
 Import-AzBlueprintWithArtifact -Name $BlueprintName -InputPath $BlueprintPath -SubscriptionId $AzureSubscriptionID
 #endregion
 
@@ -463,7 +454,7 @@ $BlueprintParams = @{
     Name                        = $BlueprintAssignmentName
     Blueprint                   = $BlueprintDefinition
     SubscriptionId              = $AzureSubscriptionID
-    Location                    = $ChoseAzureLocation
+    Location                    = $ChosenAzureLocation
     UserAssignedIdentity        = $UserAssignedIdentityId
     Parameter                   = $bpParameters
     ResourceGroupParameter      = $bpRGParameters

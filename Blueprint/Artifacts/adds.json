@@ -91,9 +91,7 @@
         "value": {
           "notifyGlobalAdmins": "Enabled",
           "notifyDcAdmins": "Enabled",
-          "additionalRecipients": [
-            "[parameters('aadds_emailNotifications')]"
-          ]
+          "additionalRecipients": []
         }
       },
       "vnetName": {
