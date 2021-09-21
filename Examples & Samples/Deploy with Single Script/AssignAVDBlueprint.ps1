@@ -90,8 +90,7 @@ $BPScriptParams
                          The included sample file "AVDBPParameters.json" only needs a few edits to get started:
 
                          I) "AADDSDomainName": "",
-                         II) "Azure Tenant ID"
-                         III) "Azure Subscription ID"
+                         II) "aadds_emailNotifications": "",
                      
                      The remaining sample values can be used "as is", or can be changed to suit your environment
 
@@ -101,14 +100,9 @@ $BPScriptParams
                      
 
 - TROUBLESHOOTING
-    - PROBLEM:      You receive the error message 'az : The term 'az' is not recognized as the name of a cmdlet, function, script file,
-                    or operable program.
-                    This might occur while attempting to install the 'Microsoft Azure CLI' .MSI package. This package is needed for a command
-                    that runs to obtain the ObjectID of the currently logged in user.
-      SOLUTION 1:   Try closing the application you are currently using, reopen it, and try running the script again.
-                    The CLI tools update the path during installation, but the old path may still be in effect in the app until restart.
+    - PROBLEM:      
       
-      SOLUTION 2:   Try checking if there are updates queued up in 'Settings' -> 'Update & Security' -> 'Windows Update'.
+      SOLUTION:   Try checking if there are updates queued up in 'Settings' -> 'Update & Security' -> 'Windows Update'.
                     If updates are needed, apply those, restart, then try running the script again.
 
 ######################################################################################################################################>
@@ -141,7 +135,6 @@ if (-not($AzureSubscriptionID)) {
 #region Make sure required Az modules are installed
 # Including the "import-module" line in case the modules were installed by xcopy method, but not yet imported
 # Also including a test for the PSGallery/
-# Silent install of the Azure CLI if not currently installed
 
 # This script requires Az modules:
     #  - Az.Blueprint
@@ -193,8 +186,7 @@ if (-not($AzureSubscriptionID)) {
 Disconnect-AzAccount -ErrorAction SilentlyContinue
 Disconnect-AzureAD -ErrorAction SilentlyContinue
 
-Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n
-NOTEL This command utilizes the Azure CLI.  If you don't have it, it will be installed automatically" -ForegroundColor Cyan
+Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue or 'CTRL+C' to end script"
 
 Connect-AzAccount -Tenant $AzureTenantID -Subscription $AzureSubscriptionID
@@ -362,25 +354,25 @@ if (-not(Get-AzureADMSRoleAssignment -Filter "principalID eq '$UserAssignedObjec
 #endregion
 
 #region Register the Azure Blueprint provider to the subscription, if not already registered
-Write-Host "`nNow checking the 'Microsoft.Blueprint' provider, and registering if needed" -ForegroundColor Cyan
+Write-Host "`nNow checking the 'Microsoft.Blueprint' provider, and registering if needed`n" -ForegroundColor Cyan
 if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.Blueprint" -and $_.RegistrationState -EQ "Registered")})) {
     Write-Host "The 'Microsoft.Blueprint' provider is not currently registered. Now registering..." -ForegroundColor Cyan
     Register-AzResourceProvider -ProviderNamespace 'Microsoft.Blueprint'
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.Blueprint" -and $_.RegistrationState -EQ "Registered")}
 } else {
-    Write-Host "The 'Microsoft.Blueprint' provider is already registered" -ForegroundColor Cyan
+    Write-Host "The 'Microsoft.Blueprint' provider is already registered`n" -ForegroundColor Cyan
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.Blueprint" -and $_.RegistrationState -EQ "Registered")}
 }
 #endregion
 
 #region Register the 'Microsoft.AAD' provider to the subscription, if not already registered
-Write-Host "`nNow checking the 'Microsoft.AAD' provider, and registering if needed" -ForegroundColor Cyan
+Write-Host "`nNow checking the 'Microsoft.AAD' provider, and registering if needed`n" -ForegroundColor Cyan
 if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")})) {
     Write-Host "The 'Microsoft.AAD' provider is not currently registered. Now registering..." -ForegroundColor Cyan
     Register-AzResourceProvider -ProviderNamespace 'Microsoft.AAD'
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")}
 } else {
-    Write-Host "The 'Microsoft.AAD' provider is already registered" -ForegroundColor Cyan
+    Write-Host "The 'Microsoft.AAD' provider is already registered`n" -ForegroundColor Cyan
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")}
 }
 #endregion
@@ -391,7 +383,7 @@ if (-not (Get-AzureADServicePrincipal -SearchString "Azure AD Domain Services" |
     Write-Host "The 'Azure AD Domain Services' enterprise application is not currently registered. Now registering`n" -ForegroundColor Cyan
     New-AzureADServicePrincipal -AppId "6ba9a5d4-8456-4118-b521-9c5ca10cdf84" -ErrorAction SilentlyContinue
 } else {
-    Write-Host "The 'Azure AD Domain Services' enterprise application is already registered" -ForegroundColor Cyan
+    Write-Host "The 'Azure AD Domain Services' enterprise application is already registered`n" -ForegroundColor Cyan
     Get-AzureADServicePrincipal -SearchString "Azure AD Domain Services" |  Where-Object AppId -EQ '6ba9a5d4-8456-4118-b521-9c5ca10cdf84'
 }
 #endregion
@@ -402,7 +394,7 @@ if (-not (Get-AzureADServicePrincipal -SearchString "Domain Controller Services"
     Write-Host "The 'Domain Controller Services' service principal is not currently registered. Now registering" -ForegroundColor Cyan
     New-AzureADServicePrincipal -AppId "2565bd9d-da50-47d4-8b85-4c97f669dc36"
 } else {
-    Write-Host "The 'Domain Controller Services' service principal is already registered" -ForegroundColor Cyan
+    Write-Host "The 'Domain Controller Services' service principal is already registered`n" -ForegroundColor Cyan
     Get-AzureADServicePrincipal | Where-Object AppID -like "2565bd9d-da50-47d4-8b85-4c97f669dc36"
 }
 #endregion
@@ -421,6 +413,7 @@ Publish-AzBlueprint -Blueprint $BlueprintDefinition -Version $BlueprintVersion
 #region Create the hash table for Parameters
 $bpParameters = @{
     adds_domainName                     =   $AADDSDomainName
+    aadds_emailNotifications            =   $aadds_emailNotifications
     script_executionUserResourceID      =   $UserAssignedIdentityId
     scriptExecutionUserObjectID         =   $ScriptExecutionUserObjectID
     keyvault_ownerUserObjectID          =   $UserAssignedObjectID
