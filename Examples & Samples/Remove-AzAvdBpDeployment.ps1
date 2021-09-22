@@ -69,6 +69,9 @@ if (-not(Get-Module -Name Az.OperationalInsights)) {
 if (-not(Get-Module -Name AzureAD)) {
     Install-Module 'AzureAD' -Force
 }
+if (-not(Get-Module -Name Az.DesktopVirtualization)) {
+    Install-Module 'Az.DesktopVirtualization' -Force
+}
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
 Write-Verbose "Found $($RemovalScope.count) Resource Groups"
@@ -127,10 +130,14 @@ $RemovalScope | ForEach-Object {
    
     Write-Verbose "Now purging key vault"
     if ($PurgeKeyVault) {
+        if(-not(Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName)) {
+        Write-Host "No key vault found."
+        } else {
         $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
         Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
         Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
         Remove-AzKeyVault -InRemovedState -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
+        }
     }
 
     if($PSCmdlet.ShouldProcess($_.ResourceGroupName, "Remove ResourceGroup")){
