@@ -54,6 +54,22 @@ Param(
     [switch] $PurgeKeyVault
 )
 
+if (-not(Get-Module -Name Az.Keyvault)) {
+    Install-Module 'Az.Keyvault' -Force
+}
+if (-not(Get-Module -Name Az.Storage)) {
+    Install-Module 'Az.Storage' -Force
+}
+if (-not(Get-Module -Name Az.Resources)) {
+    Install-Module 'Az.Resources' -Force
+}
+if (-not(Get-Module -Name Az.OperationalInsights)) {
+    Install-Module 'Az.OperationalInsights' -Force
+}
+if (-not(Get-Module -Name AzureAD)) {
+    Install-Module 'AzureAD' -Force
+}
+
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
 Write-Verbose "Found $($RemovalScope.count) Resource Groups"
 
@@ -111,9 +127,6 @@ $RemovalScope | ForEach-Object {
    
     Write-Verbose "Now purging key vault"
     if ($PurgeKeyVault) {
-        if (-not(Get-Module -Name Az.Keyvault)) {
-            Install-Module 'Az.Keyvault' -Force
-        }
         $KeyVaultToPurge = Get-AzKeyVault -ResourceGroupName $RemovalScope.ResourceGroupName
         Write-Verbose "Found '$($KeyVaultToPurge.VaultName)' Key Vault"
         Remove-AzKeyVault -VaultName $KeyVaultToPurge.VaultName -Location $RemovalScope.Location -Force
