@@ -343,11 +343,11 @@ Now assigning 'Owner' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cy
 #region Grant the 'Blueprint Operator' subscription level role to the managed identity
 Write-Host "Now checking if user assigned identity '$UserAssignedIdentityName' has 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
 if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator')) {
-    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' does not currently have 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
-    Write-Host "Now assigning 'Blueprint Operator' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
+    Write-Host "`User assigned identity '$UserAssignedIdentityName' does not currently have 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
+    Write-Host "Now assigning 'Blueprint Operator' role to '$UserAssignedIdentityName'" -ForegroundColor Cyan
     New-AzRoleAssignment -ObjectId ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator' -Scope "/subscriptions/$AzureSubscriptionID"
 } else {
-    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' already has 'Blueprint Operator' role assigned at the subscription level`n" -ForegroundColor Cyan
+    Write-Host "User assigned identity '$UserAssignedIdentityName' already has 'Blueprint Operator' role assigned at the subscription level" -ForegroundColor Cyan
     Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator' -ErrorAction SilentlyContinue
 }
 #endregion
@@ -356,13 +356,13 @@ if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupNa
 $AADGlobalAdminRoleInfo = Get-AzureADMSRoleDefinition -Filter "displayName eq 'Global Administrator'"
 $AADGlobalAdminRoleInfoId = $AADGlobalAdminRoleInfo.Id
 $AADGlobalAdminRoleDisplayName = $AADGlobalAdminRoleInfo.displayName
-Write-Host "`nAssigning Azure AD role 'Global Administrator' to the managed identity" -ForegroundColor Cyan
+Write-Host "`Assigning Azure AD role 'Global Administrator' to the managed identity" -ForegroundColor Cyan
 if (-not(Get-AzureADMSRoleAssignment -Filter "principalID eq '$ScriptExecutionUserObjectID' and roleDefinitionId eq '$AADGlobalAdminRoleInfoId'")){
-    Write-Host "User assigned identity"$UserAssignedIdentity.name"does not have the"$AADGlobalAdminRoleInfo.displayName"role currently assigned.`n" -ForegroundColor Cyan
+    Write-Host "User assigned identity"$UserAssignedIdentity.name"does not have the"$AADGlobalAdminRoleInfo.displayName"role currently assigned." -ForegroundColor Cyan
     Write-Host "Now assigning role to managed identity." -ForegroundColor Cyan
     New-AzureADMSRoleAssignment -RoleDefinitionId $AADGlobalAdminRoleInfoId -PrincipalId $ScriptExecutionUserObjectID -DirectoryScopeId '/' -ErrorAction SilentlyContinue
 } else {
-    Write-Host "User assigned identity '$UserAssignedIdentityName' already has the '$AADGlobalAdminRoleDisplayName' role assigned.`n" -ForegroundColor Cyan
+    Write-Host "User assigned identity '$UserAssignedIdentityName' already has the '$AADGlobalAdminRoleDisplayName' role assigned." -ForegroundColor Cyan
     Get-AzureADMSRoleAssignment -Filter "principalID eq '$ScriptExecutionUserObjectID' and roleDefinitionId eq '$AADGlobalAdminRoleInfoId'"
 }
 #endregion

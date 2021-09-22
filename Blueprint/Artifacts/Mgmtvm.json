@@ -430,7 +430,7 @@
             "fileUris": [
               "[parameters('CreateConfigureFileShareAndGPScriptURI')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose *> C:\\Windows\\Temp\\PowerShell_Verbose.log')]"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('ScriptURI'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
