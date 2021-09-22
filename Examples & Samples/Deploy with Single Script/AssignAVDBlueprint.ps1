@@ -4,6 +4,12 @@ param(
     [string]$AVDBPParamFile = ".\AVDBPParameters.json"
 )
 
+If (-not(Test-Path -Path '.\AVDBPParameters.json')) {
+    Write-Host "    Could not find required parameter file 'AVDBPParameters.json'.
+    Please check the path and try again" -ForegroundColor Cyan
+    Return
+}
+
 If ($AVDBPParamFile -ne '.\AVDBPParameters.json') {
     Write-Host "The current value of parameter AVDBPParamFile is '$AVDBPParamFile'" -ForegroundColor Red
     Write-Host "The parameter 'AVDBPParamFile' is not set correctly" -ForegroundColor Red
@@ -47,8 +53,8 @@ $BPScriptParams
 - TITLE:          AVD Blueprint Configuration and Deployment script
 - AUTHORED BY:    Robert M. Smith
 - AUTHORED DATE:  01 September 2021
-- CONTRIBUTORS:   Tim Muessig, Jason Masten
-- LAST UPDATED:   20 September 2021
+- CONTRIBUTORS:   Tim Muessig, Jason Masten, Dennis Payne
+- LAST UPDATED:   21 September 2021
 - PURPOSE:        A single PowerShell script to perform everything necessary to deploy Azure Virtual Desktop (AVD)
                   into an Azure Subscription
 
@@ -90,7 +96,7 @@ $BPScriptParams
                          The included sample file "AVDBPParameters.json" only needs a few edits to get started:
 
                          I) "AADDSDomainName": "",
-                         II) "aadds_emailNotifications": "",
+                         
                      
                      The remaining sample values can be used "as is", or can be changed to suit your environment
 
@@ -189,7 +195,7 @@ Disconnect-AzureAD -ErrorAction SilentlyContinue
 Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue or 'CTRL+C' to end script"
 
-Connect-AzAccount -Tenant $AzureTenantID -Subscription $AzureSubscriptionID
+Connect-AzAccount -Tenant $AzureTenantID -Subscription $AzureSubscriptionID -Environment $AzureEnvironmentName
 
 $AzureEnvironment = $null
 $AzureEnvironment = Get-AzContext
@@ -276,10 +282,18 @@ Write-Host "`nThe following parameters will be used, based on the login informat
 Azure Tenant ID:                  $AzureTenantID
 Azure Subscription ID:            $AzureSubscriptionID
 Azure Cloud Instance:             $AzureEnvironmentName
-Azure Location:                   $ChosenAzureLocation
-Script execution user object ID:  $ScriptExecutionUserObjectID`n" -ForegroundColor Cyan
+Azure Location:                   $ChosenAzureLocation`n" -ForegroundColor Cyan
 
-Read-Host -Prompt "If the listed parameters are correct, press any key to continue or 'CTRL+C' to end script"
+$UserPrincipalName = (Get-AzContext).Account.Id
+#Internal Account
+$UserAssignedObjectId = (Get-AzADUser -UserPrincipalName $UserPrincipalName).Id
+#Guest Account
+if(!$UserAssignedObjectId)
+{
+    $UserAssignedObjectId = (Get-AzADUser -Mail $UserPrincipalName).Id
+}
+
+#Read-Host -Prompt "If the listed parameters are correct, press any key to continue or 'CTRL+C' to end script"
 
 Write-Host "The next action will prompt you to login to your Azure Active Directory`n" -ForegroundColor Cyan
 Write-Host "If the prompt does not appear in the foreground, try minimizing your current app`n" -ForegroundColor Cyan
@@ -294,7 +308,7 @@ Connect-AzureAD -AzureEnvironmentName $AzureEnvironmentName -TenantId $AzureTena
     Write-Host "`nCreating AVD resource group for persistent objects such as user-assigned identity" -ForegroundColor Cyan
     If (-not(Get-AzResourceGroup -Name $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
         Write-Host "`Resource Group $BlueprintGlobalResourceGroupName does not currently exist. Now creating Resource Group" -ForegroundColor Cyan
-        New-AzResourceGroup -ResourceGroupName $BlueprintGlobalResourceGroupName -Location $ChosenLocation
+        New-AzResourceGroup -ResourceGroupName $BlueprintGlobalResourceGroupName -Location $ChosenAzureLocation
         } else {
         Write-Host "`Resource Group '$BlueprintGlobalResourceGroupName' already exists." -ForegroundColor Cyan
     }
@@ -305,29 +319,29 @@ Connect-AzureAD -AzureEnvironmentName $AzureEnvironmentName -TenantId $AzureTena
     If (-not(Get-AzUserAssignedIdentity -Name $UserAssignedIdentityName -ResourceGroupName $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
         Write-Host "`        Managed identity '$UserAssignedIdentityName' does not currently exist.`n
         Now creating '$UserAssignedIdentityName' in resource group '$BlueprintGlobalResourceGroupName'" -ForegroundColor Cyan
-        $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $ChosenLocation
+        $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $ChosenAzureLocation
         } else {
         Write-Host "`nUser Assigned Identity '$UserAssignedIdentityName' already exists`n" -ForegroundColor Cyan
         $UserAssignedIdentity = Get-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName
     }
     $UserAssignedIdentityId = $UserAssignedIdentity.Id
-    $UserAssignedObjectID = $UserAssignedIdentity.PrincipalId
+    $ScriptExecutionUserObjectID = $UserAssignedIdentity.PrincipalId
 #endregion    
 
 #region Grant the 'Owner' subscription level role to the managed identity
-Write-Host "`nNow checking if user assigned identity '$UserAssignedIdentityName' has 'Owner' subscription level role assignment" -ForegroundColor Cyan
-if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity.PrincipalId) -RoleDefinitionName 'Owner')) {
-    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' does not currently have 'Owner' subscription level role assignment" -ForegroundColor Cyan
-    Write-Host "Now assigning 'Owner' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
-    New-AzRoleAssignment -ObjectId ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Owner' -Scope "/subscriptions/$AzureSubscriptionID"
+Write-Host "Now checking if user assigned identity '$UserAssignedIdentityName' has 'Owner' subscription level role assignment" -ForegroundColor Cyan
+if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedIdentity.PrincipalId -RoleDefinitionName 'Owner')) {
+Write-Host "User assigned identity '$UserAssignedIdentityName' does not currently have 'Owner' subscription level role assignment.
+Now assigning 'Owner' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
+    New-AzRoleAssignment -ObjectId $UserAssignedIdentity.PrincipalId -RoleDefinitionName 'Owner' -Scope "/subscriptions/$AzureSubscriptionID"
 } else {
-    Write-Host "`nUser assigned identity '$UserAssignedIdentityName' already has 'Owner' role assigned at the subscription level`n" -ForegroundColor Cyan
-    Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity.PrincipalId) -RoleDefinitionName 'Owner'
+    Write-Host "User assigned identity '$UserAssignedIdentityName' already has 'Owner' role assigned at the subscription level" -ForegroundColor Cyan
+    Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedIdentity.PrincipalId -RoleDefinitionName 'Owner'
 }
 #endregion
 
 #region Grant the 'Blueprint Operator' subscription level role to the managed identity
-Write-Host "`nNow checking if user assigned identity '$UserAssignedIdentityName' has 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
+Write-Host "Now checking if user assigned identity '$UserAssignedIdentityName' has 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
 if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID ($UserAssignedIdentity).PrincipalId -RoleDefinitionName 'Blueprint Operator')) {
     Write-Host "`nUser assigned identity '$UserAssignedIdentityName' does not currently have 'Blueprint Operator' subscription level role assignment" -ForegroundColor Cyan
     Write-Host "Now assigning 'Blueprint Operator' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
@@ -343,48 +357,48 @@ $AADGlobalAdminRoleInfo = Get-AzureADMSRoleDefinition -Filter "displayName eq 'G
 $AADGlobalAdminRoleInfoId = $AADGlobalAdminRoleInfo.Id
 $AADGlobalAdminRoleDisplayName = $AADGlobalAdminRoleInfo.displayName
 Write-Host "`nAssigning Azure AD role 'Global Administrator' to the managed identity" -ForegroundColor Cyan
-if (-not(Get-AzureADMSRoleAssignment -Filter "principalID eq '$UserAssignedObjectID' and roleDefinitionId eq '$AADGlobalAdminRoleInfoId'")){
+if (-not(Get-AzureADMSRoleAssignment -Filter "principalID eq '$ScriptExecutionUserObjectID' and roleDefinitionId eq '$AADGlobalAdminRoleInfoId'")){
     Write-Host "User assigned identity"$UserAssignedIdentity.name"does not have the"$AADGlobalAdminRoleInfo.displayName"role currently assigned.`n" -ForegroundColor Cyan
     Write-Host "Now assigning role to managed identity." -ForegroundColor Cyan
-    New-AzureADMSRoleAssignment -RoleDefinitionId $AADGlobalAdminRoleInfo.Id -PrincipalId $UserAssignedIdentity.PrincipalId -DirectoryScopeId '/'    
+    New-AzureADMSRoleAssignment -RoleDefinitionId $AADGlobalAdminRoleInfoId -PrincipalId $ScriptExecutionUserObjectID -DirectoryScopeId '/' -ErrorAction SilentlyContinue
 } else {
     Write-Host "User assigned identity '$UserAssignedIdentityName' already has the '$AADGlobalAdminRoleDisplayName' role assigned.`n" -ForegroundColor Cyan
-    Get-AzureADMSRoleAssignment -Filter "principalID eq '$UserAssignedObjectID' and roleDefinitionId eq '$AADGlobalAdminRoleInfoId'"
+    Get-AzureADMSRoleAssignment -Filter "principalID eq '$ScriptExecutionUserObjectID' and roleDefinitionId eq '$AADGlobalAdminRoleInfoId'"
 }
 #endregion
 
 #region Register the Azure Blueprint provider to the subscription, if not already registered
-Write-Host "`nNow checking the 'Microsoft.Blueprint' provider, and registering if needed`n" -ForegroundColor Cyan
+Write-Host "Now checking the 'Microsoft.Blueprint' provider, and registering if needed" -ForegroundColor Cyan
 if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.Blueprint" -and $_.RegistrationState -EQ "Registered")})) {
     Write-Host "The 'Microsoft.Blueprint' provider is not currently registered. Now registering..." -ForegroundColor Cyan
     Register-AzResourceProvider -ProviderNamespace 'Microsoft.Blueprint'
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.Blueprint" -and $_.RegistrationState -EQ "Registered")}
 } else {
-    Write-Host "The 'Microsoft.Blueprint' provider is already registered`n" -ForegroundColor Cyan
+    Write-Host "The 'Microsoft.Blueprint' provider is already registered" -ForegroundColor Cyan
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.Blueprint" -and $_.RegistrationState -EQ "Registered")}
 }
 #endregion
 
 #region Register the 'Microsoft.AAD' provider to the subscription, if not already registered
-Write-Host "`nNow checking the 'Microsoft.AAD' provider, and registering if needed`n" -ForegroundColor Cyan
+Write-Host "`nNow checking the 'Microsoft.AAD' provider, and registering if needed" -ForegroundColor Cyan
 if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")})) {
     Write-Host "The 'Microsoft.AAD' provider is not currently registered. Now registering..." -ForegroundColor Cyan
     Register-AzResourceProvider -ProviderNamespace 'Microsoft.AAD'
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")}
 } else {
-    Write-Host "The 'Microsoft.AAD' provider is already registered`n" -ForegroundColor Cyan
+    Write-Host "The 'Microsoft.AAD' provider is already registered" -ForegroundColor Cyan
     Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")}
 }
 #endregion
 
 #region Register the 'Azure AD Domain Services' enterprise application to the subscription if not already registered
 Write-Host "`nNow checking registration for 'Azure AD Domain Services' enterprise application" -ForegroundColor Cyan
-if (-not (Get-AzureADServicePrincipal -SearchString "Azure AD Domain Services" |  Where-Object AppId -EQ '6ba9a5d4-8456-4118-b521-9c5ca10cdf84')) {
+if (-not (Get-AzureADServicePrincipal -SearchString "Azure AD Domain Services" | Where-Object AppId -EQ '6ba9a5d4-8456-4118-b521-9c5ca10cdf84')) {
     Write-Host "The 'Azure AD Domain Services' enterprise application is not currently registered. Now registering`n" -ForegroundColor Cyan
     New-AzureADServicePrincipal -AppId "6ba9a5d4-8456-4118-b521-9c5ca10cdf84" -ErrorAction SilentlyContinue
 } else {
-    Write-Host "The 'Azure AD Domain Services' enterprise application is already registered`n" -ForegroundColor Cyan
-    Get-AzureADServicePrincipal -SearchString "Azure AD Domain Services" |  Where-Object AppId -EQ '6ba9a5d4-8456-4118-b521-9c5ca10cdf84'
+    Write-Host "The 'Azure AD Domain Services' enterprise application is already registered" -ForegroundColor Cyan
+    Get-AzureADServicePrincipal -SearchString "Azure AD Domain Services" | Where-Object AppId -EQ '6ba9a5d4-8456-4118-b521-9c5ca10cdf84'
 }
 #endregion
 
@@ -394,29 +408,29 @@ if (-not (Get-AzureADServicePrincipal -SearchString "Domain Controller Services"
     Write-Host "The 'Domain Controller Services' service principal is not currently registered. Now registering" -ForegroundColor Cyan
     New-AzureADServicePrincipal -AppId "2565bd9d-da50-47d4-8b85-4c97f669dc36"
 } else {
-    Write-Host "The 'Domain Controller Services' service principal is already registered`n" -ForegroundColor Cyan
+    Write-Host "The 'Domain Controller Services' service principal is already registered" -ForegroundColor Cyan
     Get-AzureADServicePrincipal | Where-Object AppID -like "2565bd9d-da50-47d4-8b85-4c97f669dc36"
 }
 #endregion
 
 #region Import Blueprint section
-Write-Host "    Now importing Blueprint to subscription.`n    If prompted to overwrite a previous Blueprint, click or press 'Y'" -ForegroundColor Cyan
+Write-Host "Now importing AVD Blueprint to subscription`n" -ForegroundColor Cyan
 Import-AzBlueprintWithArtifact -Name $BlueprintName -InputPath $BlueprintPath -SubscriptionId $AzureSubscriptionID
 #endregion
 
 #region Publish Blueprint section
 $BlueprintDefinition = Get-AzBlueprint -SubscriptionId $AzureSubscriptionID -Name $BlueprintName
 $BlueprintVersion = (Get-Date -Format "yyyyMMddHHmmss").ToString()
+Write-Host "Now publishing AVD blueprint version '$BlueprintVersion'`n" -ForegroundColor Cyan
 Publish-AzBlueprint -Blueprint $BlueprintDefinition -Version $BlueprintVersion
 #endregion
 
 #region Create the hash table for Parameters
 $bpParameters = @{
     adds_domainName                     =   $AADDSDomainName
-    aadds_emailNotifications            =   $aadds_emailNotifications
     script_executionUserResourceID      =   $UserAssignedIdentityId
     scriptExecutionUserObjectID         =   $ScriptExecutionUserObjectID
-    keyvault_ownerUserObjectID          =   $UserAssignedObjectID
+    keyvault_ownerUserObjectID          =   $UserAssignedObjectId
     AzureEnvironmentName                =   $AzureEnvironmentName
     AzureStorageFQDN                    =   $AzureStorageFileEnv
     scriptURI                           =   $ScriptURI
@@ -452,6 +466,7 @@ $BlueprintParams = @{
     Parameter                   = $bpParameters
     ResourceGroupParameter      = $bpRGParameters
 }
+Write-Host "Now assigning Blueprint '$BlueprintAssignmentName'`n" -ForegroundColor Cyan
 $BlueprintAssignment = New-AzBlueprintAssignment @BlueprintParams
 
 Write-Output $BlueprintAssignment

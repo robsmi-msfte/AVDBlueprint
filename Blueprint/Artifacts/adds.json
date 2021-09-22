@@ -18,9 +18,6 @@
             "displayName": "Resource Prefix"
           }
         },
-        "emailNotifications": { 
-          "type": "string"
-        },
         "sku": {
           "type": "string"
         },
