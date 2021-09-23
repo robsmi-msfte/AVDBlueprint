@@ -151,6 +151,7 @@ Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 # Download AVD post-install group policy settings zip file, and expand it
 $CTempPath = 'C:\Temp'
 New-Item -ItemType Directory -Path $CTempPath -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Path "$CTempPath\Software" -ErrorAction SilentlyContinue
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
@@ -159,6 +160,7 @@ Expand-Archive -LiteralPath "$AVDPostInstallGPSettingsZip" -DestinationPath "$CT
 }
 
 # Create a startup script for the session hosts, to run the Virtual Desktop Optimization Tool
+# The next line of code sets the first line of the AVD SH script, with the current computer name in the share path
 $AVDSHSWShare = "$" + "SoftwareShare" + " = " + "'\\$ENV:ComputerName\Software'"
 $AVDSHSWShare | Out-File -FilePath "$CTempPath\PostInstallConfigureAVDSessionHosts.ps1"
 $PostInstallAVDConfig = @'
@@ -172,9 +174,8 @@ If(-not(Test-Path "$env:SystemRoot\System32\Winevt\Logs\Virtual Desktop Optimiza
     Copy-Item "$SoftwareShare\VDOT.zip" $CTempPath
     Expand-Archive -Path $VDOTZIP -DestinationPath $CTempPath
     Get-ChildItem -Path C:\Temp\Virtual* -Recurse -Force | Unblock-File
-    $VDOTString = "$CTempPath\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -AcceptEula -Verbose"
+    $VDOTString = "$CTempPath\Virtual-Desktop-Optimization-Tool-main\Win10_VirtualDesktop_Optimize.ps1 -AcceptEula -Restart"
     Invoke-Expression $VDOTString
-    Invoke-Command -ScriptBlock {Shutdown -r -f -t 00}
 }
 '@
 Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $PostInstallAVDConfig
@@ -182,6 +183,9 @@ Add-Content -Path $CTempPath\PostInstallConfigureAVDSessionHosts.ps1 -Value $Pos
 # Acquire Virtual Desktop Optimization Tool software
 $VDOTURI = "$ScriptURI/VDOT.zip"
 $VDOTZip = "$CTempPath\Software\VDOT.zip"
+if (-not(Test-Path "$CTempPath\Software")) {
+    New-Item -ItemType Directory -Path "$CTempPath\Software" -Force -ErrorAction SilentlyContinue   
+}
 Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
 
 # Acquire FSLogix software group policy files
