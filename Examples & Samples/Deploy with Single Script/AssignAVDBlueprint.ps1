@@ -150,7 +150,7 @@ if (-not($AzureSubscriptionID)) {
 
     $AzModuleGalleryMessage = "You may be prompted to install from the PowerShell Gallery`n
     If the Az PowerShell modules were not previously installed you may be prompted to install 'Nuget'.`n
-    If your policies allow those items to be installed, press 'Y' when prompted."
+    If your policies allow those items to be installed, click 'Yes to All' when prompted."
             
     if (-not(Get-PSRepository -Name 'PSGallery')) {
     Write-Host "    PowerShell Gallery 'PSGallery' not available.  Now resetting local repository to default,`n
@@ -189,17 +189,12 @@ if (-not($AzureSubscriptionID)) {
 #endregion
 
 #region Checking for and setting up environment
-Disconnect-AzAccount -ErrorAction SilentlyContinue
-Disconnect-AzureAD -ErrorAction SilentlyContinue
-
 Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue or 'CTRL+C' to end script"
 
 Connect-AzAccount -Tenant $AzureTenantID -Subscription $AzureSubscriptionID -Environment $AzureEnvironmentName
 
-$AzureEnvironment = $null
 $AzureEnvironment = Get-AzContext
-$AzureEnvironmentName = ($AzureEnvironment).Environment.Name
 $AzureStorageEnvironment = ($AzureEnvironment).Environment.StorageEndpointSuffix
 $AzureStorageFileEnv = 'file.' + $AzureStorageEnvironment
 
@@ -320,6 +315,7 @@ Connect-AzureAD -AzureEnvironmentName $AzureEnvironmentName -TenantId $AzureTena
         Write-Host "`        Managed identity '$UserAssignedIdentityName' does not currently exist.`n
         Now creating '$UserAssignedIdentityName' in resource group '$BlueprintGlobalResourceGroupName'" -ForegroundColor Cyan
         $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $ChosenAzureLocation
+        Start-Sleep -Seconds 15
         } else {
         Write-Host "`nUser Assigned Identity '$UserAssignedIdentityName' already exists`n" -ForegroundColor Cyan
         $UserAssignedIdentity = Get-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName
