@@ -339,9 +339,9 @@
               }
             },
             "variables": {
-              "imagePublisher": "MicrosoftWindowsServer",
-              "imageOffer": "WindowsServer",
-              "windowsOSVersion": "2019-Datacenter",
+              "imagePublisher": "[variables('imagePublisher')]",
+              "imageOffer": "[variables('imageOffer')]",
+              "windowsOSVersion": "[variables('windowsOSVersion')]",
               "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]"
             },
             "resources": [
