@@ -3,7 +3,8 @@
 ## Overview
 
 [Azure Blueprints](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview) provide a structured approach to standing up new environments, while adhering to environment requirements.  Microsoft has created a set of Azure Virtual Desktop (AVD) Blueprint objects that help automate the creation of an entire environment, ready to run.  
-Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview#blueprint-definition), such as:
+
+Azure Blueprints utilize ["artifact files (.JSON)"](https://docs.microsoft.com/en-us/azure/governance/blueprints/overview#blueprint-definition), such as:
 
 * Role Assignments
 * Policy Assignments
@@ -12,17 +13,31 @@ Azure Blueprints utilize ["artifacts"](https://docs.microsoft.com/en-us/azure/go
 
 The AVD Blueprints are meant to deploy an entire environment, including Azure Active Directory Domain Services (AAD DS), a management virtual machine (VM), networking, AVD infrastructure, and related resources, in a turn-key fashion.   The following is a guide to help accomplish customizing to your environment.  
 
-## Getting Started with the AVD Blueprint
+## Getting Started with the AVD Blueprint (New, single script configure and deploy)
 
 * **Download Blueprint files locally** to a folder on your device.  
-* **Remove az** to a folder on your device.
+
+* **Remove 'Internet zone' security restriction on download file**
+  * Locate the .zip file downloaded from Github.com
+  * Right-click the .zip file, and then click **'Properties'**
+  * In the bottom section labeled **'Security'**, if the text is present: 'This file came from another computer and might be blocked to help protect this computer', click the **'Unblock'** check-box, then click **'Apply'**, and then click **'OK'**.  
+ 
 * **Extract the downloaded .zip file** to any folder on your device (Example. 'C:\AVDBlueprint')  
+  * You can double-click the .zip file in Windows File Explorer.
+  * Double-click the top-level folder in the zip, which should be named **'AVDBlueprint-main'**.
+  * You should now see all the files and folders (\Blueprint, \Examples & Samples, etc.)  
+  * Select all files and folders, then right-click and then click 'Copy'
+  * Navigate to the root directory of the 'C:' drive, right-click in an empty area, and then click **'New'**, and then click **'Folder'**.
+  * Name this new folder **'AVDBlueprint'**.
+  * Double-click the new folder 'AVDBlueprint', and then in a blank area to the right, right-click and then click 'Paste'
+  * You should now have a folder called 'C:\AVDBlueprint' that contains all of the Blueprint files and folders
 
 > [!NOTE]
-> If you extract the files to a folder other than **'C:\AVDBlueprint'**, edit the file **'\Examples and Samples\AVDBPParameters.json'** to be equal to the path where the files are extracted to.  Example:  
+> If you extract the files to a folder other than **'C:\AVDBlueprint'**, edit the file **'\Examples and Samples\Deploy with Single Script\AVDBPParameters.json'** to be equal to the path where the files are extracted to.  Example:  
 `"BlueprintPath": "D:\\Downloads\\AVDBlueprint\\Blueprint",`
 
-* **Edit the included sample file in the 'Examples and Samples' folder; 'AVDBPParameters.json** to customize to your environment. There are several required values that are required to be edited to your environment.
+* **Edit the included sample file 'C:\AVDBlueprint\Examples and Samples\Deploy with Single Script\AVDBPParameters.json'** to customize to your environment.  You can use any type of text editor, including PowerShell ISE, which is built-in.  
+There are several required values that are required to be edited to your environment.
 
     `"AzureSubscriptionID": "",`  
     `"AzureTenantID": "",`  
@@ -50,7 +65,7 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
 
     `Set-ExecutionPolicy -ExecutionPolicy Remote-Signed -Scope CurrentUser`  
 
-    `Set-ExecutionPolicy -ExecutionPolicy Remote-Signed -Scope CurrentProcess`
+    `Set-ExecutionPolicy -ExecutionPolicy Remote-Signed -Scope Process`
 
 * **When ready, open and run, or just run the PowerShell script 'AssignAVDBlueprint.json** If you are running on a device that does not have some of the required PowerShell modules, such as AzureAD, Identity, etc., you may be prompted to install those from the [PowerShell Gallery](https://docs.microsoft.com/en-us/powershell/scripting/gallery/overview?view=powershell-7.1).  The PowerShell Gallery a community effort, hosting content from Microsoft, as well as the PowerShell community.
 
