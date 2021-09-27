@@ -122,10 +122,10 @@
         "type": "string",
         "metadata": {
           "displayName": "Azure Environment Name",
-          "description": "URI where Powershell scripts executed by the blueprint are located."
+          "description": "URI where Powershell scripts executed by the blueprint are located (cloud name)."
         },
         "defaultValue": "AzureCloud",
-        "allowedValues": ["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"]
+        "allowedValues": []
       },
       "AzureStorageFQDN": {
         "type": "string",
