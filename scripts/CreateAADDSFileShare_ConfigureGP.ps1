@@ -272,7 +272,7 @@ for ($i = 1; $i -le $vmNumberOfInstances ; $i++) {
     $s = New-PSSession -ComputerName $VMComputerName
     Invoke-Command -Session $s -ScriptBlock {
             gpupdate /force
-            shutdown /r /f /t 03
+            shutdown /r /f /t 15
         }
     Remove-PSSession -Session $s
 }
