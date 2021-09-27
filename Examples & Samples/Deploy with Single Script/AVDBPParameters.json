@@ -2,7 +2,7 @@
     "AzureSubscriptionID": "",
     "AzureTenantID": "",
     "AADDSDomainName": "",
-    "AzureEnvironmentName": "AzureCloud, AzureUSGovernment",
+    "AzureEnvironmentName": "AzureCloud, AzureUSGovernment, AzureChinaCloud",
 
     "avdHostPool_vmGalleryImageSKU": "21h1-evd-o365pp",
     "avdHostPool_vmSize": "Standard_B4ms",

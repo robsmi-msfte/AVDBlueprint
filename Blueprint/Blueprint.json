@@ -125,7 +125,7 @@
           "description": "URI where Powershell scripts executed by the blueprint are located."
         },
         "defaultValue": "AzureCloud",
-        "allowedValues": ["AzureCloud", "AzureUSGovernment"]
+        "allowedValues": ["AzureCloud", "AzureUSGovernment", "AzureChinaCloud"]
       },
       "AzureStorageFQDN": {
         "type": "string",
@@ -133,8 +133,7 @@
           "displayName": "Azure Files public endpoint",
           "description": "URI where Powershell scripts executed by the blueprint are located."
         },
-        "defaultValue": "file.core.windows.net",
-        "allowedValues": ["file.core.windows.net", "file.core.usgovcloudapi.net"]
+        "defaultValue": "file.core.windows.net"
       },
       "managementVMOSSku": {
         "type": "string",
