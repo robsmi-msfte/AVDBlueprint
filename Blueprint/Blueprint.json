@@ -100,7 +100,7 @@
         "type": "string",
         "metadata": {
           "displayName": "Keyvault Owner User Object ID",
-          "description": "Object ID of the user that will get access to the Key Vault. To retrieve this value go to Microsoft Azure Portal > Azure Active Directory > Users > (user) and copy the User’s Object ID"
+          "description": "Object ID of the Global Administrator account used to initiate this blueprint assignment"
         }
       },
       "resourcePrefix": {
@@ -142,7 +142,7 @@
           "displayName": "Management VM OS version",
           "description": "The Windows version of the VM used to manage AAD DS"
         },
-        "defaultValue": "2019-Datacenter",
+        "defaultValue": "2022-datacenter-g2",
         "allowedValues": [
           "2022-datacenter",
           "2022-datacenter-g2",
