@@ -54,7 +54,7 @@ $BPScriptParams
 - AUTHORED BY:    Robert M. Smith
 - AUTHORED DATE:  01 September 2021
 - CONTRIBUTORS:   Tim Muessig, Jason Masten, Dennis Payne
-- LAST UPDATED:   21 September 2021
+- LAST UPDATED:   30 September 2021
 - PURPOSE:        A single PowerShell script to perform everything necessary to deploy Azure Virtual Desktop (AVD)
                   into an Azure Subscription
 
@@ -69,10 +69,8 @@ $BPScriptParams
                      - 'Owner' at the Azure subscription scope
                   4. A copy of the Blueprint files (Blueprint.json and all .JSON files in the \Artifacts folder)
                   5. This script and accompanying .JSON file, which can be found in 'Examples and Samples' folder
-                  6. The Blueprint "collateral" files (all files in \Scripts folder)
-                     The files in the \Scripts folder can be used directly from the Azure Github repository URI
-                     Or, a copy can be made available from an alternate location, such as an Azure Storage container,
-                     an internal web server, etc. If using an alternate location, that location should allow for anonymous access.
+                  6. An Azure AD DS domain name (ex. corp.contoso.com)
+                     NOTE: There are some conditions with replication if the AAD DS name is not the same as the AAD tenant name.
 
 
 - PARAMETERS      This script only has one parameter '-File'.  This is set to look for a file called "AVDBPParameters.json"
@@ -96,6 +94,7 @@ $BPScriptParams
                          The included sample file "AVDBPParameters.json" only needs a few edits to get started:
 
                          I) "AADDSDomainName": "",
+                         II)
                          
                      
                      The remaining sample values can be used "as is", or can be changed to suit your environment
@@ -188,6 +187,75 @@ if (-not($AzureSubscriptionID)) {
     }
 #endregion
 
+#region Pop-up Azure Cloud instance for user selection
+Write-Host "`n    Enumerating list Azure Clouds..." -ForegroundColor Cyan
+$AzureClouds = Get-AzEnvironment
+$AzureCloudsList = $AzureClouds.Name
+
+# Present a pop-up form to select region to deploy to
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'Select Azure Cloud'
+$form.Size = New-Object System.Drawing.Size(300,200)
+$form.StartPosition = 'CenterScreen'
+
+$okButton = New-Object System.Windows.Forms.Button
+$okButton.Location = New-Object System.Drawing.Point(75,120)
+$okButton.Size = New-Object System.Drawing.Size(75,23)
+$okButton.Text = 'OK'
+$okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+$form.AcceptButton = $okButton
+$form.Controls.Add($okButton)
+
+$cancelButton = New-Object System.Windows.Forms.Button
+$cancelButton.Location = New-Object System.Drawing.Point(150,120)
+$cancelButton.Size = New-Object System.Drawing.Size(75,23)
+$cancelButton.Text = 'Cancel'
+$cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$form.CancelButton = $cancelButton
+$form.Controls.Add($cancelButton)
+
+$label = New-Object System.Windows.Forms.Label
+$label.Location = New-Object System.Drawing.Point(10,20)
+$label.Size = New-Object System.Drawing.Size(280,20)
+$label.Text = 'Please Select Azure Cloud:'
+$form.Controls.Add($label)
+
+$listBox = New-Object System.Windows.Forms.ListBox
+$listBox.Location = New-Object System.Drawing.Point(10,40)
+$listBox.Size = New-Object System.Drawing.Size(260,20)
+$listBox.Height = 80
+
+ForEach ($A in $AzureCloudsList){
+Write-Output $A | ForEach-Object {[void] $listBox.Items.Add($_)}
+}
+
+$form.Controls.Add($listBox)
+
+$form.Topmost = $true
+
+$result = $form.ShowDialog()
+
+if ($result -eq [System.Windows.Forms.DialogResult]::CANCEL)
+ {
+    Write-Host "The 'Cancel' button was pressed. The script will now exit." -ForegroundColor Red
+    Return
+ }
+if ($null -eq $listBox.SelectedItem)
+ {
+    Write-Host "    An Azure cloud was not selected.
+    Please re-run this script and select an Azure cloud in the pop-up pick-list" -ForegroundColor Red
+    Return
+ }
+if ($result -eq [System.Windows.Forms.DialogResult]::OK)
+ {
+    $AzureEnvironmentName = $listBox.SelectedItem
+    Write-Host "Your chosen Azure Cloud is '$AzureEnvironmentName'"
+ }
+#endregion
+
 #region Checking for and setting up environment
 Write-Host "The next action will prompt you to login to your Azure portal using a Global Admin account`n" -ForegroundColor Cyan
 Read-Host -Prompt "Press any key to continue or 'CTRL+C' to end script"
@@ -206,7 +274,7 @@ if ($avdHostPool_vmGalleryImageSKU -like '*o365pp*')
     $avdHostPool_vmGalleryImageOffer = "windows-10"
 }
 
-Write-Host "`n    Enumerating list of locations in your Azure environment..." -ForegroundColor Cyan
+Write-Host "`n    Enumerating list of locations in your environment, that offer the AVD service..." -ForegroundColor Cyan
 $AzureLocations = (Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.DesktopVirtualization" -and $_.RegistrationState -EQ "Registered")}).Locations.ToLower() -replace '\s',''
 
 # Present a pop-up form to select region to deploy to
@@ -272,6 +340,77 @@ if ($result -eq [System.Windows.Forms.DialogResult]::OK)
     Write-Host "Your chosen Azure location is '$ChosenAzureLocation'"
  }
 
+#region If management VM Sku prompt set true, query and display available Skus
+if ($PromptForManagementVMOSSku){
+Write-Host "`n    Gathering list of available Server Windows Skus..." -ForegroundColor Cyan
+$ServerSkus = Get-AzVMImageSku -Location $ChosenAzureLocation -PublisherName 'MicrosoftWindowsServer' -Offer 'WindowsServer'  | Where-Object {$_.Skus -like "20??-datacenter*"}| foreach { $_.Skus}
+
+# Present a pop-up form to select management VM OS Sku to build from
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$form = New-Object System.Windows.Forms.Form
+$form.Text = 'MGMT VM OS Sku'
+$form.Size = New-Object System.Drawing.Size(300,200)
+$form.StartPosition = 'CenterScreen'
+
+$okButton = New-Object System.Windows.Forms.Button
+$okButton.Location = New-Object System.Drawing.Point(75,120)
+$okButton.Size = New-Object System.Drawing.Size(75,23)
+$okButton.Text = 'OK'
+$okButton.DialogResult = [System.Windows.Forms.DialogResult]::OK
+$form.AcceptButton = $okButton
+$form.Controls.Add($okButton)
+
+$cancelButton = New-Object System.Windows.Forms.Button
+$cancelButton.Location = New-Object System.Drawing.Point(150,120)
+$cancelButton.Size = New-Object System.Drawing.Size(75,23)
+$cancelButton.Text = 'Cancel'
+$cancelButton.DialogResult = [System.Windows.Forms.DialogResult]::Cancel
+$form.CancelButton = $cancelButton
+$form.Controls.Add($cancelButton)
+
+$label = New-Object System.Windows.Forms.Label
+$label.Location = New-Object System.Drawing.Point(10,20)
+$label.Size = New-Object System.Drawing.Size(280,20)
+$label.Text = 'Please select MGMT VM OS Sku:'
+$form.Controls.Add($label)
+
+$listBox = New-Object System.Windows.Forms.ListBox
+$listBox.Location = New-Object System.Drawing.Point(10,40)
+$listBox.Size = New-Object System.Drawing.Size(260,20)
+$listBox.Height = 80
+
+ForEach ($S in $ServerSkus){
+Write-Output $S | ForEach-Object {[void] $listBox.Items.Add($_)}
+}
+
+$form.Controls.Add($listBox)
+
+$form.Topmost = $true
+
+$result = $form.ShowDialog()
+
+if ($result -eq [System.Windows.Forms.DialogResult]::CANCEL)
+ {
+    Write-Host "The 'Cancel' button was pressed. The script will now exit." -ForegroundColor Red
+    Return
+ }
+if ($null -eq $listBox.SelectedItem)
+ {
+    Write-Host "    A Windows Server OS Sku was not selected.
+    Please re-run this script and select a Windows OS Sku in the pop-up pick-list" -ForegroundColor Red
+    Return
+ }
+if ($result -eq [System.Windows.Forms.DialogResult]::OK)
+ {
+    $managementVMOSSku = $listBox.SelectedItem
+    Write-Host "Your chosen management VM OS Sku is '$managementVMOSSku'"
+ }
+
+}
+#endregion
+
 Write-Host "`nThe following parameters will be used, based on the login information provided:
 
 Azure Tenant ID:                  $AzureTenantID
@@ -312,10 +451,9 @@ Connect-AzureAD -AzureEnvironmentName $AzureEnvironmentName -TenantId $AzureTena
 #region Check to see if there is a user assigned managed identity with name 'UAI1', and if not, create one
     Write-Host "`nCreating user-assigned managed identity account, that will be the context of the AVD assignment" -ForegroundColor Cyan
     If (-not(Get-AzUserAssignedIdentity -Name $UserAssignedIdentityName -ResourceGroupName $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
-        Write-Host "`        Managed identity '$UserAssignedIdentityName' does not currently exist.`n
-        Now creating '$UserAssignedIdentityName' in resource group '$BlueprintGlobalResourceGroupName'" -ForegroundColor Cyan
+        Write-Host "        Managed identity '$UserAssignedIdentityName' does not currently exist.
+        Now creating managed identity '$UserAssignedIdentityName' in resource group '$BlueprintGlobalResourceGroupName'" -ForegroundColor Cyan
         $UserAssignedIdentity = New-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName -Location $ChosenAzureLocation
-        Start-Sleep -Seconds 15
         } else {
         Write-Host "`nUser Assigned Identity '$UserAssignedIdentityName' already exists`n" -ForegroundColor Cyan
         $UserAssignedIdentity = Get-AzUserAssignedIdentity -ResourceGroupName $BlueprintGlobalResourceGroupName -Name $UserAssignedIdentityName
@@ -326,14 +464,21 @@ Connect-AzureAD -AzureEnvironmentName $AzureEnvironmentName -TenantId $AzureTena
 
 #region Grant the 'Owner' subscription level role to the managed identity
 Write-Host "Now checking if user assigned identity '$UserAssignedIdentityName' has 'Owner' subscription level role assignment" -ForegroundColor Cyan
-if (-not(Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedIdentity.PrincipalId -RoleDefinitionName 'Owner')) {
-Write-Host "User assigned identity '$UserAssignedIdentityName' does not currently have 'Owner' subscription level role assignment.
-Now assigning 'Owner' role to '$UserAssignedIdentityName'`n" -ForegroundColor Cyan
+
+if (-not(Get-AzUserAssignedIdentity -Name $UserAssignedIdentityName -ResourceGroupName $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)){
+
+    Do {
+    Write-Host "Waiting 3 seconds for user assigned managed identity '$UserAssignedIdentityName' to become available for next operation..." -ForegroundColor Cyan
+    Start-Sleep -Seconds 3
+    } until (Get-AzUserAssignedIdentity -Name $UserAssignedIdentityName -ResourceGroupName $BlueprintGlobalResourceGroupName -ErrorAction SilentlyContinue)
+    
     New-AzRoleAssignment -ObjectId $UserAssignedIdentity.PrincipalId -RoleDefinitionName 'Owner' -Scope "/subscriptions/$AzureSubscriptionID"
+
 } else {
     Write-Host "User assigned identity '$UserAssignedIdentityName' already has 'Owner' role assigned at the subscription level" -ForegroundColor Cyan
     Get-AzRoleAssignment -ResourceGroupName $BlueprintGlobalResourceGroupName -ObjectID $UserAssignedIdentity.PrincipalId -RoleDefinitionName 'Owner'
 }
+
 #endregion
 
 #region Grant the 'Blueprint Operator' subscription level role to the managed identity
@@ -376,7 +521,7 @@ if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNames
 #endregion
 
 #region Register the 'Microsoft.AAD' provider to the subscription, if not already registered
-Write-Host "`nNow checking the 'Microsoft.AAD' provider, and registering if needed" -ForegroundColor Cyan
+Write-Host "Now checking the 'Microsoft.AAD' provider, and registering if needed" -ForegroundColor Cyan
 if (-not(Get-AzResourceProvider -ListAvailable | Where-Object {($_.ProviderNamespace -EQ "Microsoft.AAD" -and $_.RegistrationState -EQ "Registered")})) {
     Write-Host "The 'Microsoft.AAD' provider is not currently registered. Now registering..." -ForegroundColor Cyan
     Register-AzResourceProvider -ProviderNamespace 'Microsoft.AAD'
