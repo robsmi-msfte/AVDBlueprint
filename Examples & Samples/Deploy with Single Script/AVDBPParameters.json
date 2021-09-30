@@ -2,14 +2,14 @@
     "AzureSubscriptionID": "",
     "AzureTenantID": "",
     "AADDSDomainName": "",
-    "AzureEnvironmentName": "",
-
+    
+    "PromptForManagementVMOSSku": true,
     "avdHostPool_vmGalleryImageSKU": "21h1-evd-o365pp",
     "avdHostPool_vmSize": "Standard_B4ms",
     "avdHostPool_vmNumberOfInstances": 2,
     "avdHostPool_maxSessionLimit": 16,
     "avdUsers_userCount": 30,
-    "BlueprintResourcePrefix": "AVDBP01",
+    "BlueprintResourcePrefix": "AVDBP116",
     "BlueprintGlobalResourceGroupName": "AVD_Blueprint_Global_RG",
     "UserAssignedIdentityName": "UAI1",
     "BlueprintName": "AVDBlueprint",
@@ -26,6 +26,6 @@
     "avdHostPool_workspaceName": "[concat(parameters('resourcePrefix'), '-avd-ws')]",
     
     "vnetEnableDdosProtection": false,
-    "managementVMOSSku": "2019-Datacenter",
+    "managementVMOSSku": "2022-datacenter-g2",
     "logsRetentionInDays": 365
 }
