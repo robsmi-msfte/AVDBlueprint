@@ -55,9 +55,6 @@
         "type": "string",
         "defaultValue": "-mgmtvm"
       },
-      "managementVMOSSku": {
-        "type": "string"
-      },
       "dnsLabelPrefix": {
         "type": "string",
         "metadata": {
@@ -193,7 +190,7 @@
       "managedDomaintoJoin": "[parameters('adds_domainName')]",
       "imagePublisher": "MicrosoftWindowsServer",
       "imageOffer": "WindowsServer",
-      "windowsOSVersion": "[parameters('managementVMOSSku')]",
+      "windowsOSVersion": "2019-Datacenter",
       "resourceGroup": "[resourceGroup().name]",
       "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]",
       "publicIPName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-pip'))]",
@@ -339,9 +336,9 @@
               }
             },
             "variables": {
-              "imagePublisher": "[variables('imagePublisher')]",
-              "imageOffer": "[variables('imageOffer')]",
-              "windowsOSVersion": "[variables('windowsOSVersion')]",
+              "imagePublisher": "MicrosoftWindowsServer",
+              "imageOffer": "WindowsServer",
+              "windowsOSVersion": "2019-Datacenter",
               "nicName": "[concat(parameters('resourcePrefix'),parameters('mgmtvmNameStatic'),string('-nic'))]"
             },
             "resources": [
@@ -371,9 +368,9 @@
                     },
                     "storageProfile": {
                     "imageReference": {
-                        "publisher": "[variables('imagePublisher')]",
-                        "offer": "[variables('imageOffer')]",
-                        "sku": "[variables('windowsOSVersion')]",
+                      "publisher": "[variables('imagePublisher')]",
+                      "offer": "[variables('imageOffer')]",
+                      "sku": "[variables('windowsOSVersion')]",
                         "version": "latest"
                     },
                     "osDisk": {
@@ -593,7 +590,7 @@
     "AzureStorageFQDN": {
       "value": "[parameters('AzureStorageFQDN')]"
     },
-    "managementVMOSSku": {
+    "MGMTVMOSSku": {
       "value": "[parameters('managementVMOSSku')]"
     },
     "avdHostPool_vmNumberOfInstances": {
