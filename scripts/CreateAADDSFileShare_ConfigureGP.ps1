@@ -154,6 +154,8 @@ New-Item -ItemType Directory -Path $CTempPath -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Path "$CTempPath\Software" -ErrorAction SilentlyContinue
 $AVDPostInstallGPSettingsZip = "$CTempPath\AVD_PostInstall_GP_Settings.zip"
 $ZipFileURI = "$ScriptURI/AVD_PostInstall_GP_Settings.zip"
+$SoftwareShare = "$CTempPath\Software"
+New-SmbShare -Name "Software" -Path $SoftwareShare
 Invoke-WebRequest -Uri $ZipFileURI -OutFile "$AVDPostInstallGPSettingsZip"
 If (Test-Path $AVDPostInstallGPSettingsZip){
 Expand-Archive -LiteralPath "$AVDPostInstallGPSettingsZip" -DestinationPath "$CTempPath" -ErrorAction SilentlyContinue
@@ -191,16 +193,12 @@ Invoke-WebRequest -Uri $VDOTURI -OutFile $VDOTZip
 # Acquire FSLogix software group policy files
 $FSLogixZip = "$CTempPath\FSLogixGPT.zip"
 $FSLogixSW = "$CTempPath\Software\FSLogix"
-$SoftwareShare = "$CTempPath\Software"
 $FSLogixFileURI = "$ScriptURI/FSLogixGPT.zip"
 Invoke-WebRequest -Uri $FSLogixFileURI -OutFile $FSLogixZip
 If (-not(Test-Path "$FSLogixSW")) {
     New-Item -ItemType Directory -Path "$FSLogixSW"
 } 
 Expand-Archive -Path $FSLogixZip -DestinationPath $FSLogixSW
-
-# Set up a file share for the session hosts
-New-SmbShare -Name "Software" -Path $SoftwareShare
 
 # Create AVD GPO, AVD OU, link the two, then copy session host configuration start script to SYSVOL location
 $DeploymentPrefix = $ResourceGroupName.Split('-')[0]
