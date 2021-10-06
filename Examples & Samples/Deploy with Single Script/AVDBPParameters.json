@@ -2,14 +2,14 @@
     "AzureSubscriptionID": "",
     "AzureTenantID": "",
     "AADDSDomainName": "",
-    
+    "BlueprintResourcePrefix": "AVDBP116",
+
     "PromptForManagementVMOSSku": true,
     "avdHostPool_vmGalleryImageSKU": "21h1-evd-o365pp",
     "avdHostPool_vmSize": "Standard_B4ms",
     "avdHostPool_vmNumberOfInstances": 2,
     "avdHostPool_maxSessionLimit": 16,
     "avdUsers_userCount": 30,
-    "BlueprintResourcePrefix": "AVDBP116",
     "BlueprintGlobalResourceGroupName": "AVD_Blueprint_Global_RG",
     "UserAssignedIdentityName": "UAI1",
     "BlueprintName": "AVDBlueprint",
