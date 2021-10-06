@@ -18,6 +18,12 @@
             "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
           }
         },
+        "KeyVaultUniqueName": {
+          "type": "string",
+          "metadata": {
+            "displayName": "Pseudo globally unique name for the key vault to be created"
+          }
+        },
         "keyvault_ownerUserObjectID": {
           "type": "string",
           "metadata": {
@@ -85,7 +91,7 @@
       },
       "variables": {
         "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-        "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
+        "key-vault-name": "[parameters('KeyVaultUniqueName')]",
         "enable-vault-for-deployment": true,
         "enable-vault-for-templateDeployment": true,
         "enable-vault-for-diskEncryption": true,
@@ -228,6 +234,9 @@
     "parameters": {
       "resourcePrefix": {
         "value": "[parameters('resourcePrefix')]"
+      },
+      "KeyVaultUniqueName": {
+        "value": "[parameters('KeyVaultUniqueName')]"
       },
       "keyvault_ownerUserObjectID": {
         "value": "[parameters('keyvault_ownerUserObjectID')]"
