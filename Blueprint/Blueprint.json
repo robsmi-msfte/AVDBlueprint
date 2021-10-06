@@ -110,6 +110,10 @@
         },
         "defaultValue": "AVD"
       },
+      "KeyVaultUniqueName": {
+        "type": "string",
+        "defaultValue": "[concat(parameters('resourcePrefix'), '-sharedsvcs-kv')]"
+      },
       "scriptURI": {
         "type": "string",
         "metadata": {
