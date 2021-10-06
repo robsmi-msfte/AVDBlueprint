@@ -42,20 +42,18 @@ There are several required values that are required to be edited to your environ
     `"AzureSubscriptionID": "",`  
     `"AzureTenantID": "",`  
     `"AADDSDomainName": "",`  
-    `"AzureEnvironmentName": "",`  
 
     **Example:**  
 
     `"AzureSubscriptionID": "00000000-0000-0000-0000-000000000000",`  
     `"AzureTenantID": "00000000-0000-0000-0000-000000000000",`  
     `"AADDSDomainName": "avd.contoso.com",`  
-    `"AzureEnvironmentName": "AzureCloud",`  
 
     The remaining parameter values can be used as they are, or you can customize to suit your environment.  The values most likely to be modified first, are in the second "paragraph" of the file 'AVDBPParameters.json'.  In this section you can change the OS version to be deployed, you can change the AVD Azure VM size, number of VMs to create, and more.  Please note that as this file is in JSON format, some formatting rules must be followed:  
 
       - String values (text) must be surrounded by quotation marks
-      - Integer values (numbers) must NOT be surrounded by quotation marks
-      - Boolean values (True/False) must NOT be surrounded by quotation marks
+      - Integer values (numbers) are not surrounded by quotation marks
+      - Boolean values (true/false) are not surrounded by quotation marks, and must be all lower case.
 
 * **Once parameters file editing is complete, save and close the file 'AVDBPParameters.json'**.
 
@@ -77,8 +75,8 @@ Azure Virtual Desktop can be customized in a wide variety of ways. The purpose o
 |-|-|-|-|  
 |AzureSubscriptionID|string|The 'Subscription ID' obtained from Azure Portal or other tools for the destination deployment|Yes|
 |AzureTenantID|string|The 'Tenant ID' obtained from Azure Portal or other tools for the destination deployment|Yes|
-|AzureCloudInstance|string|'AzureCloud'<br/>'AzureUSGovernment'|Yes|
 |AADDSDomainName|string|the name of the AAD DS domain to be created|Yes|
+|PromptForManagementVMOSSku|boolean|Whether or not to prompt for the Windows Server operating system SKU (release) of the management VM. This list is built at run-time based on what cloud is being deployed to and what location. If left to default, the SKU choice is '2022-datacenter'.|No|
 |avdHostPool_vmGalleryImageSKU|string|'19h2-evd-o365pp'<br/>'19h2-evd-o365pp-g2''<br/>'20h1-evd-o365pp'<br/>'20h1-evd-o365pp-g2'<br/>''20h2-evd-o365pp'<br/>'20h2-evd-o365pp-g2'<br/>**'21h1-evd-o365pp'**<br/>'21h1-evd-o365pp-g2'<br/>'19h2-evd'<br/>'19h2-evd-g2'<br/>'20h1-evd'<br/>'20h1-evd-g2'<br/>'20h2-evd'<br/>'20h2-evd-g2'<br/>'21h1-evd'<br/>'21h1-evd-g2'|No (default currently 21H1 with M365)
 |avdHostPool_vmSize|string|[Azure virtual machine size of your choice](https://docs.microsoft.com/en-us/azure/virtual-machines/sizes?WT.mc_id=Portal-fx)|No (default is 'Standard_B4ms')
 |avdHostPool_vmNumberOfInstances|integer|number of AVD VMs to be created by this blueprint|No|
@@ -92,6 +90,8 @@ Azure Virtual Desktop can be customized in a wide variety of ways. The purpose o
 |BlueprintParameterFilePath|string|the name of the parameter file 'AVDBPParameters.json'|No|
 
 ## Prerequisites
+> [!TIP]
+> There is now a single PowerShell script that will configure all pre-requisites and then assign the Blueprint.  The following information is for reference, or in case of configuring manually, or assigning the Blueprint with a method other than the single assignment script.
 
 * **An [Azure tenant](https://docs.microsoft.com/en-us/microsoft-365/education/deploy/intro-azure-active-directory#what-is-an-azure-ad-tenant)**. Though you can create a long tenant domain name prefix, you cannot in AAD DS.  Therefore it is recommended to have your domain name prefix 15 characters or less.  
 If you don't already have a tenant for this deployment, here are some instructions on [setting up an Azure tenant](https://docs.microsoft.com/en-us/azure/active-directory/develop/quickstart-create-new-tenant).
@@ -170,6 +170,11 @@ Check the current provider registration status in your subscription:
 
 > [!NOTE]
 > Any roles assigned to the user assigned managed identity can safely be removed after the blueprint assignment has completed.  The only downside is that if subsequent blueprint assignments are needed, those roles would need to be granted to the user assigned managed identity again.
+
+* **Managed identity assigned the Owner role at the subscription level**  
+The reason is that the managed identity needs full access during the deployment, for example to initiate the creation of an instance of Azure AD DS.  
+
+    **MORE INFO:** [Add or change Azure subscription administrators](https://docs.microsoft.com/en-us/azure/cost-management-billing/manage/add-change-subscription-administrator)
 
 * **The Blueprint main file (Blueprint.json), and related artifact objects**  
 These objects are publicly available on Github.com. Once the Blueprint objects have been acquired, they need to be customized to each respective environment.
@@ -287,29 +292,26 @@ help .\Remove-AzAvdBpDeployment.ps1
 
 ## Tips
 
-### **Deploying AVD Blueprint to Sovereign Clouds**
+### **Deploying AVD Blueprint to other Azure clouds**
+The single script deployment now includes an option of which cloud you are planning to deploy to:
 
-If you are deploying to AzureUSGovernment, and using an assignment file, you can now change several values in the assignment file and then utilize this Blueprint without having to edit the Blueprint files or Blueprint scripts.
+* AzureChinaCloud
+* AzureCloud
+* AzureGermanCloud
+* AzureUSGovernment
 
-1. Edit the file **'run.config.json'**, changing the **'SubscriptionID'** and **'TenantID'** to the new cloud being deployed to
-1. Edit the assignment file **"assign_default.json"**
-    1. Change **Location** values at the top and bottom of the assignment file to the new location being deployed to (ex. **'usgovarizona'**)
-    1. Change the parameter **'AzureEnvironmentName'** value to 'AzureUSGovernment'
-    1. Change the parameter **'AzureStorageFQDN'** value to 'file.core.usgovcloudapi.net'
-1. Open a PowerShell console:
-    1. Change directory to your customized files
-    1. Connect to your account using PowerShell **'Connect-AzAccount -Environment AzureUSGovernment'**
-1. If you have not yet imported the Blueprint to the new cloud, run the **'import-bp.ps1'** script
-1. Assign the Blueprint with your customized **"assign_default.json"**.
+This blueprint has not yet been tested in 'AzureChinaCloud' or 'AzureGermanCloud'.  However if the Azure Virtual Desktop service is available in those clouds, this Blueprint should run successfully.  There are only three things that would need to be changed to move from one cloud to another.  All three of these changes are in the parameter file 'AVDBPParameters.json':
 
-> [!TIP]
-> If you plan to deploy in both Azure Commercial and AzureGov, it might be easier to create two folders for your customized files (import-bp.ps1, assign-bp.ps1, run.config.json, and assign_default.json).  Example:  
->
-> * C:\VSCode\CustomizedFiles\AzCloud
-> * C:\VSCode\CustomizedFiles\AzGov  
->
-> You change a few values in your "run.config.json" file (SubID, TenantID, path) and you can easily pivot from one cloud to the other.  
-> The path to the Blueprint files themselves can be the same in both sets of files, if you choose this method.
+* TenantID
+* SubscriptionID
+* Azure Active Directory Domain Services domain name
+
+```json
+    "AzureSubscriptionID": "",
+    "AzureTenantID": "",
+    "AADDSDomainName": "",
+```
+You would then save your changes to the parameter file, change directory to 'C:\AVDBlueprint\Examples & Samples\Deploy with Single Script' (or other location where those files exist), then run PowerShell elevated, set you PowerShell Execution Policy if needed, then run the script 'AssignAVDBlueprint.ps1'.
 
 ### **Pre-existing Active Directory**
 
@@ -382,6 +384,9 @@ Depending on various factors, you may create a managed identity, a storage blob,
 
     Example: AVDBlueprint-RG
 
+* **Blueprint assignment time**
+The AVD Blueprint can take an hour, or sometimes more.  AAD DS takes at least 30 minutes to create, and up to 50 minutes in some cases.  Creating the session hosts takes almost 10 minutes, because of creation but also installing extensions, adding to AVD host pools, etc.  The up-side of session host creation is that they can be created in parallel to some point.  For each "test" user created, there is a key vault created.  The more users created, the longer time it takes.  Each user can take about a minute to create.
+
 ## Recommended Reading
 
 1) [Azure Blueprints](<https://docs.microsoft.com/en-us/azure/governance/blueprints/overview>)
@@ -392,7 +397,20 @@ Depending on various factors, you may create a managed identity, a storage blob,
 
 ## Change List
 
+* **<mark style="background-color: lightblue">Created a single script that will configure all pre-requisites, import, publish, and assign the Blueprint</mark>**.  There are only 3 required parameters unique to your specific deployment environment:
+
+  * TenantID
+  * Subscription ID
+  * Azure Active Directory Domain Services (AAD DS) domain name.
+
+  There are many parameters that remain to be optionally changed.  Otherwise, the script and the blueprint have default values for many other parameters.
+
+  **NOTE:** There seems to be a problem with the script hanging, just after the first login to Azure prompt.  This hang issue may have something to do with an account that has multiple subscriptions and also has two-factor authentication enabled.  The workaround for now, is just before you run your script, log in to Azure using the same account that you will log in with during the script execution (Connect-AzAccount).  As the script runs, the first login prompt should then just display that account name with status "signed in".  You can click that and move on without having to enter name and password a second time for that same login.
+  This issue has been observed with the PowerShell and the PowerShell ISE that come "in-box" with Windows 10, release 21H1.  In those cases you have to close PowerShell, reopen it, and change directory back to the script folder.  If you are using Visual Studio Code, you can end the PowerShell session and will be prompted to open a new one.  You will still have to change directory back to the folder with the 'AssignAVDBlueprint.ps1' script.
+
 * Added a folder called **'Examples and Samples'**. Recent updates to the AVD Blueprint mean that the Blueprint files themselves, no longer need any manual edits. And you can use the same Blueprint files for Azure Commercial or Azure US Government.  For your unique values, such as SubscriptionID and so on, you can customize the included sample file **'run.config.json'**.
+
+* Added a parameter option for the Windows Server operating system SKU (release).  This is implemented in the single deployment script as an optional parameter 'PromptForManagementVMOSSku'.  If this parameter value is set to true, the script will prompt at run-time with a list of Server OS Skus available in your selected cloud and location/region.  If this parameter value is set to false, the default is set to '2022-datacenter'.
 
 * Edited the two sample PowerShell scripts that perform the Import, Publish, and Assignment tasks.  The script named "assign-bp.ps1" performs the import and publish functions.  The file "assign-bp.ps1" performs the Blueprint assignment.  Of the remaining two files; "run.config.json" and "assign_default.json" samples, the "run.config.json" would most likely only be edited once, to include your unique values of TenantID, SubscriptionID, BlueprintPath, etc.  The remaining file "assign_default.json" is the only file you need edit afterward to customize the Blueprint experience.  There is a new section in the section of this Readme called **Manage the Blueprint using a local repository of Blueprint files and customized files to import and assign using PowerShell (Windows device)**.
 
