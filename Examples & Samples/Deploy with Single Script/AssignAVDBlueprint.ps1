@@ -278,12 +278,6 @@ Write-Host "Enumerating Azure context..." -ForegroundColor Cyan
 $AzureEnvironment = Get-AzContext
 $AzureStorageEnvironment = ($AzureEnvironment).Environment.StorageEndpointSuffix
 $AzureStorageFileEnv = 'file.' + $AzureStorageEnvironment
-#region Generate a pseudo unique name for the Azure Key Vault name, to avoid name collisions
-$KeyVaultNameNumberofChars = 23 - ($BlueprintResourcePrefix | Measure-Object -Line -Character -Word).Characters
-$KeyVaultNameString1 = -join ([char[]](New-Guid).Guid |Select-Object -First 8) + -join ([char[]](New-Guid).Guid.ToUpper() |Select-Object -First 8) + -join ([char[]](New-Guid).Guid |Select-Object -First 8)
-$KeyVaultNameString2 = -join ($KeyVaultNameString1 |Select-Object -First $KeyVaultNameNumberofChars)
-$KeyVaultUniqueName = $BlueprintResourcePrefix + $KeyVaultNameString2
-#endregion
 
 # Set the correct value for 'avdHostPool_vmGalleryImageOffer' based on the VM type being installed'
 if ($avdHostPool_vmGalleryImageSKU -like '*o365pp*')
@@ -630,7 +624,6 @@ $bpParameters = @{
     avdHostPool_HostPoolType            =   $avdHostPool_HostPoolType
     avdUsers_userCount                  =   $avdUsers_userCount
     logsRetentionInDays                 =   $logsRetentionInDays
-    KeyVaultUniqueName                  =   $KeyVaultUniqueName
  }
 #endregion
 

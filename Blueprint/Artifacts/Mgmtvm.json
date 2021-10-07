@@ -183,7 +183,7 @@
       "storageAccountName": "[concat(uniquestring(resourceGroup().id, deployment().name))]",
       "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
       "resourcegroup-name": "[concat(parameters('resourcePrefix'), '-sharedsvcs-rg')]",
-      "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
+      "key-vault-name": "[uniqueString(resourceGroup().id, deployment().name)], '-kv'",
       "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
       "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
       "existingDomainUsername": "[first(split(parameters('daUser_AdminUser'), '@'))]",

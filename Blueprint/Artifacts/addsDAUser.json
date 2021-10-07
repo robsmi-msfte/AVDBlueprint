@@ -75,7 +75,7 @@
         },
         "variables": {
           "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-          "key-vault-name": "[concat(variables('deployment-prefix'), '-kv')]",
+          "key-vault-name": "[uniqueString(resourceGroup().id, deployment().name)], '-kv'",
           "username": "[first(split(parameters('ad_usernameUPN'), '@'))]",
           "domainadmin_secret_value": "[concat(toUpper(uniqueString(parameters('secret-unique-value1'))), uniqueString(parameters('secret-unique-value2')), toLower(uniqueString(parameters('secret-unique-value3'))), '!')]",
           "domainadmin_group": "AAD DC Administrators",
