@@ -506,7 +506,7 @@
           },
           "variables": {
               "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-              "key-vault-name": "[uniqueString(resourceGroup().id, deployment().name)], '-kv'",
+              "key-vault-name": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]",
               "createVMs": "[greater(parameters('avdHostPool_vmNumberOfInstances'),0)]",
               "rdshManagedDisks": "[if(equals(parameters('vmImageType'), 'CustomVHD'), parameters('vmUseManagedDisks'), bool('true'))]",
               "rdshPrefix": "[parameters('vmNamePrefix')]",
