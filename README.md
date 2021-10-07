@@ -21,7 +21,7 @@ The AVD Blueprints are meant to deploy an entire environment, including Azure Ac
   * Locate the .zip file downloaded from Github.com
   * Right-click the .zip file, and then click **'Properties'**
   * In the bottom section labeled **'Security'**, if the text is present: 'This file came from another computer and might be blocked to help protect this computer', click the **'Unblock'** check-box, then click **'Apply'**, and then click **'OK'**.  
- 
+
 * **Extract the downloaded .zip file** to any folder on your device (Example. 'C:\AVDBlueprint')  
   * You can double-click the .zip file in Windows File Explorer.
   * Double-click the top-level folder in the zip, which should be named **'AVDBlueprint-main'**.

@@ -19,8 +19,10 @@ Param(
     [string] $evdvm_name_prefix,
 
     [Parameter(Mandatory=$true)]
-    [string] $vmNumberOfInstances
-    
+    [string] $vmNumberOfInstances,
+
+    [Parameter(Mandatory=$true)]
+    [string] $keyvaultname
 )
 #region Install RSAT-AD Tools, GP Tools, setup working folders, and install 'Az' PowerShell modules
 Install-WindowsFeature -name GPMC
@@ -51,8 +53,10 @@ $Scriptblock = {
     [string] $evdvm_name_prefix,
 
     [Parameter(Mandatory=$true,Position=6)]
-    [string] $vmNumberOfInstances
+    [string] $vmNumberOfInstances,
 
+    [Parameter(Mandatory=$true,Position=7)]
+    [string] $keyvaultname
     )
     
     Start-Transcript -OutputDirectory C:\Windows\Temp
@@ -211,7 +215,7 @@ $AVDComputersOU = New-ADOrganizationalUnit -Name 'AVD Computers' -DisplayName 'A
 New-GPLink -Target $AVDComputersOU.DistinguishedName -Name $AVDPolicy.DisplayName -LinkEnabled Yes
 
 # Get credentials and use those to move AVD session hosts to their new OU
-$KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
+$KeyVault = Get-AzKeyVault -VaultName $keyvaultname
 $DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
 $DAUserName = $DAUserUPN.Split('@')[0]
 $DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName).SecretValue
@@ -287,7 +291,7 @@ for ($i = 1; $i -le $vmNumberOfInstances ; $i++) {
 Connect-AzAccount -Identity -Environment $AzureEnvironmentName
 
 #Create a DAuser context, using password from Key Vault
-$KeyVault = Get-AzKeyVault -VaultName "*-sharedsvcs-kv"
+$KeyVault = Get-AzKeyVault -VaultName $keyvaultname
 $DAUserUPN = (Get-AzADGroup -DisplayName "AAD DC Administrators" | Get-AzADGroupMember).UserPrincipalName
 $DAUserName = $DAUserUPN.Split('@')[0]
 $DAPass = (Get-AzKeyVaultSecret -VaultName $keyvault.VaultName -name $DAUserName).SecretValue
@@ -311,7 +315,7 @@ Get-AzContext | Out-File -append c:\windows\temp\outercontext.txt
 klist tickets | Out-File -append c:\windows\temp\outercontext.txt
 
 #Run the $scriptblock in the DAuser context
-Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI,$AzureEnvironmentName,$AzureStorageFQDN,$evdvm_name_prefix,$vmNumberOfInstances
+Invoke-Command -ConfigurationName DASessionConf -ComputerName $env:COMPUTERNAME -ScriptBlock $Scriptblock -ArgumentList $ResourceGroupName,$StorageAccountName,$ScriptURI,$AzureEnvironmentName,$AzureStorageFQDN,$evdvm_name_prefix,$vmNumberOfInstances,$keyvaultname
 
 #Clean up DAuser context
 Unregister-PSSessionConfiguration -Name DASessionConf -Force
