@@ -82,6 +82,10 @@
         "defaultValue": "[concat(parameters('resourcePrefix'), '-sharedsvcs-vnet')]",
         "allowedValues": []
       },
+      "key-vault-name": {
+        "type": "string",
+        "defaultValue": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]"
+      },
       "script_executionUserResourceID": {
         "type": "string",
         "metadata": {
@@ -110,7 +114,6 @@
         },
         "defaultValue": "AVD"
       },
-
       "scriptURI": {
         "type": "string",
         "metadata": {
@@ -213,7 +216,7 @@
             2,
             3
         ]
-    },
+      },
       "log-analytics_service-tier": {
         "type": "string",
         "metadata": {
