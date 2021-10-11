@@ -28,6 +28,9 @@
           "script_executionUserResourceID": {
             "type": "string"
           },
+          "key-vault-name": {
+            "type": "string"
+          },
           "ad_usernameUPN": {
             "type": "string",
             "metadata": {
@@ -75,7 +78,6 @@
         },
         "variables": {
           "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-          "key-vault-name": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]",
           "username": "[first(split(parameters('ad_usernameUPN'), '@'))]",
           "domainadmin_secret_value": "[concat(toUpper(uniqueString(parameters('secret-unique-value1'))), uniqueString(parameters('secret-unique-value2')), toLower(uniqueString(parameters('secret-unique-value3'))), '!')]",
           "domainadmin_group": "AAD DC Administrators",
@@ -84,12 +86,12 @@
         "resources": [
           {
             "type": "Microsoft.KeyVault/vaults/secrets",
-            "name": "[concat(variables('key-vault-name'), '/', variables('username'))]",
+            "name": "[concat(parameters('key-vault-name'), '/', variables('username'))]",
             "apiVersion": "2019-09-01",
             "properties": {
               "value": "[variables('domainadmin_secret_value')]",
               "dependsOn": [
-                "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]"
+                "[resourceId('Microsoft.KeyVault/vaults', parameters('key-vault-name'))]"
               ]
             }
           },
@@ -99,7 +101,7 @@
             "name": "createDAUser",
             "location": "[resourceGroup().location]",
             "dependsOn": [
-              "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('key-vault-name'), variables('username'))]"
+              "[resourceId('Microsoft.KeyVault/vaults/secrets', parameters('key-vault-name'), variables('username'))]"
             ],
             "kind": "AzurePowerShell",
             "identity": {
@@ -111,7 +113,7 @@
             "properties": {
               "forceUpdateTag": "[parameters('utcValue')]",
               "azPowerShellVersion": "5.4",
-              "arguments": "[concat('-displayName', ' ', variables('username'), ' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'), ' ', '-keyvault', ' ', variables('key-vault-name'), ' ','-forcePasswordChange', ' ', variables('forcePasswordChange'))]",
+              "arguments": "[concat('-displayName', ' ', variables('username'), ' ', '-userPrincipalName', ' ', parameters('ad_usernameUPN'), ' ', '-keyvault', ' ', parameters('key-vault-name'), ' ','-forcePasswordChange', ' ', variables('forcePasswordChange'))]",
               "primaryScriptUri": "[parameters('addADUserScriptURI')]",
               "timeout": "PT4H",
               "cleanupPreference": "OnSuccess",
@@ -151,6 +153,9 @@
       "parameters": {
         "resourcePrefix": {
           "value": "[parameters('resourcePrefix')]"
+        },
+        "key-vault-name": {
+          "value": "[parameters('key-vault-name')]"
         },
         "addADUserScriptURI": {
           "value": "[concat(parameters('scriptURI'),'/addADuser.ps1')]"
