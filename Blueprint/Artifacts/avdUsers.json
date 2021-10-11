@@ -18,11 +18,14 @@
               "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
             }
           },
+          "key-vault-name": {
+            "type": "string"
+          },
           "aad_avduserGroup": {
             "type": "string",
             "metadata": {
                 "displayName": "AAD AVD Test Users Group"
-            },
+          },
             "defaultValue": "AVD Users"
           },
           "createAVDUserScriptURI": {
@@ -94,7 +97,7 @@
         },
         "variables": {
           "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-          "key-vault-name": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]",
+          "key-vault-name": "[parameters('key-vault-name')]",
           "hostpoolName": "[replace(parameters('hostpoolName'),'\"','')]",
           "pw_secret_value": "[concat(toUpper(uniqueString(parameters('secret-unique-value1'))), uniqueString(parameters('secret-unique-value2')), toLower(uniqueString(parameters('secret-unique-value3'))), '!')]",
           "forcePasswordChange": true,
@@ -154,6 +157,9 @@
       "parameters": {
         "resourcePrefix": {
           "value": "[parameters('resourcePrefix')]"
+        },
+        "key-vault-name": {
+          "value": "[parameters('key-vault-name')]"
         },
         "domainName": {
           "value": "[parameters('adds_domainName')]"

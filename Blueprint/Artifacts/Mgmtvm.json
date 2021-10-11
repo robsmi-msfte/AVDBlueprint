@@ -22,6 +22,9 @@
           "displayName": "Resource Prefix"
         }
       },
+      "key-vault-name": {
+        "type": "string"
+      },
       "_artifactsLocationSasToken": {
         "type": "securestring",
         "metadata": {
@@ -186,7 +189,7 @@
       "storageAccountName": "[concat(uniquestring(resourceGroup().id, deployment().name))]",
       "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
       "resourcegroup-name": "[concat(parameters('resourcePrefix'), '-sharedsvcs-rg')]",
-      "key-vault-name": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]",
+      "key-vault-name": "[parameters('key-vault-name')]",
       "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
       "CustomScriptExtensionName": "CreateProfileStoreAndFSLogixPolicy",
       "existingDomainUsername": "[first(split(parameters('daUser_AdminUser'), '@'))]",
@@ -434,7 +437,7 @@
             "fileUris": [
               "[parameters('CreateConfigureFileShareAndGPScriptURI')]"
             ],
-            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('ScriptURI'), ' -keyvaultname ',parameters('vaultname'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
+            "commandToExecute": "[concat('powershell.exe -ExecutionPolicy Unrestricted -File CreateAADDSFileShare_ConfigureGP.ps1 -ResourceGroupName ', resourceGroup().name , ' -ScriptURI ',parameters('ScriptURI'), ' -keyvaultname ',parameters('key-vault-name'), ' -AzureStorageFQDN ',parameters('AzureStorageFQDN'), ' -AzureEnvironmentName ',parameters('AzureEnvironmentName'), ' -vmNumberOfInstances ',parameters('avdHostPool_vmNumberOfInstances'), ' -evdvm_name_prefix ',parameters('avdHostPool_vmNamePrefix'), ' -StorageAccountName ',toLower(substring(concat(parameters('resourcePrefix'),uniqueString(subscription().id)), 0, 14)),' -Verbose')]"
           }
         }
       },
@@ -567,11 +570,11 @@
     "adds_domainName": {
       "value": "[parameters('adds_domainName')]"
     },
+    "key-vault-name": {
+      "value": "[parameters('key-vault-name')]"
+    },
     "ouPath": {
       "value": ""
-    },
-    "vaultname": {
-      "value": "[parameters('vaultname')]"
     },
     "daUser_AdminUser": {
       "value": "[parameters('daUser_AdminUser')]"

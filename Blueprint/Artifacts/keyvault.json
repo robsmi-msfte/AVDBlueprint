@@ -18,6 +18,9 @@
             "displayName": "Resource Group and Resource identifier. String to be used as prefix to all Resource Group and Resource names."
           }
         },
+        "key-vault-name": {
+          "type": "string"
+        },
         "keyvault_ownerUserObjectID": {
           "type": "string",
           "metadata": {
@@ -85,7 +88,7 @@
       },
       "variables": {
         "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-        "key-vault-name": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]",
+        "key-vault-name": "[parameters('key-vault-name')]",
         "enable-vault-for-deployment": true,
         "enable-vault-for-templateDeployment": true,
         "enable-vault-for-diskEncryption": true,
@@ -228,6 +231,9 @@
     "parameters": {
       "resourcePrefix": {
         "value": "[parameters('resourcePrefix')]"
+      },
+      "key-vault-name": {
+        "value": "[parameters('key-vault-name')]"
       },
       "keyvault_ownerUserObjectID": {
         "value": "[parameters('keyvault_ownerUserObjectID')]"

@@ -20,10 +20,13 @@
                       "displayName": "Resource Prefix"
                   }
               },
+              "key-vault-name": {
+                "type": "string"
+              },
               "baseTime":{
                   "type":"string",
                   "defaultValue": "[utcNow('u')]"
-                },
+              },
               "nestedTemplatesLocation": {
                   "type": "string",
                   "metadata": {
@@ -506,13 +509,12 @@
           },
           "variables": {
               "deployment-prefix": "[concat(parameters('resourcePrefix'), '-sharedsvcs')]",
-              "key-vault-name": "[concat(parameters('resourcePrefix'),uniqueString(subscription().id))]",
               "createVMs": "[greater(parameters('avdHostPool_vmNumberOfInstances'),0)]",
               "rdshManagedDisks": "[if(equals(parameters('vmImageType'), 'CustomVHD'), parameters('vmUseManagedDisks'), bool('true'))]",
               "rdshPrefix": "[parameters('vmNamePrefix')]",
               "avSetSKU": "[if(variables('rdshManagedDisks'), 'Aligned', 'Classic')]",
               "existingDomainUsername": "[first(split(parameters('administratorAccountUsername'), '@'))]",
-              "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]",
+              "key-vault-resourceID": "[resourceId('Microsoft.KeyVault/vaults', parameters('key-vault-name'))]",
               "vhds": "[concat('vhds','/', variables('rdshPrefix'))]",
               "subnet-id": "[resourceId(parameters('virtualNetworkResourceGroupName'),'Microsoft.Network/virtualNetworks/subnets',parameters('existingVnetName'), parameters('existingSubnetName'))]",
               "resourceGroup": "[resourceGroup().name]",
@@ -694,7 +696,7 @@
                           "administratorAccountPassword": {
                               "reference": {
                                 "keyVault": {
-                                  "id": "[resourceId('Microsoft.KeyVault/vaults', variables('key-vault-name'))]"
+                                  "id": "[resourceId('Microsoft.KeyVault/vaults', parameters('key-vault-name'))]"
                                 },
                                 "secretName": "[variables('existingDomainUsername')]"
                               }
@@ -771,7 +773,10 @@
       "parameters": {
           "resourcePrefix": {
               "value": "[parameters('resourcePrefix')]"
-            },
+          },
+          "key-vault-name": {
+              "value": "[parameters('key-vault-name')]"
+          },
           "artifactsLocation": {
               "value": "https://wvdportalstorageblob.blob.core.windows.net/galleryartifacts/Configuration_7-20-2020.zip"
           },
