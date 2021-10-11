@@ -53,7 +53,7 @@ $BPScriptParams
 - TITLE:          AVD Blueprint Configuration and Deployment script
 - AUTHORED BY:    Robert M. Smith
 - AUTHORED DATE:  01 September 2021
-- CONTRIBUTORS:   Tim Muessig, Jason Masten, Dennis Payne
+- CONTRIBUTORS:   Tim Muessig, Jason Masten, Dennis Payne, Chris Rutledge
 - LAST UPDATED:   30 September 2021
 - PURPOSE:        A single PowerShell script to perform everything necessary to deploy Azure Virtual Desktop (AVD)
                   into an Azure Subscription
