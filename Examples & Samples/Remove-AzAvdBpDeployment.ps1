@@ -54,23 +54,49 @@ Param(
     [switch] $PurgeKeyVault
 )
 
-if (-not(Get-Module -Name Az.Keyvault)) {
+#Trying to work around an issue where the modules were previously installed but don't report that way to PowerShell
+Write-Verbose "Checking PowerShell modules needed to run this script"
+if (-not(Get-Module -Name 'Az.Keyvault')) {
+    Import-Module -Name 'Az.Keyvault' -Force
+    }
+    if (-not(Get-Module -Name 'Az.Keyvault')) {
     Install-Module 'Az.Keyvault' -Force
+    Import-Module -Name 'Az.Keyvault' -Force
 }
-if (-not(Get-Module -Name Az.Storage)) {
+if (-not(Get-Module -Name 'Az.Storage')) {
+    Import-Module -Name 'Az.Storage' -Force
+    }
+    if (-not(Get-Module -Name 'Az.Storage')) {
     Install-Module 'Az.Storage' -Force
+    Import-Module -Name 'Az.Storage' -Force
 }
-if (-not(Get-Module -Name Az.Resources)) {
+if (-not(Get-Module -Name 'Az.Resources')) {
+    Import-Module -Name 'Az.Resources' -Force
+    }
+    if (-not(Get-Module -Name 'Az.Resources')) {
     Install-Module 'Az.Resources' -Force
+    Import-Module -Name 'Az.Resources' -Force
 }
-if (-not(Get-Module -Name Az.OperationalInsights)) {
+if (-not(Get-Module -Name 'Az.OperationalInsights')) {
+    Import-Module -Name 'Az.OperationalInsights' -Force
+    }
+    if (-not(Get-Module -Name 'Az.OperationalInsights')) {
     Install-Module 'Az.OperationalInsights' -Force
+    Import-Module -Name 'Az.OperationalInsights' -Force
 }
-if (-not(Get-Module -Name AzureAD)) {
+if (-not(Get-Module -Name 'AzureAD')) {
+    Import-Module -Name 'AzureAD' -Force
+    }
+    if (-not(Get-Module -Name 'AzureAD')) {
     Install-Module 'AzureAD' -Force
+    Import-Module -Name 'AzureAD' -Force
 }
-if (-not(Get-Module -Name Az.DesktopVirtualization)) {
+if (-not(Get-Module -Name 'Az.DesktopVirtualization')) {
+    Import-Module 'Az.DesktopVirtualization' -Force
+    }
+    if (-not(Get-Module -Name 'Az.DesktopVirtualization')) {
     Install-Module 'Az.DesktopVirtualization' -Force
+    Import-Module 'Az.DesktopVirtualization' -Force
 }
 
 $RemovalScope = Get-AzResourceGroup | Where-Object {$_.ResourceGroupName -like "$($Prefix)*"} 
