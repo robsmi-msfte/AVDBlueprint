@@ -131,8 +131,8 @@
                 "metadata": {
                     "description": "The name of availability set to be used when creating the session host VMs."
                 }
-               },
-               "availabilitySetUpdateDomainCount": {
+              },
+              "availabilitySetUpdateDomainCount": {
                 "type": "int",
                 "metadata": {
                     "description": "The platform update domain count of the availability set to be created."
@@ -160,11 +160,11 @@
                     19,
                     20
                 ]
-            },
-            "availabilitySetFaultDomainCount": {
+              },
+              "availabilitySetFaultDomainCount": {
                 "type": "int",
                 "metadata": {
-                    "description": "The platform fault domain count of avaiability set to be created."
+                    "description": "The platform fault domain count of availability set to be created."
                 },
                 "defaultValue": 2,
                 "allowedValues": [
@@ -172,7 +172,7 @@
                     2,
                     3
                 ]
-            },
+              },
               "vmResourceGroup": {
                   "type": "string",
                   "metadata": {
